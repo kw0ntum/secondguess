@@ -350,5 +350,117 @@ export function createComponentLogger(componentName: string): winston.Logger {
   return createChildLogger({ component: componentName });
 }
 
+/**
+ * Log critical system failures
+ */
+export function logCriticalFailure(
+  failureType: string, 
+  component: string, 
+  description: string, 
+  metadata?: Record<string, any>
+): void {
+  logger.error('Critical system failure', {
+    failureType,
+    component,
+    description,
+    type: 'critical_failure',
+    timestamp: new Date().toISOString(),
+    ...metadata
+  });
+}
+
+/**
+ * Log system health status changes
+ */
+export function logHealthStatusChange(
+  component: string, 
+  previousStatus: string, 
+  currentStatus: string, 
+  metadata?: Record<string, any>
+): void {
+  const level = currentStatus === 'unhealthy' ? 'error' : 
+               currentStatus === 'degraded' ? 'warn' : 'info';
+  
+  logger.log(level, 'Health status changed', {
+    component,
+    previousStatus,
+    currentStatus,
+    type: 'health_status_change',
+    timestamp: new Date().toISOString(),
+    ...metadata
+  });
+}
+
+/**
+ * Log monitoring dashboard events
+ */
+export function logDashboardEvent(event: string, metadata?: Record<string, any>): void {
+  logger.info('Dashboard event', {
+    event,
+    type: 'dashboard_event',
+    timestamp: new Date().toISOString(),
+    ...metadata
+  });
+}
+
+/**
+ * Log alert lifecycle events
+ */
+export function logAlertLifecycle(
+  alertId: string, 
+  event: 'created' | 'escalated' | 'resolved' | 'acknowledged', 
+  metadata?: Record<string, any>
+): void {
+  const level = event === 'created' ? 'warn' : 'info';
+  
+  logger.log(level, 'Alert lifecycle event', {
+    alertId,
+    event,
+    type: 'alert_lifecycle',
+    timestamp: new Date().toISOString(),
+    ...metadata
+  });
+}
+
+/**
+ * Log service dependency failures
+ */
+export function logServiceDependencyFailure(
+  service: string, 
+  dependency: string, 
+  failureReason: string, 
+  metadata?: Record<string, any>
+): void {
+  logger.error('Service dependency failure', {
+    service,
+    dependency,
+    failureReason,
+    type: 'dependency_failure',
+    timestamp: new Date().toISOString(),
+    ...metadata
+  });
+}
+
+/**
+ * Log system recovery events
+ */
+export function logSystemRecovery(
+  component: string, 
+  recoveryAction: string, 
+  success: boolean, 
+  metadata?: Record<string, any>
+): void {
+  const level = success ? 'info' : 'error';
+  
+  logger.log(level, 'System recovery attempt', {
+    component,
+    recoveryAction,
+    success,
+    type: 'system_recovery',
+    timestamp: new Date().toISOString(),
+    ...metadata
+  });
+}
+
 // Export default logger
 export default logger;

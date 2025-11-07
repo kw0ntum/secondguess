@@ -215,120 +215,144 @@ router.get('/', (req: Request, res: Response) => {
         let autoRefreshInterval;
         
         async function loadDashboard() {
+            console.log('Loading dashboard...');
             try {
                 const response = await fetch('/api/monitoring/dashboard');
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status + ': ' + response.statusText);
+                }
+                
                 const data = await response.json();
+                console.log('Data received:', data);
                 
                 renderDashboard(data);
             } catch (error) {
                 console.error('Failed to load dashboard:', error);
                 document.getElementById('dashboard-content').innerHTML = 
-                    '<div class="alert alert-error">Failed to load dashboard data. Please try again.</div>';
+                    '<div class="alert alert-error">Failed to load dashboard data: ' + error.message + '</div>';
             }
         }
         
         function renderDashboard(data) {
+            console.log('Rendering dashboard with data:', data);
             const container = document.getElementById('dashboard-content');
             
-            const html = \`
-                <div class="grid">
-                    <div class="card">
-                        <h2>System Overview</h2>
-                        <div class="metric">
-                            <span class="metric-label">Overall Health</span>
-                            <span class="metric-value">
-                                <span class="status-indicator status-\${data.health.status}"></span>
-                                \${data.health.status.charAt(0).toUpperCase() + data.health.status.slice(1)}
-                            </span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Uptime</span>
-                            <span class="metric-value">\${formatUptime(data.health.uptime)}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Active Sessions</span>
-                            <span class="metric-value">\${data.health.metrics.activeSessions}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Total Requests</span>
-                            <span class="metric-value">\${data.health.metrics.totalRequests.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <h2>Performance Metrics</h2>
-                        <div class="metric">
-                            <span class="metric-label">Avg Response Time</span>
-                            <span class="metric-value">\${Math.round(data.health.metrics.averageResponseTime)}ms</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Error Rate</span>
-                            <span class="metric-value">\${(data.health.metrics.errorRate * 100).toFixed(2)}%</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Memory Usage</span>
-                            <span class="metric-value">\${((data.health.metrics.memoryUsage.heapUsed / data.health.metrics.memoryUsage.heapTotal) * 100).toFixed(1)}%</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">CPU Usage</span>
-                            <span class="metric-value">\${data.health.metrics.cpuUsage.toFixed(1)}%</span>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <h2>Service Health</h2>
-                        <ul class="component-list">
-                            \${Object.entries(data.health.services).map(([name, service]) => \`
-                                <li class="component-item">
-                                    <span class="component-name">\${name}</span>
-                                    <span class="status-indicator status-\${service.status}"></span>
-                                    <span>\${service.status}</span>
-                                </li>
-                            \`).join('')}
-                        </ul>
-                    </div>
-                    
-                    <div class="card">
-                        <h2>Service Statistics</h2>
-                        <div class="metric">
-                            <span class="metric-label">Total Services</span>
-                            <span class="metric-value">\${data.serviceHealth.totalServices}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Healthy Services</span>
-                            <span class="metric-value">\${data.serviceHealth.healthyServices}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Degraded Services</span>
-                            <span class="metric-value">\${data.serviceHealth.degradedServices}</span>
-                        </div>
-                        <div class="metric">
-                            <span class="metric-label">Unhealthy Services</span>
-                            <span class="metric-value">\${data.serviceHealth.unhealthyServices}</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="card">
-                    <h2>Active Alerts (\${data.health.alerts.length})</h2>
-                    \${data.health.alerts.length === 0 ? 
-                        '<p style="color: #10b981; font-weight: 500;">✅ No active alerts</p>' :
-                        data.health.alerts.map(alert => \`
-                            <div class="alert alert-\${alert.level}">
-                                <div class="alert-header">
-                                    [\${alert.level.toUpperCase()}] \${alert.service || 'System'}: \${alert.message}
-                                </div>
-                                \${alert.metadata ? \`<div style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">
-                                    \${JSON.stringify(alert.metadata, null, 2)}
-                                </div>\` : ''}
-                                <div class="alert-time">\${new Date(alert.timestamp).toLocaleString()}</div>
-                            </div>
-                        \`).join('')
-                    }
-                </div>
-            \`;
+            if (!container) {
+                console.error('Dashboard container not found!');
+                return;
+            }
             
+            // Build service health list
+            const serviceHealthItems = Object.entries(data.health.services).map(([name, service]) => 
+                '<li class="component-item">' +
+                    '<span class="component-name">' + name + '</span>' +
+                    '<span class="status-indicator status-' + service.status + '"></span>' +
+                    '<span>' + service.status + '</span>' +
+                '</li>'
+            ).join('');
+            
+            // Build alerts list
+            let alertsHtml = '';
+            if (data.health.alerts.length === 0) {
+                alertsHtml = '<p style="color: #10b981; font-weight: 500;">✅ No active alerts</p>';
+            } else {
+                alertsHtml = data.health.alerts.map(alert => 
+                    '<div class="alert alert-' + alert.level + '">' +
+                        '<div class="alert-header">' +
+                            '[' + alert.level.toUpperCase() + '] ' + (alert.service || 'System') + ': ' + alert.message +
+                        '</div>' +
+                        (alert.metadata ? 
+                            '<div style="font-size: 0.875rem; color: #666; margin-top: 0.5rem;">' +
+                                JSON.stringify(alert.metadata, null, 2) +
+                            '</div>' : '') +
+                        '<div class="alert-time">' + new Date(alert.timestamp).toLocaleString() + '</div>' +
+                    '</div>'
+                ).join('');
+            }
+            
+            const html = 
+                '<div class="grid">' +
+                    '<div class="card">' +
+                        '<h2>System Overview</h2>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Overall Health</span>' +
+                            '<span class="metric-value">' +
+                                '<span class="status-indicator status-' + data.health.status + '"></span>' +
+                                data.health.status.charAt(0).toUpperCase() + data.health.status.slice(1) +
+                            '</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Uptime</span>' +
+                            '<span class="metric-value">' + formatUptime(data.health.uptime) + '</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Active Sessions</span>' +
+                            '<span class="metric-value">' + data.health.metrics.activeSessions + '</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Total Requests</span>' +
+                            '<span class="metric-value">' + data.health.metrics.totalRequests.toLocaleString() + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                    
+                    '<div class="card">' +
+                        '<h2>Performance Metrics</h2>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Avg Response Time</span>' +
+                            '<span class="metric-value">' + Math.round(data.health.metrics.averageResponseTime) + 'ms</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Error Rate</span>' +
+                            '<span class="metric-value">' + (data.health.metrics.errorRate * 100).toFixed(2) + '%</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Memory Usage</span>' +
+                            '<span class="metric-value">' + ((data.health.metrics.memoryUsage.heapUsed / data.health.metrics.memoryUsage.heapTotal) * 100).toFixed(1) + '%</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">CPU Usage</span>' +
+                            '<span class="metric-value">' + data.health.metrics.cpuUsage.toFixed(1) + '%</span>' +
+                        '</div>' +
+                    '</div>' +
+                    
+                    '<div class="card">' +
+                        '<h2>Service Health</h2>' +
+                        '<ul class="component-list">' +
+                            serviceHealthItems +
+                        '</ul>' +
+                    '</div>' +
+                    
+                    '<div class="card">' +
+                        '<h2>Service Statistics</h2>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Total Services</span>' +
+                            '<span class="metric-value">' + data.serviceHealth.totalServices + '</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Healthy Services</span>' +
+                            '<span class="metric-value">' + data.serviceHealth.healthyServices + '</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Degraded Services</span>' +
+                            '<span class="metric-value">' + data.serviceHealth.degradedServices + '</span>' +
+                        '</div>' +
+                        '<div class="metric">' +
+                            '<span class="metric-label">Unhealthy Services</span>' +
+                            '<span class="metric-value">' + data.serviceHealth.unhealthyServices + '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                
+                '<div class="card">' +
+                    '<h2>Active Alerts (' + data.health.alerts.length + ')</h2>' +
+                    alertsHtml +
+                '</div>';
+            
+            console.log('Setting HTML content...');
             container.innerHTML = html;
+            console.log('Dashboard rendered successfully');
         }
         
         function formatUptime(ms) {

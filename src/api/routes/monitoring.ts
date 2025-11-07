@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { systemMonitor } from '../../utils/system-monitor';
 import { serviceMonitor } from '../../utils/service-monitor';
 import { alertingSystem } from '../../utils/alerting';
+import { monitoringIntegration } from '../../utils/monitoring-integration';
 import { logger } from '../../utils/logger';
 import { routeSpecificMonitoring } from '../middleware/monitoring';
 
@@ -29,20 +30,20 @@ router.get('/health', routeSpecificMonitoring('health'), async (req: Request, re
 });
 
 /**
- * Get detailed monitoring dashboard data
+ * Get comprehensive monitoring dashboard data
  */
 router.get('/dashboard', routeSpecificMonitoring('dashboard'), async (req: Request, res: Response) => {
   try {
-    const dashboardData = systemMonitor.getDashboardData();
-    
-    // Resolve the health promise
-    const health = await dashboardData.health;
+    // Get the basic health data that the dashboard expects
+    const health = await systemMonitor.getSystemHealth();
+    const serviceHealth = serviceMonitor.getHealthSummary();
+    const alertingStats = alertingSystem.getStatistics();
     
     const response = {
-      ...dashboardData,
       health,
-      alertingStats: alertingSystem.getStatistics(),
-      serviceHealth: serviceMonitor.getHealthSummary()
+      serviceHealth,
+      alertingStats,
+      timestamp: new Date()
     };
     
     res.json(response);
@@ -301,6 +302,147 @@ router.get('/alerting/stats', routeSpecificMonitoring('alerting-stats'), (req: R
     logger.error('Failed to get alerting statistics', { error: (error as Error).message });
     res.status(500).json({
       error: 'Failed to retrieve alerting statistics',
+      timestamp: new Date()
+    });
+  }
+});
+
+/**
+ * Get real-time monitoring metrics
+ */
+router.get('/realtime', routeSpecificMonitoring('realtime-metrics'), async (req: Request, res: Response) => {
+  try {
+    const realTimeMetrics = await monitoringIntegration.getRealTimeMetrics();
+    
+    res.json(realTimeMetrics);
+    
+  } catch (error) {
+    logger.error('Failed to get real-time metrics', { error: (error as Error).message });
+    res.status(500).json({
+      error: 'Failed to retrieve real-time metrics',
+      timestamp: new Date()
+    });
+  }
+});
+
+/**
+ * Get system health trends
+ */
+router.get('/trends', routeSpecificMonitoring('health-trends'), (req: Request, res: Response) => {
+  try {
+    const { hours } = req.query;
+    const hoursNum = hours ? parseInt(hours as string) : 24;
+    
+    const trends = systemMonitor.getHealthTrends(hoursNum);
+    
+    res.json({
+      trends,
+      period: `${hoursNum} hours`,
+      timestamp: new Date()
+    });
+    
+  } catch (error) {
+    logger.error('Failed to get health trends', { error: (error as Error).message });
+    res.status(500).json({
+      error: 'Failed to retrieve health trends',
+      timestamp: new Date()
+    });
+  }
+});
+
+/**
+ * Get critical failure indicators
+ */
+router.get('/critical-failures', routeSpecificMonitoring('critical-failures'), (req: Request, res: Response) => {
+  try {
+    const criticalFailures = systemMonitor.getCriticalFailureIndicators();
+    
+    res.json({
+      ...criticalFailures,
+      timestamp: new Date()
+    });
+    
+  } catch (error) {
+    logger.error('Failed to get critical failure indicators', { error: (error as Error).message });
+    res.status(500).json({
+      error: 'Failed to retrieve critical failure indicators',
+      timestamp: new Date()
+    });
+  }
+});
+
+/**
+ * Process critical system failure
+ */
+router.post('/critical-failures', routeSpecificMonitoring('process-critical-failure'), async (req: Request, res: Response) => {
+  try {
+    const { type, component, description, severity, metadata } = req.body;
+    
+    if (!type || !component || !description || !severity) {
+      res.status(400).json({
+        error: 'Missing required fields: type, component, description, severity'
+      });
+      return;
+    }
+    
+    await alertingSystem.processCriticalFailure({
+      type,
+      component,
+      description,
+      severity,
+      metadata
+    });
+    
+    res.json({
+      success: true,
+      message: 'Critical failure processed successfully',
+      timestamp: new Date()
+    });
+    
+  } catch (error) {
+    logger.error('Failed to process critical failure', { error: (error as Error).message });
+    res.status(500).json({
+      error: 'Failed to process critical failure',
+      timestamp: new Date()
+    });
+  }
+});
+
+/**
+ * Get performance insights and recommendations
+ */
+router.get('/insights', routeSpecificMonitoring('performance-insights'), async (req: Request, res: Response) => {
+  try {
+    const comprehensiveData = await monitoringIntegration.getComprehensiveMonitoringData();
+    
+    res.json({
+      insights: comprehensiveData.performanceInsights,
+      criticalFailures: comprehensiveData.criticalFailures,
+      timestamp: new Date()
+    });
+    
+  } catch (error) {
+    logger.error('Failed to get performance insights', { error: (error as Error).message });
+    res.status(500).json({
+      error: 'Failed to retrieve performance insights',
+      timestamp: new Date()
+    });
+  }
+});
+
+/**
+ * Get comprehensive system overview
+ */
+router.get('/overview', routeSpecificMonitoring('system-overview'), async (req: Request, res: Response) => {
+  try {
+    const systemOverview = await monitoringIntegration.getSystemOverview();
+    
+    res.json(systemOverview);
+    
+  } catch (error) {
+    logger.error('Failed to get system overview', { error: (error as Error).message });
+    res.status(500).json({
+      error: 'Failed to retrieve system overview',
       timestamp: new Date()
     });
   }

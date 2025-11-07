@@ -493,6 +493,201 @@ export class SystemMonitor extends EventEmitter {
   }
 
   /**
+   * Get comprehensive system dashboard data
+   */
+  getComprehensiveDashboardData(): {
+    systemHealth: SystemHealth;
+    performanceMetrics: {
+      responseTimeHistory: Array<{ timestamp: Date; value: number }>;
+      errorRateHistory: Array<{ timestamp: Date; value: number }>;
+      memoryUsageHistory: Array<{ timestamp: Date; value: number }>;
+      cpuUsageHistory: Array<{ timestamp: Date; value: number }>;
+    };
+    alertSummary: {
+      total: number;
+      byLevel: Record<string, number>;
+      recent: Alert[];
+    };
+    serviceHealthSummary: {
+      healthy: number;
+      degraded: number;
+      unhealthy: number;
+      unknown: number;
+    };
+  } {
+    const systemHealth = this.getSystemHealth() as any;
+    const metricsHistory = this.getMetricsHistory(24);
+    const allAlerts = this.getAllAlerts();
+    
+    // Process metrics history for dashboard charts
+    const responseTimeHistory = metricsHistory.map(m => ({
+      timestamp: m.timestamp,
+      value: m.metrics.averageResponseTime
+    }));
+    
+    const errorRateHistory = metricsHistory.map(m => ({
+      timestamp: m.timestamp,
+      value: m.metrics.errorRate * 100 // Convert to percentage
+    }));
+    
+    const memoryUsageHistory = metricsHistory.map(m => ({
+      timestamp: m.timestamp,
+      value: (m.metrics.memoryUsage.heapUsed / m.metrics.memoryUsage.heapTotal) * 100
+    }));
+    
+    const cpuUsageHistory = metricsHistory.map(m => ({
+      timestamp: m.timestamp,
+      value: m.metrics.cpuUsage
+    }));
+    
+    // Alert summary
+    const alertsByLevel = allAlerts.reduce((acc, alert) => {
+      acc[alert.level] = (acc[alert.level] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    // Service health summary
+    const serviceHealthSummary = { healthy: 0, degraded: 0, unhealthy: 0, unknown: 0 };
+    
+    return {
+      systemHealth,
+      performanceMetrics: {
+        responseTimeHistory,
+        errorRateHistory,
+        memoryUsageHistory,
+        cpuUsageHistory
+      },
+      alertSummary: {
+        total: allAlerts.length,
+        byLevel: alertsByLevel,
+        recent: allAlerts.slice(0, 10)
+      },
+      serviceHealthSummary
+    };
+  }
+
+  /**
+   * Get system health trends
+   */
+  getHealthTrends(hours: number = 24): Array<{
+    timestamp: Date;
+    overallHealth: 'healthy' | 'degraded' | 'unhealthy';
+    serviceHealthCounts: { healthy: number; degraded: number; unhealthy: number; unknown: number };
+    alertCount: number;
+  }> {
+    // This would typically be stored in a time-series database
+    // For now, we'll simulate based on current metrics history
+    const metricsHistory = this.getMetricsHistory(hours);
+    
+    return metricsHistory.map(m => {
+      // Determine health based on metrics
+      let overallHealth: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+      
+      const memoryUsagePercent = (m.metrics.memoryUsage.heapUsed / m.metrics.memoryUsage.heapTotal) * 100;
+      
+      if (m.metrics.errorRate > this.config.alertThresholds.errorRate || 
+          memoryUsagePercent > this.config.alertThresholds.memoryUsage ||
+          m.metrics.cpuUsage > this.config.alertThresholds.cpuUsage) {
+        overallHealth = 'unhealthy';
+      } else if (m.metrics.errorRate > this.config.alertThresholds.errorRate * 0.5 ||
+                 memoryUsagePercent > this.config.alertThresholds.memoryUsage * 0.8 ||
+                 m.metrics.cpuUsage > this.config.alertThresholds.cpuUsage * 0.8) {
+        overallHealth = 'degraded';
+      }
+      
+      return {
+        timestamp: m.timestamp,
+        overallHealth,
+        serviceHealthCounts: { healthy: 0, degraded: 0, unhealthy: 0, unknown: 0 },
+        alertCount: 0 // Would be calculated from historical alert data
+      };
+    });
+  }
+
+  /**
+   * Get critical failure indicators
+   */
+  getCriticalFailureIndicators(): {
+    cascadingFailures: boolean;
+    memoryExhaustion: boolean;
+    cpuOverload: boolean;
+    highErrorRate: boolean;
+    serviceUnavailability: boolean;
+    indicators: Array<{ type: string; severity: 'low' | 'medium' | 'high' | 'critical'; description: string }>;
+  } {
+    const systemHealth = this.getSystemHealth() as any;
+    const indicators: Array<{ type: string; severity: 'low' | 'medium' | 'high' | 'critical'; description: string }> = [];
+    
+    // Check for cascading failures (multiple services unhealthy)
+    const unhealthyServices = Object.values(systemHealth.services || {})
+      .filter((service: any) => service.status === 'unhealthy').length;
+    const cascadingFailures = unhealthyServices >= 2;
+    
+    if (cascadingFailures) {
+      indicators.push({
+        type: 'cascading_failures',
+        severity: 'critical',
+        description: `${unhealthyServices} services are unhealthy simultaneously`
+      });
+    }
+    
+    // Check memory exhaustion
+    const memoryUsagePercent = systemHealth.metrics ? 
+      (systemHealth.metrics.memoryUsage.heapUsed / systemHealth.metrics.memoryUsage.heapTotal) * 100 : 0;
+    const memoryExhaustion = memoryUsagePercent > 90;
+    
+    if (memoryExhaustion) {
+      indicators.push({
+        type: 'memory_exhaustion',
+        severity: 'critical',
+        description: `Memory usage at ${memoryUsagePercent.toFixed(1)}%`
+      });
+    }
+    
+    // Check CPU overload
+    const cpuOverload = systemHealth.metrics ? systemHealth.metrics.cpuUsage > 95 : false;
+    
+    if (cpuOverload) {
+      indicators.push({
+        type: 'cpu_overload',
+        severity: 'high',
+        description: `CPU usage at ${systemHealth.metrics?.cpuUsage.toFixed(1)}%`
+      });
+    }
+    
+    // Check high error rate
+    const highErrorRate = systemHealth.metrics ? systemHealth.metrics.errorRate > 0.2 : false;
+    
+    if (highErrorRate) {
+      indicators.push({
+        type: 'high_error_rate',
+        severity: 'high',
+        description: `Error rate at ${((systemHealth.metrics?.errorRate || 0) * 100).toFixed(1)}%`
+      });
+    }
+    
+    // Check service unavailability
+    const serviceUnavailability = unhealthyServices > 0;
+    
+    if (serviceUnavailability && !cascadingFailures) {
+      indicators.push({
+        type: 'service_unavailability',
+        severity: 'medium',
+        description: `${unhealthyServices} service(s) unhealthy`
+      });
+    }
+    
+    return {
+      cascadingFailures,
+      memoryExhaustion,
+      cpuOverload,
+      highErrorRate,
+      serviceUnavailability,
+      indicators
+    };
+  }
+
+  /**
    * Stop monitoring
    */
   stop(): void {

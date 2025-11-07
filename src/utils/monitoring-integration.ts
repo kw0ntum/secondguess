@@ -179,7 +179,7 @@ export class MonitoringIntegration extends EventEmitter {
         performance: {
           memoryUsage: (systemHealth.metrics.memoryUsage.heapUsed / systemHealth.metrics.memoryUsage.heapTotal) * 100,
           cpuUsage: systemHealth.metrics.cpuUsage,
-          diskUsage: systemHealth.metrics.diskUsage
+          ...(systemHealth.metrics.diskUsage !== undefined && { diskUsage: systemHealth.metrics.diskUsage })
         }
       };
 
@@ -430,6 +430,145 @@ export class MonitoringIntegration extends EventEmitter {
       lastCheck: new Date(),
       metrics: Object.fromEntries(metrics),
       issues
+    };
+  }
+
+  /**
+   * Get comprehensive monitoring dashboard data
+   */
+  async getComprehensiveMonitoringData(): Promise<{
+    systemOverview: SystemOverview;
+    dashboardData: any;
+    healthTrends: any[];
+    criticalFailures: any;
+    performanceInsights: {
+      bottlenecks: Array<{ component: string; issue: string; severity: string }>;
+      recommendations: string[];
+      trends: {
+        improving: string[];
+        degrading: string[];
+      };
+    };
+  }> {
+    const [systemOverview, dashboardData] = await Promise.all([
+      this.getSystemOverview(),
+      systemMonitor.getComprehensiveDashboardData()
+    ]);
+    
+    const healthTrends = systemMonitor.getHealthTrends(24);
+    const criticalFailures = systemMonitor.getCriticalFailureIndicators();
+    
+    // Analyze performance insights
+    const performanceInsights = this.analyzePerformanceInsights(systemOverview, dashboardData);
+    
+    return {
+      systemOverview,
+      dashboardData,
+      healthTrends,
+      criticalFailures,
+      performanceInsights
+    };
+  }
+
+  /**
+   * Analyze performance insights and recommendations
+   */
+  private analyzePerformanceInsights(systemOverview: SystemOverview, dashboardData: any): {
+    bottlenecks: Array<{ component: string; issue: string; severity: string }>;
+    recommendations: string[];
+    trends: { improving: string[]; degrading: string[] };
+  } {
+    const bottlenecks: Array<{ component: string; issue: string; severity: string }> = [];
+    const recommendations: string[] = [];
+    const trends = { improving: [] as string[], degrading: [] as string[] };
+    
+    // Identify bottlenecks
+    systemOverview.components.forEach(component => {
+      if (component.status === 'unhealthy') {
+        bottlenecks.push({
+          component: component.component,
+          issue: component.issues.join(', ') || 'Service unhealthy',
+          severity: 'high'
+        });
+      } else if (component.status === 'degraded') {
+        bottlenecks.push({
+          component: component.component,
+          issue: component.issues.join(', ') || 'Service degraded',
+          severity: 'medium'
+        });
+      }
+    });
+    
+    // Generate recommendations
+    if (systemOverview.performance.memoryUsage > 80) {
+      recommendations.push('Consider increasing memory allocation or optimizing memory usage');
+    }
+    
+    if (systemOverview.performance.cpuUsage > 80) {
+      recommendations.push('Consider scaling CPU resources or optimizing CPU-intensive operations');
+    }
+    
+    if (systemOverview.systemMetrics.errorRate > 0.05) {
+      recommendations.push('Investigate and resolve high error rate issues');
+    }
+    
+    if (systemOverview.activeAlerts.length > 5) {
+      recommendations.push('Review and resolve multiple active alerts');
+    }
+    
+    if (bottlenecks.length === 0 && systemOverview.activeAlerts.length === 0) {
+      recommendations.push('System is operating optimally');
+    }
+    
+    // Analyze trends (simplified - would use historical data in production)
+    const recentMetrics = dashboardData.performanceMetrics;
+    
+    if (recentMetrics.responseTimeHistory.length > 1) {
+      const recent = recentMetrics.responseTimeHistory.slice(-5);
+      const older = recentMetrics.responseTimeHistory.slice(-10, -5);
+      
+      const recentAvg = recent.reduce((sum: number, m: any) => sum + m.value, 0) / recent.length;
+      const olderAvg = older.reduce((sum: number, m: any) => sum + m.value, 0) / older.length;
+      
+      if (recentAvg < olderAvg * 0.9) {
+        trends.improving.push('Response time improving');
+      } else if (recentAvg > olderAvg * 1.1) {
+        trends.degrading.push('Response time degrading');
+      }
+    }
+    
+    return { bottlenecks, recommendations, trends };
+  }
+
+  /**
+   * Get real-time monitoring metrics
+   */
+  async getRealTimeMetrics(): Promise<{
+    timestamp: Date;
+    systemHealth: string;
+    activeAlerts: number;
+    criticalFailures: number;
+    memoryUsage: number;
+    cpuUsage: number;
+    errorRate: number;
+    responseTime: number;
+    activeSessions: number;
+    requestsPerMinute: number;
+  }> {
+    const systemOverview = await this.getSystemOverview();
+    const criticalFailures = systemMonitor.getCriticalFailureIndicators();
+    
+    return {
+      timestamp: new Date(),
+      systemHealth: systemOverview.overallHealth,
+      activeAlerts: systemOverview.activeAlerts.length,
+      criticalFailures: criticalFailures.indicators.filter(i => i.severity === 'critical').length,
+      memoryUsage: systemOverview.performance.memoryUsage,
+      cpuUsage: systemOverview.performance.cpuUsage,
+      errorRate: systemOverview.systemMetrics.errorRate * 100,
+      responseTime: systemOverview.systemMetrics.averageResponseTime,
+      activeSessions: systemOverview.systemMetrics.activeSessions,
+      requestsPerMinute: systemOverview.systemMetrics.totalRequests // Simplified
     };
   }
 
