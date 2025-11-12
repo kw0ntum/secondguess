@@ -81,7 +81,7 @@ Thumbs.db
 # Generated documents
 *.pdf
 *.docx
-*.html
+#*.html
 
 # Test files
 test-results/
