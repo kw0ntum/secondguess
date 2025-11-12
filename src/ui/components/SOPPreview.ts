@@ -460,7 +460,7 @@ ate formatSectionContent(content: string): string {
       .join('');
   }
 
-  private generateSectionCharts(section: SOPSection): string {
+  private generateSectionCharts(section: SOPSection | any): string {
     if (!section.charts || section.charts.length === 0) return '';
 
     const chartsHtml = section.charts.map(chartRef => `
