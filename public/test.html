@@ -9,10 +9,40 @@
     
     <script>
         const API_BASE = 'http://localhost:3000/api';
-        const AUTH_TOKEN = 'mock-valid-token';
+        let authToken = null;
         const results = document.getElementById('results');
         
+        async function obtainAuthToken() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/guest`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error obtaining auth token:', error);
+                return false;
+            }
+        }
+        
         async function testAPI() {
+            results.innerHTML = '<p>Obtaining authentication token...</p>';
+            
+            if (!await obtainAuthToken()) {
+                results.innerHTML += '<p style="color: red;">❌ Failed to obtain auth token</p>';
+                return;
+            }
+            
+            results.innerHTML += '<p>✅ Auth token obtained</p>';
+            
             results.innerHTML = '<p>Testing API...</p>';
             
             try {

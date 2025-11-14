@@ -44,9 +44,39 @@
     
     <script>
         const results = document.getElementById('results');
+        let authToken = null;
+        
+        async function obtainAuthToken() {
+            try {
+                const response = await fetch('http://localhost:3000/api/auth/guest', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('Error obtaining auth token:', error);
+                return false;
+            }
+        }
         
         async function runTests() {
-            results.innerHTML = '<p class="info">Running tests...</p>';
+            results.innerHTML = '<p class="info">Obtaining authentication token...</p>';
+            
+            if (!await obtainAuthToken()) {
+                results.innerHTML += '<p class="fail">❌ Failed to obtain auth token</p>';
+                return;
+            }
+            
+            results.innerHTML += '<p class="pass">✅ Auth token obtained</p>';
+            results.innerHTML += '<p class="info">Running tests...</p>';
             
             const tests = [];
             
@@ -120,7 +150,7 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': 'Bearer mock-valid-token'
+                                'Authorization': `Bearer ${authToken}`
                             },
                             body: JSON.stringify({ userId: 'diagnostic-test' })
                         });

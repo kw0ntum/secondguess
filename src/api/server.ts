@@ -7,6 +7,7 @@ import { getConfig } from '../utils/config';
 import { systemMonitor } from '../utils/system-monitor';
 
 // Import routes
+import authRoutes from './routes/auth.routes';
 import sessionRoutes from './routes/session';
 import conversationRoutes from './routes/conversation';
 import sopRoutes from './routes/sop';
@@ -82,6 +83,13 @@ export function createApp(): Application {
   
   // Dashboard routes
   app.use('/dashboard', dashboardRoutes);
+
+  // Auth routes (no authentication required for these endpoints)
+  app.use('/api/auth', 
+    rateLimit(rateLimitConfigs.general),
+    routeSpecificMonitoring('auth'),
+    authRoutes
+  );
 
   // API routes with rate limiting and route-specific monitoring
   app.use('/api/sessions', 

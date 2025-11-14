@@ -355,12 +355,12 @@
         let conversationHistory = [];
         let currentWorkflow = null;
         let currentSOP = null;
+        let authToken = null; // Will be fetched dynamically
 
         // Detect if running on Vercel or locally
         const API_BASE = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api' 
             : `${window.location.origin}/api`;
-        const AUTH_TOKEN = 'mock-valid-token';
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', async function() {
@@ -383,7 +383,16 @@
                 showError('⚠️ Unexpected hostname: ' + window.location.hostname + '. Expected localhost or vercel.app');
             }
             
-            // First check API connection
+            // First, obtain authentication token
+            await obtainAuthToken();
+            
+            if (!authToken) {
+                showError('Failed to obtain authentication token. Please refresh the page.');
+                updateStatus('Auth Failed', false);
+                return;
+            }
+            
+            // Check API connection
             await checkAPIConnection();
             
             // Wait a bit for server to be ready
@@ -392,6 +401,58 @@
             // Then start session
             await startNewSession();
         });
+
+        // Obtain authentication token
+        async function obtainAuthToken() {
+            try {
+                console.log('Obtaining authentication token...');
+                
+                // Try to get token from sessionStorage first
+                const storedToken = sessionStorage.getItem('authToken');
+                const tokenExpiry = sessionStorage.getItem('tokenExpiry');
+                
+                if (storedToken && tokenExpiry) {
+                    const expiryTime = new Date(tokenExpiry).getTime();
+                    const now = Date.now();
+                    
+                    // If token is still valid (with 5 minute buffer), use it
+                    if (expiryTime - now > 5 * 60 * 1000) {
+                        authToken = storedToken;
+                        console.log('Using stored authentication token');
+                        return true;
+                    }
+                }
+                
+                // Request a new guest token
+                const response = await fetch(`${API_BASE}/auth/guest`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    
+                    // Store token in sessionStorage (not localStorage for better security)
+                    sessionStorage.setItem('authToken', authToken);
+                    
+                    // Calculate expiry time (24 hours from now)
+                    const expiryTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
+                    sessionStorage.setItem('tokenExpiry', expiryTime.toISOString());
+                    
+                    console.log('Authentication token obtained successfully');
+                    return true;
+                } else {
+                    console.error('Failed to obtain auth token:', response.status);
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error obtaining auth token:', error);
+                return false;
+            }
+        }
 
         // Check API connection
         async function checkAPIConnection() {
@@ -404,7 +465,7 @@
                 const response = await fetch(`${API_BASE}/monitoring/health`, {
                     method: 'GET',
                     headers: {
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     signal: controller.signal
                 });
@@ -449,7 +510,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
                         userId: 'web-user-' + Date.now()
@@ -575,7 +636,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
                         text: message,
@@ -654,7 +715,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Authorization': `Bearer ${authToken}`
                     }
                 });
 
@@ -669,7 +730,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
                         workflowDefinition: currentWorkflow,
@@ -731,7 +792,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                        'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
                         format: format,
