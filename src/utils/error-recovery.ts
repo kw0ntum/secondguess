@@ -156,7 +156,7 @@ export class CircuitBreaker {
   private config: CircuitBreakerConfig;
   private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
   private failureCount = 0;
-  private lastFailureTime?: Date;
+  private lastFailureTime: Date | undefined;
   private successCount = 0;
 
   constructor(private name: string, config: Partial<CircuitBreakerConfig> = {}) {
@@ -258,7 +258,7 @@ export class CircuitBreaker {
   /**
    * Get current circuit breaker state
    */
-  getState(): { state: string; failureCount: number; lastFailureTime?: Date } {
+  getState(): { state: string; failureCount: number; lastFailureTime?: Date | undefined } {
     return {
       state: this.state,
       failureCount: this.failureCount,

@@ -8,4 +8,5 @@ export * from './document-exporter-service';
 export * from './text-to-speech-service';
 export * from './feedback-processor-service';
 export * from './document-versioning-service';
-export * from './service-orchestrator';
+// Note: service-orchestrator temporarily excluded due to type refactoring in progress
+// export * from './service-orchestrator';

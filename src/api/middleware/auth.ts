@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../../utils/logger';
 import { AuthenticatedUser, ApiError } from '../types/api-types';
+import { AuthService } from '../services/auth.service';
 
 // Extend Express Request type to include user
 declare global {
@@ -31,13 +32,14 @@ export const authenticateUser = async (req: Request, res: Response, next: NextFu
     
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
     
-    // TODO: Implement actual JWT validation
-    // For now, we'll use a simple mock validation
-    if (token === 'mock-valid-token') {
+    // Verify JWT token
+    const payload = AuthService.verifyToken(token);
+    
+    if (payload) {
       const user: AuthenticatedUser = {
-        id: 'user-123',
-        email: 'user@example.com',
-        roles: ['user']
+        id: payload.userId,
+        email: payload.email,
+        roles: payload.roles
       };
       
       req.user = user;
@@ -108,12 +110,14 @@ export const optionalAuth = async (req: Request, res: Response, next: NextFuncti
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       
-      // TODO: Implement actual JWT validation
-      if (token === 'mock-valid-token') {
+      // Verify JWT token
+      const payload = AuthService.verifyToken(token);
+      
+      if (payload) {
         const user: AuthenticatedUser = {
-          id: 'user-123',
-          email: 'user@example.com',
-          roles: ['user']
+          id: payload.userId,
+          email: payload.email,
+          roles: payload.roles
         };
         
         req.user = user;
