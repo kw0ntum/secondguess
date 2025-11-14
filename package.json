@@ -7,7 +7,7 @@
     "build": "tsc && tsc-alias",
     "dev": "ts-node -r tsconfig-paths/register src/index.ts",
     "start": "node dist/index.js",
-    "vercel-build": "tsc",
+    "vercel-build": "tsc && tsc-alias",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src/**/*.ts",
