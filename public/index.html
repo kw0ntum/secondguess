@@ -271,8 +271,7 @@
 <body>
     <div class="nav-bar">
         <a href="/" class="nav-link">🏠 Home</a>
-        <a href="/api/monitoring/health" class="nav-link" target="_blank">📊 Monitoring</a>
-        <a href="/api/dashboard" class="nav-link" target="_blank">📈 Dashboard</a>
+        <a href="/dashboard" class="nav-link" target="_blank">📈 Dashboard</a>
     </div>
     
     <div class="container">
@@ -364,25 +363,68 @@
         const AUTH_TOKEN = 'mock-valid-token';
 
         // Initialize the application
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAPIConnection();
-            startNewSession();
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('Application initialized');
+            console.log('API_BASE:', API_BASE);
+            console.log('Window location:', window.location.href);
+            console.log('Protocol:', window.location.protocol);
+            console.log('Hostname:', window.location.hostname);
+            console.log('Browser:', navigator.userAgent);
+            
+            // Check if opened via file:// protocol
+            if (window.location.protocol === 'file:') {
+                showError('⚠️ Please open this page through the server at http://localhost:3000 (not by opening the HTML file directly)');
+                updateStatus('Wrong URL', false);
+                return;
+            }
+            
+            // Check if hostname is correct
+            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && !window.location.hostname.includes('vercel.app')) {
+                showError('⚠️ Unexpected hostname: ' + window.location.hostname + '. Expected localhost or vercel.app');
+            }
+            
+            // First check API connection
+            await checkAPIConnection();
+            
+            // Wait a bit for server to be ready
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Then start session
+            await startNewSession();
         });
 
         // Check API connection
         async function checkAPIConnection() {
             try {
-                const response = await fetch(`${API_BASE}/monitoring/health`);
-                const health = await response.json();
+                console.log('Checking API connection...');
                 
-                if (health.status === 'healthy') {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const response = await fetch(`${API_BASE}/monitoring/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const health = await response.json();
+                    console.log('API health check:', health);
                     updateStatus('Connected', true);
+                    return true;
                 } else {
+                    console.warn('API health check failed:', response.status);
                     updateStatus('API Degraded', false);
+                    return false;
                 }
             } catch (error) {
-                updateStatus('API Offline', false);
                 console.error('API connection failed:', error);
+                updateStatus('API Offline', false);
+                return false;
             }
         }
 
@@ -398,6 +440,11 @@
         // Start a new conversation session
         async function startNewSession() {
             try {
+                console.log('Starting new session with API_BASE:', API_BASE);
+                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
                 const response = await fetch(`${API_BASE}/sessions`, {
                     method: 'POST',
                     headers: {
@@ -406,9 +453,14 @@
                     },
                     body: JSON.stringify({
                         userId: 'web-user-' + Date.now()
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
 
+                console.log('Session response status:', response.status);
+                
                 if (response.ok) {
                     const session = await response.json();
                     currentSessionId = session.sessionId;
@@ -438,12 +490,60 @@
                     `;
                     
                     console.log('New session started:', currentSessionId);
+                    addMessageToConversation('assistant', '✅ Session started successfully! You can now describe your workflow.');
                 } else {
-                    throw new Error('Failed to create session');
+                    const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
                 }
             } catch (error) {
-                showError('Failed to start new session: ' + error.message);
                 console.error('Session creation failed:', error);
+                console.error('Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                // Provide more helpful error messages
+                let errorMessage = 'Failed to start new session: ';
+                if (error.name === 'AbortError') {
+                    errorMessage += 'Request timed out. Server may be slow or not responding.';
+                } else if (error.message === 'Failed to fetch' || error.message.includes('Load failed')) {
+                    errorMessage += 'Cannot connect to server. Is the server running at ' + API_BASE + '?';
+                } else if (error.message.includes('NetworkError')) {
+                    errorMessage += 'Network error. Check your internet connection and server status.';
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
+                
+                // Update status to show disconnected
+                updateStatus('Disconnected', false);
+                
+                // Add a retry button to the error message
+                const conversationArea = document.getElementById('conversationArea');
+                const retryDiv = document.createElement('div');
+                retryDiv.style.cssText = 'text-align: center; margin: 20px 0;';
+                retryDiv.innerHTML = '<button class="btn btn-primary" onclick="retryConnection()">🔄 Retry Connection</button>';
+                conversationArea.appendChild(retryDiv);
+            }
+        }
+        
+        // Retry connection function
+        async function retryConnection() {
+            console.log('Retrying connection...');
+            const conversationArea = document.getElementById('conversationArea');
+            conversationArea.innerHTML = `
+                <div class="message assistant">
+                    <strong>AI Assistant:</strong> Retrying connection...
+                </div>
+            `;
+            
+            const connected = await checkAPIConnection();
+            if (connected) {
+                await startNewSession();
+            } else {
+                showError('Still cannot connect to server. Please check that the server is running.');
             }
         }
 
@@ -452,13 +552,25 @@
             const input = document.getElementById('messageInput');
             const message = input.value.trim();
             
-            if (!message || !currentSessionId) return;
+            if (!message) {
+                showError('Please enter a message');
+                return;
+            }
+            
+            if (!currentSessionId) {
+                showError('No active session. Starting a new one...');
+                await startNewSession();
+                // Retry after session is created
+                if (!currentSessionId) return;
+            }
 
             // Add user message to conversation
             addMessageToConversation('user', message);
             input.value = '';
 
             try {
+                console.log('Sending message to session:', currentSessionId);
+                
                 const response = await fetch(`${API_BASE}/conversations/${currentSessionId}/input`, {
                     method: 'POST',
                     headers: {
@@ -471,6 +583,8 @@
                     })
                 });
 
+                console.log('Message response status:', response.status);
+
                 if (response.ok) {
                     const result = await response.json();
                     addMessageToConversation('assistant', result.message);
@@ -480,12 +594,21 @@
                         document.getElementById('generateBtn').disabled = false;
                     }
                 } else {
-                    const error = await response.json();
-                    throw new Error(error.error?.message || 'Failed to send message');
+                    const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
+                    throw new Error(error.error?.message || `HTTP ${response.status}`);
                 }
             } catch (error) {
-                showError('Failed to send message: ' + error.message);
                 console.error('Message sending failed:', error);
+                
+                // Provide more helpful error messages
+                let errorMessage = 'Failed to send message: ';
+                if (error.message === 'Failed to fetch' || error.message.includes('Load failed')) {
+                    errorMessage += 'Cannot connect to server. Please make sure the server is running at ' + API_BASE;
+                } else {
+                    errorMessage += error.message;
+                }
+                
+                showError(errorMessage);
             }
         }
 
@@ -649,14 +772,29 @@
             conversationArea.scrollTop = conversationArea.scrollHeight;
         }
 
+        // Voice recording state
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+
         // Start voice conversation
         async function startVoiceConversation() {
             const voiceBtn = document.getElementById('voiceBtn');
+            
+            // If already recording, stop it
+            if (isRecording) {
+                stopRecording();
+                return;
+            }
             
             try {
                 // Check if session exists
                 if (!currentSessionId) {
                     await startNewSession();
+                    if (!currentSessionId) {
+                        showError('Failed to create session. Please try again.');
+                        return;
+                    }
                 }
                 
                 // Check for browser support
@@ -671,20 +809,40 @@
                 
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 
-                // Stop the stream immediately (we just needed permission)
-                stream.getTracks().forEach(track => track.stop());
+                // Create MediaRecorder
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
                 
-                // Show success message
-                addMessageToConversation('assistant', 
-                    '🎤 Voice conversation ready! Note: Full voice features require additional setup. ' +
-                    'For now, please use the text input below to describe your workflow.'
-                );
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
                 
-                voiceBtn.textContent = '✅ Voice Ready';
-                voiceBtn.style.background = '#10b981';
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    console.log('Audio recorded, size:', audioBlob.size);
+                    
+                    // For now, just show a message that voice is recorded
+                    // In a full implementation, this would be sent to the API
+                    addMessageToConversation('assistant', 
+                        '🎤 Voice recorded! Note: Voice-to-text processing requires additional backend setup. ' +
+                        'Please use the text input for now.'
+                    );
+                    
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                };
                 
-                // Focus on text input
-                document.getElementById('messageInput').focus();
+                // Start recording
+                mediaRecorder.start();
+                isRecording = true;
+                
+                voiceBtn.textContent = '⏹️ Stop Recording';
+                voiceBtn.disabled = false;
+                voiceBtn.style.background = '#ef4444';
+                
+                addMessageToConversation('assistant', '🎤 Recording... Click the button again to stop.');
                 
             } catch (error) {
                 console.error('Voice setup failed:', error);
@@ -699,6 +857,20 @@
                 
                 voiceBtn.textContent = '🎤 Start Voice Conversation';
                 voiceBtn.disabled = false;
+                voiceBtn.style.background = '#10b981';
+            }
+        }
+        
+        // Stop recording
+        function stopRecording() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                voiceBtn.textContent = '🎤 Start Voice Conversation';
+                voiceBtn.style.background = '#10b981';
             }
         }
 
