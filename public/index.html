@@ -650,6 +650,9 @@
                     const result = await response.json();
                     addMessageToConversation('assistant', result.message);
                     
+                    // Generate AI summary after user input
+                    await generateAISummary();
+                    
                     // Enable generate button after some conversation
                     if (conversationHistory.length >= 4) {
                         document.getElementById('generateBtn').disabled = false;
@@ -673,6 +676,68 @@
             }
         }
 
+        // Generate AI summary using Gemini
+        async function generateAISummary() {
+            if (!currentSessionId) return;
+            
+            try {
+                console.log('Generating AI summary for session:', currentSessionId);
+                
+                const response = await fetch(`${API_BASE}/summarization/${currentSessionId}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const summary = data.summary;
+                    
+                    // Format and display the summary (sanitization happens in addMessageToConversation)
+                    let summaryMessage = '📋 **Workflow Summary**\n\n';
+                    summaryMessage += (summary.description || '') + '\n\n';
+                    
+                    if (summary.keySteps && summary.keySteps.length > 0) {
+                        summaryMessage += '**Key Steps:**\n';
+                        summary.keySteps.forEach((step, index) => {
+                            summaryMessage += `${index + 1}. ${step || ''}\n`;
+                        });
+                        summaryMessage += '\n';
+                    }
+                    
+                    if (summary.missingInformation && summary.missingInformation.length > 0) {
+                        summaryMessage += '**Missing Information:**\n';
+                        summary.missingInformation.forEach(item => {
+                            summaryMessage += `• ${item || ''}\n`;
+                        });
+                        summaryMessage += '\n';
+                    }
+                    
+                    // Ensure completenessScore is a safe number
+                    const completeness = parseInt(summary.completenessScore) || 0;
+                    summaryMessage += `**Completeness:** ${completeness}%\n\n`;
+                    
+                    // Add helpful next step message based on completeness
+                    if (completeness >= 70) {
+                        summaryMessage += 'Looking good! You can continue adding details or click "Generate SOP" when ready.';
+                    } else {
+                        summaryMessage += 'Please provide more details to improve the workflow completeness.';
+                    }
+                    
+                    addMessageToConversation('assistant', summaryMessage);
+                    
+                } else {
+                    console.warn('Failed to generate AI summary:', response.status);
+                    // Don't show error to user, just log it
+                }
+            } catch (error) {
+                console.error('AI summary generation failed:', error);
+                // Don't show error to user, just log it
+            }
+        }
+
         // Handle Enter key press
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
@@ -680,17 +745,22 @@
             }
         }
 
-        // Add message to conversation display
+        // Add message to conversation display using textContent to prevent XSS
         function addMessageToConversation(sender, message) {
             const conversationArea = document.getElementById('conversationArea');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
             
-            if (sender === 'user') {
-                messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
-            } else {
-                messageDiv.innerHTML = `<strong>AI Assistant:</strong> ${message}`;
-            }
+            // Create label using DOM methods (no innerHTML)
+            const label = document.createElement('strong');
+            label.textContent = sender === 'user' ? 'You:' : 'AI Assistant:';
+            
+            // Create text node for message content (automatically safe from XSS)
+            const messageText = document.createTextNode(' ' + message);
+            
+            // Append elements safely
+            messageDiv.appendChild(label);
+            messageDiv.appendChild(messageText);
             
             conversationArea.appendChild(messageDiv);
             conversationArea.scrollTop = conversationArea.scrollHeight;
@@ -756,31 +826,73 @@
             }
         }
 
-        // Display SOP in preview
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Display SOP in preview with proper sanitization
         function displaySOP(sop) {
             const sopContent = document.getElementById('sopContent');
             
-            let html = `
-                <h2>${sop.title}</h2>
-                <p><strong>Type:</strong> ${sop.type.replace('_', ' ').toUpperCase()}</p>
-                <p><strong>Version:</strong> ${sop.version || '1.0'}</p>
-                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
-            `;
+            // Clear existing content
+            sopContent.innerHTML = '';
+            
+            // Create title
+            const title = document.createElement('h2');
+            title.textContent = sop.title || 'Untitled SOP';
+            sopContent.appendChild(title);
+            
+            // Create type paragraph
+            const typePara = document.createElement('p');
+            const typeLabel = document.createElement('strong');
+            typeLabel.textContent = 'Type: ';
+            typePara.appendChild(typeLabel);
+            typePara.appendChild(document.createTextNode((sop.type || '').replace('_', ' ').toUpperCase()));
+            sopContent.appendChild(typePara);
+            
+            // Create version paragraph
+            const versionPara = document.createElement('p');
+            const versionLabel = document.createElement('strong');
+            versionLabel.textContent = 'Version: ';
+            versionPara.appendChild(versionLabel);
+            versionPara.appendChild(document.createTextNode(sop.version || '1.0'));
+            sopContent.appendChild(versionPara);
+            
+            // Create horizontal rule
+            const hr = document.createElement('hr');
+            hr.style.cssText = 'margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;';
+            sopContent.appendChild(hr);
 
             if (sop.sections && sop.sections.length > 0) {
                 sop.sections.forEach((section, index) => {
-                    html += `
-                        <h3>${index + 1}. ${section.title}</h3>
-                        <div style="margin-bottom: 20px;">
-                            ${section.content.replace(/\n/g, '<br>')}
-                        </div>
-                    `;
+                    // Create section heading
+                    const heading = document.createElement('h3');
+                    heading.textContent = `${index + 1}. ${section.title || 'Untitled Section'}`;
+                    sopContent.appendChild(heading);
+                    
+                    // Create section content div
+                    const contentDiv = document.createElement('div');
+                    contentDiv.style.marginBottom = '20px';
+                    
+                    // Split content by newlines and create text nodes with <br> elements
+                    const lines = (section.content || '').split('\n');
+                    lines.forEach((line, lineIndex) => {
+                        contentDiv.appendChild(document.createTextNode(line));
+                        if (lineIndex < lines.length - 1) {
+                            contentDiv.appendChild(document.createElement('br'));
+                        }
+                    });
+                    
+                    sopContent.appendChild(contentDiv);
                 });
             } else {
-                html += '<p>SOP content will be displayed here once generated.</p>';
+                const placeholder = document.createElement('p');
+                placeholder.textContent = 'SOP content will be displayed here once generated.';
+                sopContent.appendChild(placeholder);
             }
-
-            sopContent.innerHTML = html;
         }
 
         // Export SOP

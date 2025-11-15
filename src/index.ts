@@ -2,6 +2,10 @@
  * Main entry point for the AI Voice SOP Agent
  */
 
+// Load environment variables first
+import dotenv from 'dotenv';
+dotenv.config();
+
 import { logger } from './utils/logger';
 import { getConfig, validateConfig } from './utils/config';
 import { startServer } from './api/server';
