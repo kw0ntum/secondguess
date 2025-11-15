@@ -14,7 +14,7 @@ Create or edit your `.env` file in the `secondguess` directory:
 ```bash
 # Add these lines to your .env file
 GEMINI_API_KEY=your-actual-api-key-here
-GEMINI_MODEL=gemini-pro
+GEMINI_MODEL=gemini-2.5-pro
 ```
 
 Replace `your-actual-api-key-here` with the API key you copied.

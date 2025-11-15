@@ -695,14 +695,14 @@
                     const data = await response.json();
                     const summary = data.summary;
                     
-                    // Format and display the summary
+                    // Format and display the summary (sanitization happens in addMessageToConversation)
                     let summaryMessage = '📋 **Workflow Summary**\n\n';
-                    summaryMessage += summary.description + '\n\n';
+                    summaryMessage += (summary.description || '') + '\n\n';
                     
                     if (summary.keySteps && summary.keySteps.length > 0) {
                         summaryMessage += '**Key Steps:**\n';
                         summary.keySteps.forEach((step, index) => {
-                            summaryMessage += `${index + 1}. ${step}\n`;
+                            summaryMessage += `${index + 1}. ${step || ''}\n`;
                         });
                         summaryMessage += '\n';
                     }
@@ -710,15 +710,17 @@
                     if (summary.missingInformation && summary.missingInformation.length > 0) {
                         summaryMessage += '**Missing Information:**\n';
                         summary.missingInformation.forEach(item => {
-                            summaryMessage += `• ${item}\n`;
+                            summaryMessage += `• ${item || ''}\n`;
                         });
                         summaryMessage += '\n';
                     }
                     
-                    summaryMessage += `**Completeness:** ${summary.completenessScore}%\n\n`;
+                    // Ensure completenessScore is a safe number
+                    const completeness = parseInt(summary.completenessScore) || 0;
+                    summaryMessage += `**Completeness:** ${completeness}%\n\n`;
                     
                     // Add helpful next step message based on completeness
-                    if (summary.completenessScore >= 70) {
+                    if (completeness >= 70) {
                         summaryMessage += 'Looking good! You can continue adding details or click "Generate SOP" when ready.';
                     } else {
                         summaryMessage += 'Please provide more details to improve the workflow completeness.';
@@ -743,16 +745,26 @@
             }
         }
 
+        // Sanitize text to prevent XSS attacks
+        function sanitizeText(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         // Add message to conversation display
         function addMessageToConversation(sender, message) {
             const conversationArea = document.getElementById('conversationArea');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
             
+            // Sanitize message content to prevent XSS
+            const sanitizedMessage = sanitizeText(message);
+            
             if (sender === 'user') {
-                messageDiv.innerHTML = `<strong>You:</strong> ${message}`;
+                messageDiv.innerHTML = `<strong>You:</strong> ${sanitizedMessage}`;
             } else {
-                messageDiv.innerHTML = `<strong>AI Assistant:</strong> ${message}`;
+                messageDiv.innerHTML = `<strong>AI Assistant:</strong> ${sanitizedMessage}`;
             }
             
             conversationArea.appendChild(messageDiv);

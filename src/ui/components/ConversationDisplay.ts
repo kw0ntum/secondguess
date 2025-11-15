@@ -554,14 +554,22 @@ export class ConversationDisplay {
     }
   }
 
+  private sanitizeText(text: string): string {
+    // Escape HTML special characters to prevent XSS
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   private formatSummaryMessage(summary: any): string {
+    // Sanitize all user-provided content to prevent XSS
     let message = `📋 **Workflow Summary**\n\n`;
-    message += `${summary.description}\n\n`;
+    message += `${this.sanitizeText(summary.description || '')}\n\n`;
     
     if (summary.keySteps && summary.keySteps.length > 0) {
       message += `**Key Steps:**\n`;
       summary.keySteps.forEach((step: string, index: number) => {
-        message += `${index + 1}. ${step}\n`;
+        message += `${index + 1}. ${this.sanitizeText(step)}\n`;
       });
       message += `\n`;
     }
@@ -569,12 +577,12 @@ export class ConversationDisplay {
     if (summary.missingInformation && summary.missingInformation.length > 0) {
       message += `**Missing Information:**\n`;
       summary.missingInformation.forEach((item: string) => {
-        message += `• ${item}\n`;
+        message += `• ${this.sanitizeText(item)}\n`;
       });
       message += `\n`;
     }
 
-    message += `**Completeness:** ${summary.completenessScore}%\n\n`;
+    message += `**Completeness:** ${parseInt(summary.completenessScore) || 0}%\n\n`;
     message += `Is this summary accurate? Please approve or provide feedback.`;
 
     return message;
@@ -583,21 +591,23 @@ export class ConversationDisplay {
   private addFeedbackButtons(summaryId: string): void {
     const feedbackContainer = document.createElement('div');
     feedbackContainer.className = 'feedback-buttons';
-    feedbackContainer.innerHTML = `
-      <button class="feedback-btn approve" data-summary-id="${summaryId}">
-        ✓ Approve
-      </button>
-      <button class="feedback-btn reject" data-summary-id="${summaryId}">
-        ✗ Provide Feedback
-      </button>
-    `;
+    
+    // Create buttons using DOM methods instead of innerHTML to prevent XSS
+    const approveBtn = document.createElement('button');
+    approveBtn.className = 'feedback-btn approve';
+    approveBtn.setAttribute('data-summary-id', summaryId);
+    approveBtn.textContent = '✓ Approve';
+    
+    const rejectBtn = document.createElement('button');
+    rejectBtn.className = 'feedback-btn reject';
+    rejectBtn.setAttribute('data-summary-id', summaryId);
+    rejectBtn.textContent = '✗ Provide Feedback';
+    
+    feedbackContainer.appendChild(approveBtn);
+    feedbackContainer.appendChild(rejectBtn);
 
     this.messagesContainer.appendChild(feedbackContainer);
     this.scrollToBottom();
-
-    // Add event listeners
-    const approveBtn = feedbackContainer.querySelector('.approve') as HTMLButtonElement;
-    const rejectBtn = feedbackContainer.querySelector('.reject') as HTMLButtonElement;
 
     approveBtn.addEventListener('click', () => this.handleFeedback(summaryId, true, feedbackContainer));
     rejectBtn.addEventListener('click', () => this.handleFeedback(summaryId, false, feedbackContainer));
