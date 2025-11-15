@@ -1,11 +1,3 @@
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
-import { document } from 'pdfkit/js/page';
 import { ConversationSession, TranscriptionResult, ConversationResponse, UserInput } from '../../models/conversation-models';
 import { ConversationState, UserInputType } from '../../models/enums';
 
@@ -415,6 +407,49 @@ export class ConversationDisplay {
       .messages-container::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8;
       }
+
+      .feedback-buttons {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        padding: 15px;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      .feedback-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        min-width: 140px;
+        justify-content: center;
+      }
+
+      .feedback-btn.approve {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+      }
+
+      .feedback-btn.approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+      }
+
+      .feedback-btn.reject {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        color: white;
+      }
+
+      .feedback-btn.reject:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+      }
     `;
 
     document.head.appendChild(style);
@@ -448,9 +483,9 @@ export class ConversationDisplay {
     undoBtn.addEventListener('click', this.undoLastMessage.bind(this));
   }
 
-  private handleSendMessage(): void {
+  private async handleSendMessage(): Promise<void> {
     const content = this.textInput.value.trim();
-    if (!content || !this.onMessageSend) return;
+    if (!content || !this.currentSession) return;
 
     // Add user message to display
     this.addMessage({
@@ -469,6 +504,173 @@ export class ConversationDisplay {
     if (this.onMessageSendCallback) {
       this.onMessageSendCallback(content);
     }
+
+    // Generate AI summary after user input
+    await this.generateAndDisplaySummary();
+  }
+
+  private async generateAndDisplaySummary(): Promise<void> {
+    if (!this.currentSession) return;
+
+    try {
+      // Call the summarization API
+      const response = await fetch(`/api/summarization/${this.currentSession.id}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate summary');
+      }
+
+      const data = await response.json();
+      const summary = data.summary;
+
+      // Display the summary with approve/reject options
+      const summaryMessage = this.formatSummaryMessage(summary);
+      this.addMessage({
+        id: this.generateMessageId(),
+        type: 'agent',
+        content: summaryMessage,
+        timestamp: new Date(),
+        isEditable: false
+      });
+
+      // Add approve/reject buttons
+      this.addFeedbackButtons(summary.id);
+
+    } catch (error) {
+      console.error('Failed to generate summary:', error);
+      this.addMessage({
+        id: this.generateMessageId(),
+        type: 'agent',
+        content: 'I encountered an issue generating the summary. Please try again.',
+        timestamp: new Date(),
+        isEditable: false
+      });
+    }
+  }
+
+  private formatSummaryMessage(summary: any): string {
+    let message = `📋 **Workflow Summary**\n\n`;
+    message += `${summary.description}\n\n`;
+    
+    if (summary.keySteps && summary.keySteps.length > 0) {
+      message += `**Key Steps:**\n`;
+      summary.keySteps.forEach((step: string, index: number) => {
+        message += `${index + 1}. ${step}\n`;
+      });
+      message += `\n`;
+    }
+
+    if (summary.missingInformation && summary.missingInformation.length > 0) {
+      message += `**Missing Information:**\n`;
+      summary.missingInformation.forEach((item: string) => {
+        message += `• ${item}\n`;
+      });
+      message += `\n`;
+    }
+
+    message += `**Completeness:** ${summary.completenessScore}%\n\n`;
+    message += `Is this summary accurate? Please approve or provide feedback.`;
+
+    return message;
+  }
+
+  private addFeedbackButtons(summaryId: string): void {
+    const feedbackContainer = document.createElement('div');
+    feedbackContainer.className = 'feedback-buttons';
+    feedbackContainer.innerHTML = `
+      <button class="feedback-btn approve" data-summary-id="${summaryId}">
+        ✓ Approve
+      </button>
+      <button class="feedback-btn reject" data-summary-id="${summaryId}">
+        ✗ Provide Feedback
+      </button>
+    `;
+
+    this.messagesContainer.appendChild(feedbackContainer);
+    this.scrollToBottom();
+
+    // Add event listeners
+    const approveBtn = feedbackContainer.querySelector('.approve') as HTMLButtonElement;
+    const rejectBtn = feedbackContainer.querySelector('.reject') as HTMLButtonElement;
+
+    approveBtn.addEventListener('click', () => this.handleFeedback(summaryId, true, feedbackContainer));
+    rejectBtn.addEventListener('click', () => this.handleFeedback(summaryId, false, feedbackContainer));
+  }
+
+  private async handleFeedback(summaryId: string, isApproved: boolean, container: HTMLElement): Promise<void> {
+    if (!this.currentSession) return;
+
+    let userComments = '';
+    if (!isApproved) {
+      userComments = prompt('What would you like to improve in the summary?') || '';
+    }
+
+    try {
+      const response = await fetch(`/api/summarization/${this.currentSession.id}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.getAuthToken()}`
+        },
+        body: JSON.stringify({
+          summaryId,
+          isApproved,
+          userComments
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit feedback');
+      }
+
+      const data = await response.json();
+
+      // Remove feedback buttons
+      container.remove();
+
+      // Add feedback confirmation message
+      this.addMessage({
+        id: this.generateMessageId(),
+        type: 'agent',
+        content: data.message,
+        timestamp: new Date(),
+        isEditable: false
+      });
+
+      // If rejected, display the new summary
+      if (!isApproved && data.newSummary) {
+        const summaryMessage = this.formatSummaryMessage(data.newSummary);
+        this.addMessage({
+          id: this.generateMessageId(),
+          type: 'agent',
+          content: summaryMessage,
+          timestamp: new Date(),
+          isEditable: false
+        });
+        this.addFeedbackButtons(data.newSummary.id);
+      }
+
+    } catch (error) {
+      console.error('Failed to submit feedback:', error);
+      this.addMessage({
+        id: this.generateMessageId(),
+        type: 'agent',
+        content: 'Failed to submit feedback. Please try again.',
+        timestamp: new Date(),
+        isEditable: false
+      });
+    }
+  }
+
+  private getAuthToken(): string {
+    // Get token from localStorage or session storage
+    return localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '';
   }
 
   private generateMessageId(): string {
