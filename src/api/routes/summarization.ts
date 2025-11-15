@@ -29,8 +29,9 @@ router.post('/:sessionId/generate', authenticateUser, async (req: Request, res: 
       return;
     }
 
-    // Generate summary using Gemini
+    // Generate summary using Gemini with session-scoped feedback
     const summary = await geminiService.generateWorkflowSummary(
+      sessionId,
       session.conversationHistory,
       session.workflowData
     );
@@ -77,8 +78,8 @@ router.post('/:sessionId/feedback', authenticateUser, async (req: Request, res: 
       return;
     }
 
-    // Record feedback
-    geminiService.recordFeedback({
+    // Record feedback for this session only
+    geminiService.recordFeedback(sessionId, {
       summaryId,
       isApproved,
       userComments,
@@ -99,6 +100,7 @@ router.post('/:sessionId/feedback', authenticateUser, async (req: Request, res: 
       
       if (session) {
         newSummary = await geminiService.generateWorkflowSummary(
+          sessionId,
           session.conversationHistory,
           session.workflowData
         );
@@ -116,7 +118,7 @@ router.post('/:sessionId/feedback', authenticateUser, async (req: Request, res: 
         ? 'Thank you for your feedback! The summary has been approved.' 
         : 'Thank you for your feedback! I\'ve generated an improved summary.',
       newSummary,
-      feedbackStats: geminiService.getFeedbackStats()
+      feedbackStats: geminiService.getFeedbackStats(sessionId)
     });
     
   } catch (error) {
@@ -131,15 +133,17 @@ router.post('/:sessionId/feedback', authenticateUser, async (req: Request, res: 
 });
 
 /**
- * GET /api/summarization/stats
- * Get feedback statistics
+ * GET /api/summarization/:sessionId/stats
+ * Get feedback statistics for a specific session
  */
-router.get('/stats', authenticateUser, async (req: Request, res: Response) => {
+router.get('/:sessionId/stats', authenticateUser, async (req: Request, res: Response) => {
   try {
-    const stats = geminiService.getFeedbackStats();
+    const sessionId = req.params.sessionId!;
+    const stats = geminiService.getFeedbackStats(sessionId);
     
     res.json({
       success: true,
+      sessionId,
       stats
     });
     
