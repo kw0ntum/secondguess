@@ -13,6 +13,7 @@ import conversationRoutes from './routes/conversation';
 import sopRoutes from './routes/sop';
 import monitoringRoutes from './routes/monitoring';
 import dashboardRoutes from './routes/dashboard';
+import summarizationRoutes from './routes/summarization';
 
 // Import middleware
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
@@ -106,6 +107,11 @@ export function createApp(): Application {
     rateLimit(rateLimitConfigs.sopGeneration), 
     routeSpecificMonitoring('sops'),
     sopRoutes
+  );
+  app.use('/api/summarization', 
+    rateLimit(rateLimitConfigs.general), 
+    routeSpecificMonitoring('summarization'),
+    summarizationRoutes
   );
 
   // 404 handler for unmatched routes

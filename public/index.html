@@ -650,6 +650,9 @@
                     const result = await response.json();
                     addMessageToConversation('assistant', result.message);
                     
+                    // Generate AI summary after user input
+                    await generateAISummary();
+                    
                     // Enable generate button after some conversation
                     if (conversationHistory.length >= 4) {
                         document.getElementById('generateBtn').disabled = false;
@@ -670,6 +673,66 @@
                 }
                 
                 showError(errorMessage);
+            }
+        }
+
+        // Generate AI summary using Gemini
+        async function generateAISummary() {
+            if (!currentSessionId) return;
+            
+            try {
+                console.log('Generating AI summary for session:', currentSessionId);
+                
+                const response = await fetch(`${API_BASE}/summarization/${currentSessionId}/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const summary = data.summary;
+                    
+                    // Format and display the summary
+                    let summaryMessage = '📋 **Workflow Summary**\n\n';
+                    summaryMessage += summary.description + '\n\n';
+                    
+                    if (summary.keySteps && summary.keySteps.length > 0) {
+                        summaryMessage += '**Key Steps:**\n';
+                        summary.keySteps.forEach((step, index) => {
+                            summaryMessage += `${index + 1}. ${step}\n`;
+                        });
+                        summaryMessage += '\n';
+                    }
+                    
+                    if (summary.missingInformation && summary.missingInformation.length > 0) {
+                        summaryMessage += '**Missing Information:**\n';
+                        summary.missingInformation.forEach(item => {
+                            summaryMessage += `• ${item}\n`;
+                        });
+                        summaryMessage += '\n';
+                    }
+                    
+                    summaryMessage += `**Completeness:** ${summary.completenessScore}%\n\n`;
+                    
+                    // Add helpful next step message based on completeness
+                    if (summary.completenessScore >= 70) {
+                        summaryMessage += 'Looking good! You can continue adding details or click "Generate SOP" when ready.';
+                    } else {
+                        summaryMessage += 'Please provide more details to improve the workflow completeness.';
+                    }
+                    
+                    addMessageToConversation('assistant', summaryMessage);
+                    
+                } else {
+                    console.warn('Failed to generate AI summary:', response.status);
+                    // Don't show error to user, just log it
+                }
+            } catch (error) {
+                console.error('AI summary generation failed:', error);
+                // Don't show error to user, just log it
             }
         }
 
