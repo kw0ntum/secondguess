@@ -745,27 +745,22 @@
             }
         }
 
-        // Sanitize text to prevent XSS attacks
-        function sanitizeText(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Add message to conversation display
+        // Add message to conversation display using textContent to prevent XSS
         function addMessageToConversation(sender, message) {
             const conversationArea = document.getElementById('conversationArea');
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${sender}`;
             
-            // Sanitize message content to prevent XSS
-            const sanitizedMessage = sanitizeText(message);
+            // Create label using DOM methods (no innerHTML)
+            const label = document.createElement('strong');
+            label.textContent = sender === 'user' ? 'You:' : 'AI Assistant:';
             
-            if (sender === 'user') {
-                messageDiv.innerHTML = `<strong>You:</strong> ${sanitizedMessage}`;
-            } else {
-                messageDiv.innerHTML = `<strong>AI Assistant:</strong> ${sanitizedMessage}`;
-            }
+            // Create text node for message content (automatically safe from XSS)
+            const messageText = document.createTextNode(' ' + message);
+            
+            // Append elements safely
+            messageDiv.appendChild(label);
+            messageDiv.appendChild(messageText);
             
             conversationArea.appendChild(messageDiv);
             conversationArea.scrollTop = conversationArea.scrollHeight;
@@ -831,31 +826,73 @@
             }
         }
 
-        // Display SOP in preview
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Display SOP in preview with proper sanitization
         function displaySOP(sop) {
             const sopContent = document.getElementById('sopContent');
             
-            let html = `
-                <h2>${sop.title}</h2>
-                <p><strong>Type:</strong> ${sop.type.replace('_', ' ').toUpperCase()}</p>
-                <p><strong>Version:</strong> ${sop.version || '1.0'}</p>
-                <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
-            `;
+            // Clear existing content
+            sopContent.innerHTML = '';
+            
+            // Create title
+            const title = document.createElement('h2');
+            title.textContent = sop.title || 'Untitled SOP';
+            sopContent.appendChild(title);
+            
+            // Create type paragraph
+            const typePara = document.createElement('p');
+            const typeLabel = document.createElement('strong');
+            typeLabel.textContent = 'Type: ';
+            typePara.appendChild(typeLabel);
+            typePara.appendChild(document.createTextNode((sop.type || '').replace('_', ' ').toUpperCase()));
+            sopContent.appendChild(typePara);
+            
+            // Create version paragraph
+            const versionPara = document.createElement('p');
+            const versionLabel = document.createElement('strong');
+            versionLabel.textContent = 'Version: ';
+            versionPara.appendChild(versionLabel);
+            versionPara.appendChild(document.createTextNode(sop.version || '1.0'));
+            sopContent.appendChild(versionPara);
+            
+            // Create horizontal rule
+            const hr = document.createElement('hr');
+            hr.style.cssText = 'margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;';
+            sopContent.appendChild(hr);
 
             if (sop.sections && sop.sections.length > 0) {
                 sop.sections.forEach((section, index) => {
-                    html += `
-                        <h3>${index + 1}. ${section.title}</h3>
-                        <div style="margin-bottom: 20px;">
-                            ${section.content.replace(/\n/g, '<br>')}
-                        </div>
-                    `;
+                    // Create section heading
+                    const heading = document.createElement('h3');
+                    heading.textContent = `${index + 1}. ${section.title || 'Untitled Section'}`;
+                    sopContent.appendChild(heading);
+                    
+                    // Create section content div
+                    const contentDiv = document.createElement('div');
+                    contentDiv.style.marginBottom = '20px';
+                    
+                    // Split content by newlines and create text nodes with <br> elements
+                    const lines = (section.content || '').split('\n');
+                    lines.forEach((line, lineIndex) => {
+                        contentDiv.appendChild(document.createTextNode(line));
+                        if (lineIndex < lines.length - 1) {
+                            contentDiv.appendChild(document.createElement('br'));
+                        }
+                    });
+                    
+                    sopContent.appendChild(contentDiv);
                 });
             } else {
-                html += '<p>SOP content will be displayed here once generated.</p>';
+                const placeholder = document.createElement('p');
+                placeholder.textContent = 'SOP content will be displayed here once generated.';
+                sopContent.appendChild(placeholder);
             }
-
-            sopContent.innerHTML = html;
         }
 
         // Export SOP

@@ -27,33 +27,76 @@ XSS (Cross-Site Scripting) vulnerability in workflow summary display where unsan
 ### 2. `public/index.html`
 
 **Changes:**
-- Added `sanitizeText()` helper function to escape HTML characters
-- Updated `addMessageToConversation()` to sanitize all messages before rendering
+- **CRITICAL FIX**: Completely refactored `addMessageToConversation()` to use DOM methods instead of `innerHTML`
+  - Uses `document.createElement()` for all elements
+  - Uses `textContent` for all dynamic content (automatically XSS-safe)
+  - Uses `document.createTextNode()` for message content
+  - Eliminates all `innerHTML` usage with user/API data
+- **CRITICAL FIX**: Refactored `displaySOP()` to use DOM methods instead of `innerHTML`
+  - Creates all elements using `document.createElement()`
+  - Uses `textContent` for all SOP data (title, type, version, sections)
+  - Properly handles newlines with `<br>` elements created via DOM
+  - Prevents XSS in SOP preview display
+- Added `escapeHtml()` helper function (for future use if needed)
 - Updated `generateAISummary()` to:
   - Add null checks for all summary fields
   - Validate `completenessScore` as integer
   - Ensure all array items are strings with fallback to empty string
+- Verified `showError()` already uses `textContent` (safe)
 
 **Security Improvements:**
-- All user messages and AI responses are sanitized before display
-- Prevents XSS attacks through chat messages
+- **ZERO innerHTML usage with dynamic content** - Complete elimination of XSS attack vectors
+- All user messages and AI responses rendered using `textContent` (browser automatically prevents XSS)
+- All SOP data rendered using DOM methods (no HTML injection possible)
 - Validates numeric values to prevent injection
+- Defense-in-depth approach with multiple layers of protection
 
-## How Sanitization Works
+## How XSS Prevention Works
 
-The `sanitizeText()` function uses the browser's built-in HTML escaping:
+### Primary Defense: textContent and DOM Methods
 
+Instead of using `innerHTML` which interprets HTML, we use:
+
+1. **`textContent`** - Browser automatically escapes all HTML:
+   ```javascript
+   element.textContent = userInput;  // Safe - no HTML interpretation
+   ```
+
+2. **`document.createTextNode()`** - Creates pure text nodes:
+   ```javascript
+   const textNode = document.createTextNode(userInput);  // Safe - no HTML
+   element.appendChild(textNode);
+   ```
+
+3. **`document.createElement()`** - Creates elements programmatically:
+   ```javascript
+   const div = document.createElement('div');  // Safe - controlled creation
+   div.textContent = userInput;  // Safe - text only
+   ```
+
+### Why This is Better Than Sanitization
+
+- **No parsing**: Content is never parsed as HTML
+- **No escaping needed**: Browser handles it automatically
+- **No bypass risk**: No way to inject HTML/JavaScript
+- **Performance**: Faster than sanitization
+- **Maintainability**: Simpler code, less error-prone
+
+### Example: Safe Message Rendering
+
+**Before (VULNERABLE):**
 ```javascript
-function sanitizeText(text) {
-    const div = document.createElement('div');
-    div.textContent = text;  // Browser automatically escapes HTML
-    return div.innerHTML;     // Returns escaped HTML
-}
+messageDiv.innerHTML = `<strong>User:</strong> ${message}`;  // XSS risk!
 ```
 
-This converts:
-- `<script>alert('XSS')</script>` → `&lt;script&gt;alert('XSS')&lt;/script&gt;`
-- `<img src=x onerror=alert(1)>` → `&lt;img src=x onerror=alert(1)&gt;`
+**After (SAFE):**
+```javascript
+const label = document.createElement('strong');
+label.textContent = 'User:';
+const text = document.createTextNode(' ' + message);
+messageDiv.appendChild(label);
+messageDiv.appendChild(text);  // No XSS possible
+```
 
 ## Testing
 
