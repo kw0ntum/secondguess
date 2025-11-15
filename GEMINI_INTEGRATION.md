@@ -27,7 +27,7 @@ Add your Google Gemini API key to your `.env` file:
 
 ```bash
 GEMINI_API_KEY=your-gemini-api-key-here
-GEMINI_MODEL=gemini-pro
+GEMINI_MODEL=gemini-2.5-pro
 ```
 
 To get your API key:
@@ -172,7 +172,7 @@ Edit the prompt in `GeminiSummarizationService.buildSummarizationPrompt()` to cu
 
 Update your `.env` file:
 ```bash
-GEMINI_MODEL=gemini-pro  # or gemini-pro-vision for image support
+GEMINI_MODEL=gemini-2.5-pro  # or gemini-pro-vision for image support
 ```
 
 ## Troubleshooting

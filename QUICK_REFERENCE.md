@@ -21,7 +21,7 @@
 Add to your `.env` file:
 ```bash
 GEMINI_API_KEY=your-api-key-here
-GEMINI_MODEL=gemini-pro
+GEMINI_MODEL=gemini-2.5-pro
 ```
 
 ## API Endpoints
