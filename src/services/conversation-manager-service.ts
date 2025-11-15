@@ -1572,4 +1572,8 @@ export class ConversationManagerService implements ConversationManager {
 
     return session.contextData.recoveryData.recoveryInstructions;
   }
+
+  async getSession(sessionId: SessionId): Promise<ExtendedSessionState | null> {
+    return this.sessions.get(sessionId) || null;
+  }
 }
