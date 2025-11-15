@@ -17,7 +17,8 @@ export interface SummarizationFeedback {
 export class GeminiSummarizationService {
   private genAI: GoogleGenerativeAI;
   private model: any;
-  private feedbackHistory: SummarizationFeedback[] = [];
+  // Store feedback per session to prevent data leakage between users
+  private sessionFeedback: Map<string, SummarizationFeedback[]> = new Map();
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -37,6 +38,7 @@ export class GeminiSummarizationService {
    * Generate a workflow summary from conversation history
    */
   async generateWorkflowSummary(
+    sessionId: string,
     conversationHistory: UserInput[],
     workflowData: any
   ): Promise<WorkflowSummary & { 
@@ -47,7 +49,7 @@ export class GeminiSummarizationService {
     iterationNumber: number;
   }> {
     try {
-      const prompt = this.buildSummarizationPrompt(conversationHistory, workflowData);
+      const prompt = this.buildSummarizationPrompt(sessionId, conversationHistory, workflowData);
       
       logger.info('Generating workflow summary with Gemini', {
         messageCount: conversationHistory.length
@@ -75,6 +77,7 @@ export class GeminiSummarizationService {
    * Build the prompt for Gemini to generate a workflow summary
    */
   private buildSummarizationPrompt(
+    sessionId: string,
     conversationHistory: UserInput[],
     workflowData: any
   ): string {
@@ -82,7 +85,7 @@ export class GeminiSummarizationService {
       .map((input, index) => `[Message ${index + 1}] ${input.content}`)
       .join('\n');
 
-    const feedbackContext = this.buildFeedbackContext();
+    const feedbackContext = this.buildFeedbackContext(sessionId);
 
     return `You are an AI assistant helping to create Standard Operating Procedures (SOPs). 
 Your task is to analyze the conversation history and generate a comprehensive workflow summary.
@@ -126,14 +129,16 @@ Be specific, actionable, and focus on creating a clear, implementable workflow.`
   }
 
   /**
-   * Build feedback context from previous user feedback
+   * Build feedback context from previous user feedback for this session
    */
-  private buildFeedbackContext(): string {
-    if (this.feedbackHistory.length === 0) {
+  private buildFeedbackContext(sessionId: string): string {
+    const sessionHistory = this.sessionFeedback.get(sessionId) || [];
+    
+    if (sessionHistory.length === 0) {
       return '';
     }
 
-    const recentFeedback = this.feedbackHistory.slice(-3);
+    const recentFeedback = sessionHistory.slice(-3);
     const rejectedSummaries = recentFeedback.filter(f => !f.isApproved);
 
     if (rejectedSummaries.length === 0) {
@@ -241,34 +246,71 @@ Please take this feedback into account when generating the new summary.`;
   }
 
   /**
-   * Record user feedback on a summary
+   * Record user feedback on a summary for a specific session
    */
-  recordFeedback(feedback: SummarizationFeedback): void {
-    this.feedbackHistory.push(feedback);
+  recordFeedback(sessionId: string, feedback: SummarizationFeedback): void {
+    // Get or create feedback array for this session
+    const sessionHistory = this.sessionFeedback.get(sessionId) || [];
+    sessionHistory.push(feedback);
+    
+    // Keep only last 10 feedback entries per session
+    if (sessionHistory.length > 10) {
+      sessionHistory.splice(0, sessionHistory.length - 10);
+    }
+    
+    this.sessionFeedback.set(sessionId, sessionHistory);
     
     logger.info('User feedback recorded', {
+      sessionId,
       summaryId: feedback.summaryId,
       isApproved: feedback.isApproved,
       hasComments: !!feedback.userComments
     });
-
-    // Keep only last 10 feedback entries
-    if (this.feedbackHistory.length > 10) {
-      this.feedbackHistory = this.feedbackHistory.slice(-10);
-    }
   }
 
   /**
-   * Get feedback statistics
+   * Get feedback statistics for a specific session
    */
-  getFeedbackStats(): { approved: number; rejected: number; total: number } {
-    const approved = this.feedbackHistory.filter(f => f.isApproved).length;
-    const rejected = this.feedbackHistory.filter(f => !f.isApproved).length;
+  getFeedbackStats(sessionId: string): { approved: number; rejected: number; total: number } {
+    const sessionHistory = this.sessionFeedback.get(sessionId) || [];
+    const approved = sessionHistory.filter(f => f.isApproved).length;
+    const rejected = sessionHistory.filter(f => !f.isApproved).length;
     
     return {
       approved,
       rejected,
-      total: this.feedbackHistory.length
+      total: sessionHistory.length
     };
+  }
+
+  /**
+   * Clear feedback history for a session (e.g., when session ends)
+   */
+  clearSessionFeedback(sessionId: string): void {
+    this.sessionFeedback.delete(sessionId);
+    logger.info('Session feedback cleared', { sessionId });
+  }
+
+  /**
+   * Clean up old sessions (call periodically to prevent memory leaks)
+   */
+  cleanupOldSessions(activeSessionIds: Set<string>): void {
+    const sessionsToDelete: string[] = [];
+    
+    for (const sessionId of this.sessionFeedback.keys()) {
+      if (!activeSessionIds.has(sessionId)) {
+        sessionsToDelete.push(sessionId);
+      }
+    }
+    
+    sessionsToDelete.forEach(sessionId => {
+      this.sessionFeedback.delete(sessionId);
+    });
+    
+    if (sessionsToDelete.length > 0) {
+      logger.info('Cleaned up feedback for inactive sessions', { 
+        count: sessionsToDelete.length 
+      });
+    }
   }
 }
