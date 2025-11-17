@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Monitoring Dashboard - AI Voice SOP Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header-nav {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.2);
+            transition: background 0.2s;
+        }
+        
+        .header-nav a:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .tab {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        
+        .tab:hover {
+            color: #667eea;
+        }
+        
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+        }
+        
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .stat-change {
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+        
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        
+        .logs-table th {
+            background: #f9fafb;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .logs-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .logs-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .method-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: monospace;
+        }
+        
+        .method-get { background: #dbeafe; color: #1e40af; }
+        .method-post { background: #d1fae5; color: #065f46; }
+        .method-put { background: #fef3c7; color: #92400e; }
+        .method-delete { background: #fee2e2; color: #991b1b; }
+        
+        .api-tester {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .tester-input, .tester-output {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        textarea {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            resize: vertical;
+            min-height: 200px;
+        }
+        
+        .response-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .metric-item {
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .metric-item-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+        
+        .metric-item-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .pagination button {
+            padding: 0.5rem 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 API Monitoring Dashboard</h1>
+        <div class="header-nav">
+            <a href="/">🏠 Home</a>
+            <a href="/dashboard">📈 System Dashboard</a>
+            <a href="/api-dashboard.html">🔍 API Logs</a>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+            <button class="tab" onclick="switchTab('logs')">📋 API Logs</button>
+            <button class="tab" onclick="switchTab('endpoints')">🔗 Endpoints</button>
+            <button class="tab" onclick="switchTab('tester')">🧪 API Tester</button>
+        </div>
+        
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content active">
+            <div class="stats-grid" id="stats-grid">
+                <div class="loading">Loading statistics...</div>
+            </div>
+            
+            <div class="card">
+                <h2>Performance Trends</h2>
+                <div id="performance-chart">
+                    <p style="color: #666; text-align: center; padding: 2rem;">
+                        Performance charts will be displayed here
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Logs Tab -->
+        <div id="logs-tab" class="tab-content">
+            <div class="card">
+                <h2>Filter Logs</h2>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Start Date</label>
+                        <input type="datetime-local" id="filter-start-date">
+                    </div>
+                    <div class="filter-group">
+                        <label>End Date</label>
+                        <input type="datetime-local" id="filter-end-date">
+                    </div>
+                    <div class="filter-group">
+                        <label>Method</label>
+                        <select id="filter-method">
+                            <option value="">All Methods</option>
+                            <option value="GET">GET</option>
+                            <option value="POST">POST</option>
+                            <option value="PUT">PUT</option>
+                            <option value="DELETE">DELETE</option>
+                            <option value="PATCH">PATCH</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Endpoint</label>
+                        <input type="text" id="filter-endpoint" placeholder="/api/...">
+                    </div>
+                    <div class="filter-group">
+                        <label>Status Code</label>
+                        <select id="filter-status">
+                            <option value="">All Status</option>
+                            <option value="200">200 OK</option>
+                            <option value="201">201 Created</option>
+                            <option value="400">400 Bad Request</option>
+                            <option value="401">401 Unauthorized</option>
+                            <option value="404">404 Not Found</option>
+                            <option value="500">500 Server Error</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Has Error</label>
+                        <select id="filter-error">
+                            <option value="">All</option>
+                            <option value="true">Errors Only</option>
+                            <option value="false">Success Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
+                    <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
+                    <button class="btn btn-success" onclick="exportLogs('json')">Export JSON</button>
+                    <button class="btn btn-success" onclick="exportLogs('csv')">Export CSV</button>
+                    <button class="btn btn-danger" onclick="clearAllLogs()">Clear All Logs</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>API Logs</h2>
+                <div id="logs-container">
+                    <div class="loading">Loading logs...</div>
+                </div>
+                <div class="pagination" id="logs-pagination" style="display: none;">
+                    <button class="btn btn-secondary" onclick="previousPage()" id="prev-btn">Previous</button>
+                    <span id="page-info">Page 1</span>
+                    <button class="btn btn-secondary" onclick="nextPage()" id="next-btn">Next</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Endpoints Tab -->
+        <div id="endpoints-tab" class="tab-content">
+            <div class="card">
+                <h2>API Endpoints</h2>
+                <div id="endpoints-container">
+                    <div class="loading">Loading endpoints...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- API Tester Tab -->
+        <div id="tester-tab" class="tab-content">
+            <div class="card">
+                <h2>API Tester</h2>
+                <div class="api-tester">
+                    <div class="tester-input">
+                        <h3>Request</h3>
+                        <div class="filter-group">
+                            <label>Method</label>
+                            <select id="test-method">
+                                <option value="GET">GET</option>
+                                <option value="POST">POST</option>
+                                <option value="PUT">PUT</option>
+                                <option value="DELETE">DELETE</option>
+                                <option value="PATCH">PATCH</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Endpoint</label>
+                            <input type="text" id="test-endpoint" placeholder="/api/endpoint" value="/api/monitoring/health">
+                        </div>
+                        <div class="filter-group">
+                            <label>Request Body (JSON)</label>
+                            <textarea id="test-body" placeholder='{"key": "value"}'></textarea>
+                        </div>
+                        <div class="filter-group">
+                            <label>Headers (JSON)</label>
+                            <textarea id="test-headers" placeholder='{"Content-Type": "application/json"}'>{"Content-Type": "application/json"}</textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="testAPI()" style="width: 100%;">Send Request</button>
+                    </div>
+                    
+                    <div class="tester-output">
+                        <h3>Response</h3>
+                        <div class="response-metrics" id="test-metrics" style="display: none;">
+                            <div class="metric-item">
+                                <div class="metric-item-label">Status</div>
+                                <div class="metric-item-value" id="test-status">-</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-item-label">Time</div>
+                                <div class="metric-item-value" id="test-time">-</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-item-label">Size</div>
+                                <div class="metric-item-value" id="test-size">-</div>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label>Response Body</label>
+                            <textarea id="test-response" readonly placeholder="Response will appear here..."></textarea>
+                        </div>
+                        <div class="filter-group">
+                            <label>Response Headers</label>
+                            <textarea id="test-response-headers" readonly placeholder="Headers will appear here..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let authToken = null;
+        let currentPage = 0;
+        let currentFilters = {};
+        const pageSize = 50;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await obtainAuthToken();
+            loadOverview();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(() => {
+                const activeTab = document.querySelector('.tab.active').textContent;
+                if (activeTab.includes('Overview')) {
+                    loadOverview();
+                } else if (activeTab.includes('Logs')) {
+                    loadLogs();
+                } else if (activeTab.includes('Endpoints')) {
+                    loadEndpoints();
+                }
+            }, 30000);
+        });
+        
+        // Get authentication token
+        async function obtainAuthToken() {
+            try {
+                const storedToken = sessionStorage.getItem('authToken');
+                if (storedToken) {
+                    authToken = storedToken;
+                    return;
+                }
+                
+                const response = await fetch('/api/auth/guest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    sessionStorage.setItem('authToken', authToken);
+                }
+            } catch (error) {
+                console.error('Failed to obtain auth token:', error);
+            }
+        }
+        
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'overview') loadOverview();
+            else if (tabName === 'logs') loadLogs();
+            else if (tabName === 'endpoints') loadEndpoints();
+        }
+        
+        // Load overview statistics
+        async function loadOverview() {
+            try {
+                const response = await fetch('/api/logs/stats', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load stats');
+                
+                const data = await response.json();
+                renderStats(data.stats);
+            } catch (error) {
+                console.error('Failed to load overview:', error);
+                document.getElementById('stats-grid').innerHTML = 
+                    '<div class="empty-state">Failed to load statistics</div>';
+            }
+        }
+        
+        function renderStats(stats) {
+            const grid = document.getElementById('stats-grid');
+            grid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Total Requests</div>
+                    <div class="stat-value">${stats.totalRequests.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Successful</div>
+                    <div class="stat-value">${stats.successfulRequests.toLocaleString()}</div>
+                    <div class="stat-change positive">
+                        ${((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)}%
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Failed</div>
+                    <div class="stat-value">${stats.failedRequests.toLocaleString()}</div>
+                    <div class="stat-change negative">${stats.errorRate.toFixed(2)}%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Latency</div>
+                    <div class="stat-value">${Math.round(stats.averageLatency)}ms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Processing</div>
+                    <div class="stat-value">${Math.round(stats.averageProcessingTime)}ms</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Throughput</div>
+                    <div class="stat-value">${formatBytes(stats.averageThroughput)}/s</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Slowest Endpoint</div>
+                    <div class="stat-value" style="font-size: 0.875rem;">${stats.slowestEndpoint || 'N/A'}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Most Used</div>
+                    <div class="stat-value" style="font-size: 0.875rem;">${stats.mostUsedEndpoint || 'N/A'}</div>
+                </div>
+            `;
+        }
+        
+        // Load logs
+        async function loadLogs() {
+            try {
+                const params = new URLSearchParams({
+                    limit: pageSize,
+                    offset: currentPage * pageSize,
+                    ...currentFilters
+                });
+                
+                const response = await fetch(`/api/logs?${params}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load logs');
+                
+                const data = await response.json();
+                renderLogs(data.logs, data.pagination);
+            } catch (error) {
+                console.error('Failed to load logs:', error);
+                document.getElementById('logs-container').innerHTML = 
+                    '<div class="empty-state">Failed to load logs</div>';
+            }
+        }
+        
+        function renderLogs(logs, pagination) {
+            const container = document.getElementById('logs-container');
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No logs found</p>
+                    </div>
+                `;
+                document.getElementById('logs-pagination').style.display = 'none';
+                return;
+            }
+            
+            const table = `
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Method</th>
+                            <th>Endpoint</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                            <th>Size</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${logs.map(log => `
+                            <tr>
+                                <td>${new Date(log.timestamp).toLocaleString()}</td>
+                                <td><span class="method-badge method-${log.method.toLowerCase()}">${log.method}</span></td>
+                                <td style="font-family: monospace; font-size: 0.8rem;">${log.endpoint}</td>
+                                <td><span class="status-badge ${getStatusClass(log.statusCode)}">${log.statusCode}</span></td>
+                                <td>${log.duration}ms</td>
+                                <td>${formatBytes(log.networkMetrics.responseSize)}</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                                            onclick="viewLogDetails('${log.id}')">View</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = table;
+            
+            // Update pagination
+            document.getElementById('logs-pagination').style.display = 'flex';
+            document.getElementById('page-info').textContent = 
+                `Page ${currentPage + 1} (${logs.length} of ${pagination.total})`;
+            document.getElementById('prev-btn').disabled = currentPage === 0;
+            document.getElementById('next-btn').disabled = !pagination.hasMore;
+        }
+        
+        // Load endpoints
+        async function loadEndpoints() {
+            try {
+                const response = await fetch('/api/logs/endpoints/list', {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load endpoints');
+                
+                const data = await response.json();
+                renderEndpoints(data.endpoints);
+            } catch (error) {
+                console.error('Failed to load endpoints:', error);
+                document.getElementById('endpoints-container').innerHTML = 
+                    '<div class="empty-state">Failed to load endpoints</div>';
+            }
+        }
+        
+        function renderEndpoints(endpoints) {
+            const container = document.getElementById('endpoints-container');
+            
+            if (endpoints.length === 0) {
+                container.innerHTML = '<div class="empty-state">No endpoints found</div>';
+                return;
+            }
+            
+            const table = `
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Path</th>
+                            <th>Total Calls</th>
+                            <th>Avg Response Time</th>
+                            <th>Errors</th>
+                            <th>Last Called</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${endpoints.map(endpoint => `
+                            <tr>
+                                <td><span class="method-badge method-${endpoint.method.toLowerCase()}">${endpoint.method}</span></td>
+                                <td style="font-family: monospace; font-size: 0.8rem;">${endpoint.path}</td>
+                                <td>${endpoint.totalCalls.toLocaleString()}</td>
+                                <td>${endpoint.averageResponseTime}ms</td>
+                                <td><span class="status-badge ${endpoint.errorCount > 0 ? 'status-error' : 'status-success'}">
+                                    ${endpoint.errorCount}
+                                </span></td>
+                                <td>${endpoint.lastCalled ? new Date(endpoint.lastCalled).toLocaleString() : 'Never'}</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
+                                            onclick="testEndpoint('${endpoint.method}', '${endpoint.path}')">Test</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = table;
+        }
+        
+        // Filter functions
+        function applyFilters() {
+            currentFilters = {};
+            currentPage = 0;
+            
+            const startDate = document.getElementById('filter-start-date').value;
+            const endDate = document.getElementById('filter-end-date').value;
+            const method = document.getElementById('filter-method').value;
+            const endpoint = document.getElementById('filter-endpoint').value;
+            const status = document.getElementById('filter-status').value;
+            const hasError = document.getElementById('filter-error').value;
+            
+            if (startDate) currentFilters.startDate = new Date(startDate).toISOString();
+            if (endDate) currentFilters.endDate = new Date(endDate).toISOString();
+            if (method) currentFilters.method = method;
+            if (endpoint) currentFilters.endpoint = endpoint;
+            if (status) currentFilters.statusCode = status;
+            if (hasError) currentFilters.hasError = hasError;
+            
+            loadLogs();
+        }
+        
+        function clearFilters() {
+            document.getElementById('filter-start-date').value = '';
+            document.getElementById('filter-end-date').value = '';
+            document.getElementById('filter-method').value = '';
+            document.getElementById('filter-endpoint').value = '';
+            document.getElementById('filter-status').value = '';
+            document.getElementById('filter-error').value = '';
+            currentFilters = {};
+            currentPage = 0;
+            loadLogs();
+        }
+        
+        // Pagination
+        function previousPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                loadLogs();
+            }
+        }
+        
+        function nextPage() {
+            currentPage++;
+            loadLogs();
+        }
+        
+        // API Tester
+        async function testAPI() {
+            const method = document.getElementById('test-method').value;
+            const endpoint = document.getElementById('test-endpoint').value;
+            const body = document.getElementById('test-body').value;
+            const headersText = document.getElementById('test-headers').value;
+            
+            try {
+                let headers = {};
+                if (headersText.trim()) {
+                    headers = JSON.parse(headersText);
+                }
+                
+                const options = {
+                    method,
+                    headers: {
+                        ...headers,
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                };
+                
+                if (body.trim() && method !== 'GET') {
+                    options.body = body;
+                }
+                
+                const startTime = performance.now();
+                const response = await fetch(endpoint, options);
+                const endTime = performance.now();
+                
+                const responseText = await response.text();
+                let responseData;
+                try {
+                    responseData = JSON.parse(responseText);
+                } catch {
+                    responseData = responseText;
+                }
+                
+                // Display metrics
+                document.getElementById('test-metrics').style.display = 'grid';
+                document.getElementById('test-status').textContent = response.status;
+                document.getElementById('test-status').className = 
+                    'metric-item-value ' + (response.ok ? 'status-success' : 'status-error');
+                document.getElementById('test-time').textContent = Math.round(endTime - startTime) + 'ms';
+                document.getElementById('test-size').textContent = formatBytes(responseText.length);
+                
+                // Display response
+                document.getElementById('test-response').value = 
+                    typeof responseData === 'object' ? JSON.stringify(responseData, null, 2) : responseData;
+                
+                // Display headers
+                const responseHeaders = {};
+                response.headers.forEach((value, key) => {
+                    responseHeaders[key] = value;
+                });
+                document.getElementById('test-response-headers').value = 
+                    JSON.stringify(responseHeaders, null, 2);
+                
+            } catch (error) {
+                document.getElementById('test-response').value = 
+                    'Error: ' + error.message;
+                document.getElementById('test-metrics').style.display = 'none';
+            }
+        }
+        
+        function testEndpoint(method, path) {
+            switchTab('tester');
+            document.getElementById('test-method').value = method;
+            document.getElementById('test-endpoint').value = path;
+            
+            // Populate with sample JSON based on endpoint
+            const sampleData = getSampleDataForEndpoint(method, path);
+            document.getElementById('test-body').value = sampleData.body;
+            document.getElementById('test-headers').value = sampleData.headers;
+        }
+        
+        function getSampleDataForEndpoint(method, path) {
+            const result = {
+                body: '',
+                headers: JSON.stringify({
+                    'Content-Type': 'application/json'
+                }, null, 2)
+            };
+            
+            // Don't populate body for GET requests
+            if (method === 'GET') {
+                return result;
+            }
+            
+            // Session endpoints
+            if (path.includes('/api/sessions')) {
+                result.body = JSON.stringify({
+                    userId: 'user-' + Date.now()
+                }, null, 2);
+            }
+            // Conversation input endpoints
+            else if (path.includes('/api/conversations') && path.includes('/input')) {
+                result.body = JSON.stringify({
+                    text: 'I need to create a workflow for employee onboarding',
+                    type: 'text'
+                }, null, 2);
+            }
+            // Summarization endpoints
+            else if (path.includes('/api/summarization') && path.includes('/feedback')) {
+                result.body = JSON.stringify({
+                    summaryId: 'summary-123',
+                    isApproved: true,
+                    userComments: 'Looks good!'
+                }, null, 2);
+            }
+            // SOP generation endpoints
+            else if (path.includes('/api/sops') && !path.includes('/export')) {
+                result.body = JSON.stringify({
+                    workflowDefinition: {
+                        id: 'workflow-123',
+                        title: 'Sample Workflow',
+                        description: 'A sample workflow for testing',
+                        type: 'sequential',
+                        steps: []
+                    },
+                    sopType: 'process_improvement'
+                }, null, 2);
+            }
+            // SOP export endpoints
+            else if (path.includes('/api/sops') && path.includes('/export')) {
+                result.body = JSON.stringify({
+                    format: 'pdf',
+                    options: {
+                        includeCharts: true
+                    }
+                }, null, 2);
+            }
+            // Auth endpoints
+            else if (path.includes('/api/auth/login')) {
+                result.body = JSON.stringify({
+                    username: 'testuser',
+                    password: 'testpassword'
+                }, null, 2);
+            }
+            else if (path.includes('/api/auth/register')) {
+                result.body = JSON.stringify({
+                    username: 'newuser',
+                    email: 'user@example.com',
+                    password: 'securepassword'
+                }, null, 2);
+            }
+            // Generic POST/PUT/PATCH body
+            else if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+                result.body = JSON.stringify({
+                    // Add your data here
+                    example: 'value',
+                    timestamp: new Date().toISOString()
+                }, null, 2);
+            }
+            
+            return result;
+        }
+        
+        // Export functions
+        async function exportLogs(format) {
+            try {
+                const params = new URLSearchParams({
+                    limit: 10000,
+                    ...currentFilters
+                });
+                
+                const response = await fetch(`/api/logs?${params}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to fetch logs');
+                
+                const data = await response.json();
+                const logs = data.logs;
+                
+                if (format === 'json') {
+                    downloadJSON(logs, 'api-logs.json');
+                } else if (format === 'csv') {
+                    downloadCSV(logs, 'api-logs.csv');
+                }
+            } catch (error) {
+                alert('Failed to export logs: ' + error.message);
+            }
+        }
+        
+        function downloadJSON(data, filename) {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function downloadCSV(logs, filename) {
+            const headers = ['Timestamp', 'Method', 'Endpoint', 'Status', 'Duration (ms)', 'Latency (ms)', 'Response Size'];
+            const rows = logs.map(log => [
+                new Date(log.timestamp).toISOString(),
+                log.method,
+                log.endpoint,
+                log.statusCode,
+                log.duration,
+                log.networkMetrics.latency,
+                log.networkMetrics.responseSize
+            ]);
+            
+            const csv = [headers, ...rows]
+                .map(row => row.map(cell => `"${cell}"`).join(','))
+                .join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Clear all logs
+        async function clearAllLogs() {
+            if (!confirm('Are you sure you want to clear all logs? This cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/logs', {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to clear logs');
+                
+                alert('All logs cleared successfully');
+                loadLogs();
+                loadOverview();
+            } catch (error) {
+                alert('Failed to clear logs: ' + error.message);
+            }
+        }
+        
+        // View log details
+        async function viewLogDetails(logId) {
+            try {
+                const response = await fetch(`/api/logs/${logId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (!response.ok) throw new Error('Failed to load log details');
+                
+                const data = await response.json();
+                const log = data.log;
+                
+                const details = `
+Log ID: ${log.id}
+Timestamp: ${new Date(log.timestamp).toLocaleString()}
+Method: ${log.method}
+Endpoint: ${log.endpoint}
+Status: ${log.statusCode}
+Duration: ${log.duration}ms
+
+Network Metrics:
+- Latency: ${log.networkMetrics.latency.toFixed(2)}ms
+- Processing Time: ${log.networkMetrics.processingTime.toFixed(2)}ms
+- Request Size: ${formatBytes(log.networkMetrics.requestSize)}
+- Response Size: ${formatBytes(log.networkMetrics.responseSize)}
+- Throughput: ${formatBytes(log.networkMetrics.throughput)}/s
+
+Request Body:
+${JSON.stringify(log.requestBody, null, 2)}
+
+Response Body:
+${JSON.stringify(log.responseBody, null, 2)}
+
+${log.error ? `Error: ${log.error}` : ''}
+                `.trim();
+                
+                alert(details);
+            } catch (error) {
+                alert('Failed to load log details: ' + error.message);
+            }
+        }
+        
+        // Utility functions
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+        
+        function getStatusClass(statusCode) {
+            if (statusCode >= 200 && statusCode < 300) return 'status-success';
+            if (statusCode >= 400 && statusCode < 500) return 'status-warning';
+            if (statusCode >= 500) return 'status-error';
+            return 'status-success';
+        }
+    </script>
+</body>
+</html>

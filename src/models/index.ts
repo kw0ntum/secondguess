@@ -5,6 +5,7 @@ export * from './workflow-models';
 export * from './validation-models';
 export * from './sop-models';
 export * from './chart-models';
+export * from './api-log-models';
 
 // Feedback models - export specific items to avoid conflicts
 export {

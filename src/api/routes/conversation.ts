@@ -32,13 +32,21 @@ router.post('/:sessionId/input', authenticateUser, validateRequest('conversation
     
     const conversationResponse = await conversationManager.processUserInput(sessionId, userInput);
     
+    // Get the latest summary to include in metadata
+    const summaryHistory = await conversationManager.getSummaryHistory(sessionId);
+    const latestSummary = summaryHistory.length > 0 ? summaryHistory[summaryHistory.length - 1] : null;
+    
     const response: ConversationResponse = {
       message: conversationResponse.message,
       requiresConfirmation: conversationResponse.requiresConfirmation,
       suggestedActions: conversationResponse.suggestedActions,
       shouldReadAloud: conversationResponse.shouldReadAloud,
       sessionId,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      metadata: {
+        ...conversationResponse.metadata,
+        summary: latestSummary
+      }
     };
     
     logger.info('Conversation input processed successfully', { sessionId, inputType: type });
