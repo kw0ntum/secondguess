@@ -14,6 +14,7 @@ import sopRoutes from './routes/sop';
 import monitoringRoutes from './routes/monitoring';
 import dashboardRoutes from './routes/dashboard';
 import summarizationRoutes from './routes/summarization';
+import apiLogsRoutes from './routes/api-logs';
 
 // Import middleware
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
@@ -23,6 +24,7 @@ import {
   errorTrackingMiddleware,
   routeSpecificMonitoring
 } from './middleware/monitoring';
+import { apiLoggerMiddleware } from './middleware/api-logger';
 
 /**
  * Create and configure Express application
@@ -71,6 +73,9 @@ export function createApp(): Application {
   // Comprehensive monitoring middleware
   app.use(comprehensiveMonitoringMiddleware);
 
+  // API logger middleware (logs all API calls with performance metrics)
+  app.use(apiLoggerMiddleware);
+
   // Serve static files from public directory
   app.use(express.static('public'));
 
@@ -112,6 +117,11 @@ export function createApp(): Application {
     rateLimit(rateLimitConfigs.general), 
     routeSpecificMonitoring('summarization'),
     summarizationRoutes
+  );
+  app.use('/api/logs', 
+    rateLimit(rateLimitConfigs.general), 
+    routeSpecificMonitoring('logs'),
+    apiLogsRoutes
   );
 
   // 404 handler for unmatched routes
