@@ -84,6 +84,20 @@ export function createApp(): Application {
     res.sendFile('index.html', { root: 'public' });
   });
 
+  // New modern interface route
+  app.get('/new', (req, res) => {
+    res.sendFile('index-new.html', { root: 'public' });
+  });
+
+  // Test and diagnostic pages
+  app.get('/test', (req, res) => {
+    res.sendFile('test-new.html', { root: 'public' });
+  });
+
+  app.get('/diagnostic', (req, res) => {
+    res.sendFile('diagnostic-new.html', { root: 'public' });
+  });
+
   // Monitoring routes (includes health check)
   app.use('/api/monitoring', monitoringRoutes);
   

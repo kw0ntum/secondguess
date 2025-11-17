@@ -19,6 +19,8 @@ import {
   validateUserInput,
   validateWorkflowSummary
 } from '@/models';
+import { GeminiSummarizationService } from './gemini-summarization-service';
+import { logger } from '../utils/logger';
 
 interface ExtendedSessionState extends ConversationSessionState {
   conversationHistory: UserInput[];
@@ -70,10 +72,20 @@ export class ConversationManagerService implements ConversationManager {
   private readonly MAX_RECOVERY_ATTEMPTS = 3;
   private cleanupInterval?: NodeJS.Timeout;
   private persistenceInterval?: NodeJS.Timeout;
+  private geminiService: GeminiSummarizationService;
 
   constructor() {
     this.startPeriodicCleanup();
     this.startPeriodicPersistence();
+    
+    // Initialize Gemini service
+    try {
+      this.geminiService = new GeminiSummarizationService();
+      logger.info('Conversation Manager initialized with Gemini AI');
+    } catch (error) {
+      logger.error('Failed to initialize Gemini service:', error);
+      throw error;
+    }
   }
 
   async startSession(userId: string, preferences?: Partial<UserPreferences>): Promise<SessionId> {
@@ -163,7 +175,7 @@ export class ConversationManagerService implements ConversationManager {
   ): Promise<ConversationResponse> {
     switch (session.currentPhase) {
       case ConversationPhase.INITIALIZATION:
-        return this.handleInitializationPhase(session, input);
+        return this.handleInitializationPhase(session, input, sessionId);
       
       case ConversationPhase.WORKFLOW_DESCRIPTION:
         return this.handleWorkflowDescriptionPhase(session, input, sessionId);
@@ -187,23 +199,48 @@ export class ConversationManagerService implements ConversationManager {
 
   private async handleInitializationPhase(
     session: ExtendedSessionState, 
-    input: UserInput
+    input: UserInput,
+    sessionId: SessionId
   ): Promise<ConversationResponse> {
     // Extract initial workflow information
     this.extractWorkflowInformation(session, input);
     session.iterationCount++;
     
-    return {
-      message: "Thank you for starting to describe your workflow. Please continue with more details about the process, including the steps involved, inputs needed, and expected outputs.",
-      requiresConfirmation: false,
-      suggestedActions: [
-        'Describe the main steps',
-        'Explain inputs and outputs',
-        'Mention any dependencies'
-      ],
-      shouldReadAloud: true,
-      nextState: ConversationState.GATHERING_DETAILS
-    };
+    // Generate AI-powered initial response
+    try {
+      const aiSummary = await this.generateAISummary(sessionId, session);
+      session.summaryHistory.push(aiSummary);
+      
+      const nextQuestion = aiSummary.suggestedNextQuestions && aiSummary.suggestedNextQuestions.length > 0
+        ? aiSummary.suggestedNextQuestions[0]
+        : "Please continue with more details about the process, including the steps involved, inputs needed, and expected outputs.";
+      
+      return {
+        message: `Thank you for starting to describe your workflow. ${aiSummary.description}\n\n${nextQuestion}`,
+        requiresConfirmation: false,
+        suggestedActions: aiSummary.suggestedNextQuestions?.slice(0, 3) || [
+          'Describe the main steps',
+          'Explain inputs and outputs',
+          'Mention any dependencies'
+        ],
+        shouldReadAloud: true,
+        nextState: ConversationState.GATHERING_DETAILS
+      };
+    } catch (error) {
+      logger.error('Failed to generate AI response in initialization:', error);
+      // Fallback to basic response
+      return {
+        message: "Thank you for starting to describe your workflow. Please continue with more details about the process, including the steps involved, inputs needed, and expected outputs.",
+        requiresConfirmation: false,
+        suggestedActions: [
+          'Describe the main steps',
+          'Explain inputs and outputs',
+          'Mention any dependencies'
+        ],
+        shouldReadAloud: true,
+        nextState: ConversationState.GATHERING_DETAILS
+      };
+    }
   }
 
   private async handleWorkflowDescriptionPhase(
@@ -214,19 +251,24 @@ export class ConversationManagerService implements ConversationManager {
     this.extractWorkflowInformation(session, input);
     session.iterationCount++;
 
-    // Generate summary after each input
-    const summary = await this.generateSummary(sessionId);
-    session.summaryHistory.push(summary);
+    // Generate AI-powered summary
+    const aiSummary = await this.generateAISummary(sessionId, session);
+    session.summaryHistory.push(aiSummary);
 
     // Check if we've reached the iteration limit
     if (session.iterationCount >= this.ITERATION_LIMIT) {
       return this.handleIterationCheckpoint(session);
     }
 
+    // Use AI-generated questions if available
+    const nextQuestion = aiSummary.suggestedNextQuestions && aiSummary.suggestedNextQuestions.length > 0
+      ? aiSummary.suggestedNextQuestions[0]
+      : "That's all or is there something missing?";
+
     return {
-      message: `${summary.description}\n\nThat's all or there is something missing?`,
+      message: `${aiSummary.description}\n\n${nextQuestion}`,
       requiresConfirmation: true,
-      suggestedActions: [
+      suggestedActions: aiSummary.suggestedNextQuestions?.slice(0, 3) || [
         'Add more details',
         'Clarify existing information',
         'Continue to next phase'
@@ -244,24 +286,28 @@ export class ConversationManagerService implements ConversationManager {
     this.extractWorkflowInformation(session, input);
     session.iterationCount++;
 
-    // Generate updated summary
-    const summary = await this.generateSummary(sessionId);
-    session.summaryHistory.push(summary);
+    // Generate AI-powered summary
+    const aiSummary = await this.generateAISummary(sessionId, session);
+    session.summaryHistory.push(aiSummary);
 
     // Check iteration limit
     if (session.iterationCount >= this.ITERATION_LIMIT) {
       return this.handleIterationCheckpoint(session);
     }
 
-    // Determine if we need more information
-    const completeness = this.calculateWorkflowCompleteness(session);
+    // Use AI completeness score
+    const completeness = aiSummary.completenessScore || this.calculateWorkflowCompleteness(session);
     session.workflowCompleteness = completeness;
+
+    const nextQuestion = aiSummary.suggestedNextQuestions && aiSummary.suggestedNextQuestions.length > 0
+      ? aiSummary.suggestedNextQuestions[0]
+      : "That's all or is there something missing?";
 
     if (completeness >= 80) {
       return {
-        message: `${summary.description}\n\nYour workflow description appears comprehensive. That's all or there is something missing?`,
+        message: `${aiSummary.description}\n\nYour workflow description appears comprehensive. ${nextQuestion}`,
         requiresConfirmation: true,
-        suggestedActions: [
+        suggestedActions: aiSummary.suggestedNextQuestions?.slice(0, 3) || [
           'Proceed to validation',
           'Add final details',
           'Review and refine'
@@ -272,9 +318,9 @@ export class ConversationManagerService implements ConversationManager {
     }
 
     return {
-      message: `${summary.description}\n\nThat's all or there is something missing?`,
+      message: `${aiSummary.description}\n\n${nextQuestion}`,
       requiresConfirmation: true,
-      suggestedActions: [
+      suggestedActions: aiSummary.suggestedNextQuestions?.slice(0, 3) || [
         'Add more details',
         'Clarify steps',
         'Specify requirements'
@@ -307,12 +353,19 @@ export class ConversationManagerService implements ConversationManager {
 
     // Handle corrections or additional information
     this.extractWorkflowInformation(session, input);
-    const summary = await this.generateSummary(sessionId);
+    
+    // Generate AI-powered summary with updates
+    const aiSummary = await this.generateAISummary(sessionId, session);
+    session.summaryHistory.push(aiSummary);
+    
+    const nextQuestion = aiSummary.suggestedNextQuestions && aiSummary.suggestedNextQuestions.length > 0
+      ? aiSummary.suggestedNextQuestions[0]
+      : "Is this now accurate?";
     
     return {
-      message: `I've updated the workflow based on your feedback: ${summary.description}\n\nIs this now accurate?`,
+      message: `I've updated the workflow based on your feedback: ${aiSummary.description}\n\n${nextQuestion}`,
       requiresConfirmation: true,
-      suggestedActions: [
+      suggestedActions: aiSummary.suggestedNextQuestions?.slice(0, 3) || [
         'Confirm accuracy',
         'Make more changes',
         'Add details'
@@ -328,12 +381,19 @@ export class ConversationManagerService implements ConversationManager {
     sessionId: SessionId
   ): Promise<ConversationResponse> {
     this.extractWorkflowInformation(session, input);
-    const summary = await this.generateSummary(sessionId);
+    
+    // Generate AI-powered summary with refinements
+    const aiSummary = await this.generateAISummary(sessionId, session);
+    session.summaryHistory.push(aiSummary);
+    
+    const nextQuestion = aiSummary.suggestedNextQuestions && aiSummary.suggestedNextQuestions.length > 0
+      ? aiSummary.suggestedNextQuestions[0]
+      : "Are you satisfied with these changes?";
     
     return {
-      message: `Refinement applied: ${summary.description}\n\nAre you satisfied with these changes?`,
+      message: `Refinement applied: ${aiSummary.description}\n\n${nextQuestion}`,
       requiresConfirmation: true,
-      suggestedActions: [
+      suggestedActions: aiSummary.suggestedNextQuestions?.slice(0, 3) || [
         'Accept changes',
         'Make more refinements',
         'Finalize workflow'
@@ -916,6 +976,30 @@ export class ConversationManagerService implements ConversationManager {
         return ConversationPhase.FINALIZATION;
       default:
         return ConversationPhase.INITIALIZATION;
+    }
+  }
+
+  /**
+   * Generate AI-powered summary using Gemini
+   */
+  private async generateAISummary(sessionId: SessionId, session: ExtendedSessionState): Promise<any> {
+    try {
+      const aiSummary = await this.geminiService.generateWorkflowSummary(
+        sessionId,
+        session.conversationHistory,
+        session.workflowData
+      );
+      
+      logger.info('AI summary generated', {
+        sessionId,
+        completeness: aiSummary.completenessScore
+      });
+      
+      return aiSummary;
+    } catch (error) {
+      logger.error('Failed to generate AI summary, falling back to basic summary:', error);
+      // Fallback to basic summary if AI fails
+      return this.generateSummary(sessionId);
     }
   }
 

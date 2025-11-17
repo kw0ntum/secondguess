@@ -8,6 +8,14 @@ const router = Router();
  * Serve monitoring dashboard HTML
  */
 router.get('/', (req: Request, res: Response) => {
+  // Serve the static dashboard.html file
+  res.sendFile('dashboard.html', { root: 'public' });
+});
+
+/**
+ * Legacy inline dashboard (kept for reference)
+ */
+router.get('/legacy', (req: Request, res: Response) => {
   const dashboardHTML = `
 <!DOCTYPE html>
 <html lang="en">

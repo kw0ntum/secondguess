@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice SOP Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding-bottom: 120px; /* Space for fixed input */
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #1a1a1a;
+        }
+
+
+        /* Main Container */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem 1rem 1rem;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Welcome Message */
+        .welcome {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        /* Message */
+        .message {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background: #f8f9fa;
+        }
+
+        .message.assistant {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.assistant .message-avatar {
+            background: #f3f4f6;
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-role {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .message.user .message-role {
+            color: #667eea;
+        }
+
+        .message.assistant .message-role {
+            color: #1a1a1a;
+        }
+
+        .message-text {
+            color: #1a1a1a;
+            word-wrap: break-word;
+        }
+
+        /* AI Response Blocks */
+        .ai-response-block {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f9fafb;
+            border-left: 3px solid #667eea;
+            border-radius: 6px;
+        }
+
+        .ai-response-block h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-response-block p {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+        }
+
+        .ai-response-block ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .ai-response-block li {
+            margin: 0.25rem 0;
+            line-height: 1.5;
+        }
+
+        .ai-response-block li::marker {
+            color: #667eea;
+        }
+
+        .completeness-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .completeness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .completeness-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .ai-question {
+            background: #eff6ff;
+            border-left-color: #3b82f6;
+            margin-top: 1rem;
+        }
+
+        .ai-question h4 {
+            color: #3b82f6;
+        }
+
+        /* Formatted content */
+        .message-text h1, .message-text h2, .message-text h3 {
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .message-text h1 { font-size: 1.5rem; }
+        .message-text h2 { font-size: 1.25rem; }
+        .message-text h3 { font-size: 1.1rem; }
+
+        .message-text ul, .message-text ol {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .message-text li {
+            margin: 0.25rem 0;
+        }
+
+        .message-text table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .message-text th, .message-text td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .message-text th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+
+        .message-text strong {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .message-text code {
+            background: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        /* Input Container */
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            z-index: 90;
+        }
+
+        .input-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            position: relative;
+        }
+
+        .input-box {
+            width: 100%;
+            min-height: 60px;
+            max-height: 200px;
+            padding: 0.75rem 3.5rem 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            overflow-y: auto;
+            transition: border-color 0.2s;
+            line-height: 1.5;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-box::placeholder {
+            color: #9ca3af;
+        }
+
+        .send-button {
+            position: absolute;
+            right: 1.25rem;
+            bottom: 0.75rem;
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-button.loading {
+            background: #9ca3af;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .send-button.loading .spinner {
+            display: block;
+        }
+
+        .send-button.loading .send-icon {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+
+        /* Action Buttons */
+        .action-buttons {
+            max-width: 900px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #1a1a1a;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* SOP Section */
+        .sop-section {
+            max-width: 900px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            display: none;
+        }
+
+        .sop-section.visible {
+            display: block;
+        }
+
+        .sop-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .sop-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        .sop-content {
+            color: #4b5563;
+            line-height: 1.8;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            max-width: 900px;
+            margin: 0 auto 0.5rem auto;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #9ca3af;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        /* Error Message */
+        .error-message {
+            max-width: 900px;
+            margin: 1rem auto;
+            padding: 1rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            color: #dc2626;
+        }
+
+        /* Loading State */
+        .typing-indicator {
+            display: none;
+            padding: 1.5rem;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .typing-indicator.visible {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typingAnimation 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        .typing-text {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🎙️ AI Voice SOP Agent</div>
+            <div class="nav-links">
+                <a href="/new" class="nav-link">🏠 Home</a>
+                <a href="/dashboard" class="nav-link">📈 System Dashboard</a>
+                <a href="/api-dashboard-new.html" class="nav-link">🔍 API Logs</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Welcome Message (shown when no conversation) -->
+        <div class="welcome" id="welcome-section">
+            <h1>Create SOPs with AI</h1>
+            <p>Describe your workflow or process, and I'll help you create a comprehensive Standard Operating Procedure.</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar" id="status-bar" style="display: none;">
+            <div class="status-indicator">
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">Connected</span>
+            </div>
+            <div id="session-info">No active session</div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chat-container"></div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typing-indicator">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <span class="typing-text">AI is thinking...</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons" id="action-buttons" style="display: none;">
+            <button class="action-btn" onclick="startNewSession()">
+                🔄 New Session
+            </button>
+            <button class="action-btn primary" onclick="generateSOP()" id="generate-btn" disabled>
+                📋 Generate SOP
+            </button>
+            <button class="action-btn" onclick="startVoiceConversation()" id="voice-btn">
+                🎤 Voice Input
+            </button>
+        </div>
+
+        <!-- SOP Section -->
+        <div class="sop-section" id="sop-section">
+            <div class="sop-card">
+                <h2>📄 Generated SOP</h2>
+                <div class="sop-content" id="sop-content"></div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="exportSOP('pdf')" id="export-pdf-btn">
+                    📄 Export PDF
+                </button>
+                <button class="action-btn" onclick="exportSOP('docx')" id="export-docx-btn">
+                    📝 Export Word
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Container (Fixed at bottom) -->
+    <div class="input-container">
+        <div class="input-wrapper">
+            <textarea 
+                id="message-input" 
+                class="input-box" 
+                placeholder="Describe your workflow or process..."
+                rows="10"
+                onkeydown="handleKeyPress(event)"
+            ></textarea>
+            <button class="send-button" id="send-button" onclick="sendMessage()" disabled>
+                <span class="send-icon">➤</span>
+                <div class="spinner"></div>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentSessionId = null;
+        let conversationHistory = [];
+        let authToken = null;
+        let isProcessing = false;
+
+        const API_BASE = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api' 
+            : `${window.location.origin}/api`;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await obtainAuthToken();
+            await startNewSession();
+            
+            // Enable send button when there's text and auto-resize textarea
+            const messageInput = document.getElementById('message-input');
+            messageInput.addEventListener('input', (e) => {
+                const hasText = e.target.value.trim().length > 0;
+                document.getElementById('send-button').disabled = !hasText || isProcessing;
+                
+                // Auto-resize textarea
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+            });
+            
+            // Reset textarea height on send
+            messageInput.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    setTimeout(() => {
+                        messageInput.style.height = '60px';
+                    }, 100);
+                }
+            });
+        });
+
+        // Get auth token
+        async function obtainAuthToken() {
+            try {
+                const storedToken = sessionStorage.getItem('authToken');
+                if (storedToken) {
+                    authToken = storedToken;
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE}/auth/guest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.token;
+                    sessionStorage.setItem('authToken', authToken);
+                }
+            } catch (error) {
+                console.error('Failed to obtain auth token:', error);
+            }
+        }
+
+        // Start new session
+        async function startNewSession() {
+            try {
+                // Clear API logs before starting new session
+                await clearAPILogs();
+                
+                const response = await fetch(`${API_BASE}/sessions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        userId: 'user-' + Date.now()
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentSessionId = data.sessionId;
+                    conversationHistory = [];
+                    
+                    // Update UI
+                    const chatContainer = document.getElementById('chat-container');
+                    chatContainer.textContent = '';
+                    
+                    // Hide welcome section
+                    document.getElementById('welcome-section').style.display = 'none';
+                    
+                    // Show status bar and update
+                    const statusBar = document.getElementById('status-bar');
+                    statusBar.style.display = 'flex';
+                    document.getElementById('session-info').textContent = `Session: ${currentSessionId.substring(0, 8)}...`;
+                    updateStatus('connected', 'Connected');
+                    
+                    // Scroll to status bar
+                    statusBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Add welcome message to chat
+                    setTimeout(() => {
+                        addSystemMessage('👋 Welcome! New session started. Tell me about the workflow or process you want to document.');
+                        
+                        // Hide action buttons initially
+                        document.getElementById('action-buttons').style.display = 'none';
+                        document.getElementById('sop-section').classList.remove('visible');
+                        document.getElementById('generate-btn').disabled = true;
+                    }, 300);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Failed to create session');
+                }
+            } catch (error) {
+                console.error('Failed to start session:', error);
+                showError('Failed to start new session. Please try again.');
+            }
+        }
+
+        // Clear API logs
+        async function clearAPILogs() {
+            try {
+                const response = await fetch(`${API_BASE}/logs`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    console.log('API logs cleared successfully');
+                } else {
+                    console.warn('Failed to clear API logs, but continuing...');
+                }
+            } catch (error) {
+                console.warn('Error clearing API logs:', error);
+                // Don't throw error, just log it - we don't want to prevent session creation
+            }
+        }
+
+        // Add system message
+        function addSystemMessage(content) {
+            const container = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.style.background = '#f0f9ff';
+            messageDiv.style.borderLeft = '4px solid #3b82f6';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = '💬';
+            avatar.style.background = '#dbeafe';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const roleDiv = document.createElement('div');
+            roleDiv.className = 'message-role';
+            roleDiv.textContent = 'System';
+            roleDiv.style.color = '#3b82f6';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            textDiv.textContent = content;
+            
+            contentDiv.appendChild(roleDiv);
+            contentDiv.appendChild(textDiv);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            container.appendChild(messageDiv);
+            
+            // Enhanced smooth scroll
+            smoothScrollToElement(messageDiv);
+        }
+
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message || isProcessing) return;
+            
+            isProcessing = true;
+            input.value = '';
+            input.style.height = '60px'; // Reset height
+            document.getElementById('send-button').disabled = true;
+            document.getElementById('welcome-section').style.display = 'none';
+            
+            // Add user message to UI
+            addMessage('user', message);
+            
+            // Show typing indicator and scroll to it
+            const typingIndicator = document.getElementById('typing-indicator');
+            typingIndicator.classList.add('visible');
+            
+            // Scroll to typing indicator
+            setTimeout(() => {
+                typingIndicator.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 100);
+            
+            try {
+                const response = await fetch(`${API_BASE}/conversations/${currentSessionId}/input`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        text: message,
+                        type: 'text'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Hide typing indicator
+                    document.getElementById('typing-indicator').classList.remove('visible');
+                    
+                    // Add assistant response with metadata
+                    addMessage('assistant', data.message, data.metadata);
+                    
+                    // Update conversation history
+                    conversationHistory.push(
+                        { role: 'user', content: message },
+                        { role: 'assistant', content: data.message, metadata: data.metadata }
+                    );
+                    
+                    // Show action buttons after first exchange with smooth animation
+                    setTimeout(() => {
+                        const actionButtons = document.getElementById('action-buttons');
+                        actionButtons.style.display = 'flex';
+                        document.getElementById('generate-btn').disabled = false;
+                        
+                        // Scroll to show action buttons
+                        actionButtons.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 500);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Failed to get response');
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                document.getElementById('typing-indicator').classList.remove('visible');
+                showError('Failed to send message. Please try again.');
+            } finally {
+                isProcessing = false;
+                document.getElementById('send-button').disabled = false;
+            }
+        }
+
+        // Add message to chat
+        function addMessage(role, content, metadata) {
+            const container = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const roleDiv = document.createElement('div');
+            roleDiv.className = 'message-role';
+            roleDiv.textContent = role === 'user' ? 'You' : 'AI Assistant';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            
+            if (role === 'assistant' && metadata) {
+                // Format AI response with structured blocks
+                textDiv.appendChild(formatAIResponse(content, metadata));
+            } else {
+                textDiv.textContent = content;
+            }
+            
+            contentDiv.appendChild(roleDiv);
+            contentDiv.appendChild(textDiv);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            container.appendChild(messageDiv);
+            
+            // Enhanced smooth scroll with multiple attempts to ensure visibility
+            smoothScrollToElement(messageDiv);
+        }
+
+        // Enhanced smooth scroll function
+        function smoothScrollToElement(element) {
+            // First scroll attempt
+            requestAnimationFrame(() => {
+                element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                
+                // Second scroll attempt after a short delay to ensure content is rendered
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                }, 100);
+                
+                // Final scroll to ensure we're at the bottom
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: document.documentElement.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 300);
+            });
+        }
+
+        // Format AI response with structured blocks
+        function formatAIResponse(content, metadata) {
+            const container = document.createElement('div');
+            
+            // Main message
+            const mainText = document.createElement('p');
+            mainText.textContent = content;
+            mainText.style.marginBottom = '1rem';
+            container.appendChild(mainText);
+            
+            // If we have structured data from the response, display it
+            if (metadata && metadata.summary) {
+                const summary = metadata.summary;
+                
+                // Summary block
+                if (summary.description) {
+                    const summaryBlock = createResponseBlock('📋 Summary', summary.description);
+                    container.appendChild(summaryBlock);
+                }
+                
+                // Key Steps
+                if (summary.keySteps && summary.keySteps.length > 0) {
+                    const stepsBlock = createResponseBlock('📝 Key Steps Identified', null);
+                    const stepsList = document.createElement('ul');
+                    summary.keySteps.forEach(step => {
+                        const li = document.createElement('li');
+                        li.textContent = step;
+                        stepsList.appendChild(li);
+                    });
+                    stepsBlock.appendChild(stepsList);
+                    container.appendChild(stepsBlock);
+                }
+                
+                // Inputs
+                if (summary.identifiedInputs && summary.identifiedInputs.length > 0) {
+                    const inputsBlock = createResponseBlock('📥 Required Inputs', null);
+                    const inputsList = document.createElement('ul');
+                    summary.identifiedInputs.forEach(input => {
+                        const li = document.createElement('li');
+                        li.textContent = input;
+                        inputsList.appendChild(li);
+                    });
+                    inputsBlock.appendChild(inputsList);
+                    container.appendChild(inputsBlock);
+                }
+                
+                // Outputs
+                if (summary.identifiedOutputs && summary.identifiedOutputs.length > 0) {
+                    const outputsBlock = createResponseBlock('📤 Expected Outputs', null);
+                    const outputsList = document.createElement('ul');
+                    summary.identifiedOutputs.forEach(output => {
+                        const li = document.createElement('li');
+                        li.textContent = output;
+                        outputsList.appendChild(li);
+                    });
+                    outputsBlock.appendChild(outputsList);
+                    container.appendChild(outputsBlock);
+                }
+                
+                // Missing Information
+                if (summary.missingInformation && summary.missingInformation.length > 0) {
+                    const missingBlock = createResponseBlock('⚠️ Missing Information', null);
+                    const missingList = document.createElement('ul');
+                    summary.missingInformation.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = item;
+                        missingList.appendChild(li);
+                    });
+                    missingBlock.appendChild(missingList);
+                    container.appendChild(missingBlock);
+                }
+                
+                // Completeness Score
+                if (summary.completenessScore !== undefined) {
+                    const completenessBlock = createResponseBlock('📊 Workflow Completeness', null);
+                    
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'completeness-bar';
+                    
+                    const barFill = document.createElement('div');
+                    barFill.className = 'completeness-fill';
+                    barFill.style.width = `${summary.completenessScore}%`;
+                    
+                    barContainer.appendChild(barFill);
+                    completenessBlock.appendChild(barContainer);
+                    
+                    const scoreText = document.createElement('div');
+                    scoreText.className = 'completeness-text';
+                    scoreText.textContent = `${summary.completenessScore}% complete`;
+                    completenessBlock.appendChild(scoreText);
+                    
+                    container.appendChild(completenessBlock);
+                }
+                
+                // Next Questions
+                if (summary.suggestedNextQuestions && summary.suggestedNextQuestions.length > 0) {
+                    const questionsBlock = createResponseBlock('❓ Next Questions', null);
+                    questionsBlock.classList.add('ai-question');
+                    const questionsList = document.createElement('ul');
+                    summary.suggestedNextQuestions.forEach(question => {
+                        const li = document.createElement('li');
+                        li.textContent = question;
+                        questionsList.appendChild(li);
+                    });
+                    questionsBlock.appendChild(questionsList);
+                    container.appendChild(questionsBlock);
+                }
+            }
+            
+            return container;
+        }
+
+        // Create a response block
+        function createResponseBlock(title, content) {
+            const block = document.createElement('div');
+            block.className = 'ai-response-block';
+            
+            const heading = document.createElement('h4');
+            heading.textContent = title;
+            block.appendChild(heading);
+            
+            if (content) {
+                const text = document.createElement('p');
+                text.textContent = content;
+                block.appendChild(text);
+            }
+            
+            return block;
+        }
+
+        // Generate SOP
+        async function generateSOP() {
+            if (!currentSessionId || conversationHistory.length === 0) {
+                showError('Please have a conversation first before generating an SOP.');
+                return;
+            }
+            
+            const generateBtn = document.getElementById('generate-btn');
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ Generating...';
+            
+            try {
+                // First finalize the workflow
+                const finalizeResponse = await fetch(`${API_BASE}/conversations/${currentSessionId}/finalize`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+                
+                if (!finalizeResponse.ok) {
+                    throw new Error('Failed to finalize workflow');
+                }
+                
+                const workflowDefinition = await finalizeResponse.json();
+                
+                // Then generate SOP
+                const sopResponse = await fetch(`${API_BASE}/sops`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        workflowDefinition: workflowDefinition,
+                        sopType: 'process_improvement'
+                    })
+                });
+                
+                if (sopResponse.ok) {
+                    const sopDocument = await sopResponse.json();
+                    
+                    // Display SOP
+                    const sopContent = document.getElementById('sop-content');
+                    let sopText = `${sopDocument.title}\n\n`;
+                    sopDocument.sections.forEach(section => {
+                        sopText += `${section.title}\n${section.content}\n\n`;
+                    });
+                    sopContent.textContent = sopText;
+                    
+                    const sopSection = document.getElementById('sop-section');
+                    sopSection.classList.add('visible');
+                    
+                    // Smooth scroll to SOP with delay to ensure rendering
+                    setTimeout(() => {
+                        sopSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                } else {
+                    throw new Error('Failed to generate SOP');
+                }
+            } catch (error) {
+                console.error('SOP generation error:', error);
+                showError('Failed to generate SOP. Please try again.');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '📋 Generate SOP';
+            }
+        }
+
+        // Voice conversation
+        async function startVoiceConversation() {
+            showError('Voice input feature coming soon!');
+        }
+
+        // Export SOP
+        async function exportSOP(format) {
+            const sopContent = document.getElementById('sop-content').textContent;
+            
+            if (!sopContent) {
+                showError('No SOP to export. Please generate an SOP first.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/sop/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        content: sopContent,
+                        format: format
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `sop-${Date.now()}.${format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error('Export failed');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                showError(`Failed to export SOP as ${format.toUpperCase()}. Please try again.`);
+            }
+        }
+
+        // Handle keyboard shortcuts
+        function handleKeyPress(event) {
+            // Send on Ctrl/Cmd + Enter
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+
+        // Update status
+        function updateStatus(status, text) {
+            const dot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            
+            if (status === 'connected') {
+                dot.style.background = '#10b981';
+            } else if (status === 'processing') {
+                dot.style.background = '#f59e0b';
+            } else {
+                dot.style.background = '#ef4444';
+            }
+            
+            statusText.textContent = text;
+        }
+
+        // Show error
+        function showError(message) {
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            const mainContainer = document.querySelector('.main-container');
+            mainContainer.insertBefore(errorDiv, mainContainer.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

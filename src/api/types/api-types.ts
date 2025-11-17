@@ -43,6 +43,7 @@ export interface ConversationResponse {
   shouldReadAloud: boolean;
   sessionId: string;
   timestamp: string;
+  metadata?: any;
 }
 
 export interface SOPResponse extends SOPDocument {
