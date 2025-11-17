@@ -921,6 +921,93 @@
             switchTab('tester');
             document.getElementById('test-method').value = method;
             document.getElementById('test-endpoint').value = path;
+            
+            // Populate with sample JSON based on endpoint
+            const sampleData = getSampleDataForEndpoint(method, path);
+            document.getElementById('test-body').value = sampleData.body;
+            document.getElementById('test-headers').value = sampleData.headers;
+        }
+        
+        function getSampleDataForEndpoint(method, path) {
+            const result = {
+                body: '',
+                headers: JSON.stringify({
+                    'Content-Type': 'application/json'
+                }, null, 2)
+            };
+            
+            // Don't populate body for GET requests
+            if (method === 'GET') {
+                return result;
+            }
+            
+            // Session endpoints
+            if (path.includes('/api/sessions')) {
+                result.body = JSON.stringify({
+                    userId: 'user-' + Date.now()
+                }, null, 2);
+            }
+            // Conversation input endpoints
+            else if (path.includes('/api/conversations') && path.includes('/input')) {
+                result.body = JSON.stringify({
+                    text: 'I need to create a workflow for employee onboarding',
+                    type: 'text'
+                }, null, 2);
+            }
+            // Summarization endpoints
+            else if (path.includes('/api/summarization') && path.includes('/feedback')) {
+                result.body = JSON.stringify({
+                    summaryId: 'summary-123',
+                    isApproved: true,
+                    userComments: 'Looks good!'
+                }, null, 2);
+            }
+            // SOP generation endpoints
+            else if (path.includes('/api/sops') && !path.includes('/export')) {
+                result.body = JSON.stringify({
+                    workflowDefinition: {
+                        id: 'workflow-123',
+                        title: 'Sample Workflow',
+                        description: 'A sample workflow for testing',
+                        type: 'sequential',
+                        steps: []
+                    },
+                    sopType: 'process_improvement'
+                }, null, 2);
+            }
+            // SOP export endpoints
+            else if (path.includes('/api/sops') && path.includes('/export')) {
+                result.body = JSON.stringify({
+                    format: 'pdf',
+                    options: {
+                        includeCharts: true
+                    }
+                }, null, 2);
+            }
+            // Auth endpoints
+            else if (path.includes('/api/auth/login')) {
+                result.body = JSON.stringify({
+                    username: 'testuser',
+                    password: 'testpassword'
+                }, null, 2);
+            }
+            else if (path.includes('/api/auth/register')) {
+                result.body = JSON.stringify({
+                    username: 'newuser',
+                    email: 'user@example.com',
+                    password: 'securepassword'
+                }, null, 2);
+            }
+            // Generic POST/PUT/PATCH body
+            else if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
+                result.body = JSON.stringify({
+                    // Add your data here
+                    example: 'value',
+                    timestamp: new Date().toISOString()
+                }, null, 2);
+            }
+            
+            return result;
         }
         
         // Export functions
