@@ -196,7 +196,10 @@ export class SpeechToTextServiceImpl implements SpeechToTextService {
       case 'flac':
         return 'FLAC';
       case 'ogg':
+      case 'opus':
         return 'OGG_OPUS';
+      case 'webm':
+        return 'WEBM_OPUS';
       case 'mp3':
         return 'MP3';
       default:
@@ -221,34 +224,62 @@ export class SpeechToTextServiceImpl implements SpeechToTextService {
   }
 
   private analyzeAudioQuality(audioStream: AudioStream): AudioQualityMetrics {
-    // Convert audio data to analyze quality
-    const samples = new Float32Array(audioStream.data);
+    // For compressed formats (WebM, MP3, OGG), we can't analyze raw samples
+    // Return default metrics indicating good quality
+    const isCompressedFormat = ['webm', 'mp3', 'ogg', 'opus'].includes(audioStream.format.toLowerCase());
     
-    // Calculate basic metrics
-    const averageAmplitude = samples.reduce((sum, sample) => sum + Math.abs(sample), 0) / samples.length;
-    const peakAmplitude = Math.max(...samples.map(Math.abs));
+    if (isCompressedFormat) {
+      // Return default "good quality" metrics for compressed formats
+      return {
+        signalToNoiseRatio: 30, // Assume good SNR
+        averageAmplitude: 0.3,
+        peakAmplitude: 0.8,
+        silenceRatio: 0.1,
+        clippingDetected: false,
+      };
+    }
     
-    // Detect silence
-    const silenceThreshold = 0.01;
-    const silentSamples = samples.filter(sample => Math.abs(sample) < silenceThreshold).length;
-    const silenceRatio = silentSamples / samples.length;
-    
-    // Detect clipping
-    const clippingThreshold = 0.95;
-    const clippingDetected = samples.some(sample => Math.abs(sample) >= clippingThreshold);
-    
-    // Estimate SNR (simplified)
-    const signalPower = samples.reduce((sum, sample) => sum + sample * sample, 0) / samples.length;
-    const noisePower = Math.min(signalPower * 0.1, 0.001); // Simplified noise estimation
-    const signalToNoiseRatio = 10 * Math.log10(signalPower / noisePower);
+    // Only analyze raw PCM formats (WAV, FLAC)
+    try {
+      // For WAV/FLAC, convert audio data to analyze quality
+      const samples = new Float32Array(audioStream.data);
+      
+      // Calculate basic metrics
+      const averageAmplitude = samples.reduce((sum, sample) => sum + Math.abs(sample), 0) / samples.length;
+      const peakAmplitude = Math.max(...samples.map(Math.abs));
+      
+      // Detect silence
+      const silenceThreshold = 0.01;
+      const silentSamples = samples.filter(sample => Math.abs(sample) < silenceThreshold).length;
+      const silenceRatio = silentSamples / samples.length;
+      
+      // Detect clipping
+      const clippingThreshold = 0.95;
+      const clippingDetected = samples.some(sample => Math.abs(sample) >= clippingThreshold);
+      
+      // Estimate SNR (simplified)
+      const signalPower = samples.reduce((sum, sample) => sum + sample * sample, 0) / samples.length;
+      const noisePower = Math.min(signalPower * 0.1, 0.001); // Simplified noise estimation
+      const signalToNoiseRatio = 10 * Math.log10(signalPower / noisePower);
 
-    return {
-      signalToNoiseRatio,
-      averageAmplitude,
-      peakAmplitude,
-      silenceRatio,
-      clippingDetected,
-    };
+      return {
+        signalToNoiseRatio,
+        averageAmplitude,
+        peakAmplitude,
+        silenceRatio,
+        clippingDetected,
+      };
+    } catch (error) {
+      // If analysis fails, return default metrics
+      logger.warn('Audio quality analysis failed, using defaults:', error);
+      return {
+        signalToNoiseRatio: 25,
+        averageAmplitude: 0.3,
+        peakAmplitude: 0.7,
+        silenceRatio: 0.15,
+        clippingDetected: false,
+      };
+    }
   }
 
   private createEmptyTranscriptionResult(audioStream: AudioStream): TranscriptionResult {

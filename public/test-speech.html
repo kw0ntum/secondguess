@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Endpoint Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #00ff00;
+        }
+        .test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+            background: #2a2a2a;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #ffff00; }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-family: monospace;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            overflow-x: auto;
+            border: 1px solid #333;
+        }
+        #recordBtn {
+            background: #ff0000;
+        }
+        #recordBtn.recording {
+            background: #ff6600;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎤 Speech-to-Text Endpoint Test</h1>
+    <p>This page tests the /api/speech/transcribe endpoint</p>
+    
+    <button onclick="runTests()">▶ Run All Tests</button>
+    <button id="recordBtn" onclick="testRealRecording()">🎤 Test Real Recording</button>
+    <button onclick="location.href='/'">← Back to App</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        const API_BASE = 'http://localhost:3000/api';
+        let authToken = null;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        
+        async function runTests() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p class="info">Running tests...</p>';
+            
+            let html = '<h2>Test Results:</h2>';
+            
+            // Test 1: Get Auth Token
+            html += '<div class="test">';
+            html += '<strong>Test 1: Get Authentication Token</strong><br>';
+            try {
+                const response = await fetch(`${API_BASE}/auth/guest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                authToken = data.token;
+                html += `<span class="pass">✓ Token obtained: ${authToken.substring(0, 30)}...</span>`;
+            } catch (error) {
+                html += `<span class="fail">✗ Failed: ${error.message}</span>`;
+                results.innerHTML = html + '</div>';
+                return;
+            }
+            html += '</div>';
+            
+            // Test 2: Check Service Status
+            html += '<div class="test">';
+            html += '<strong>Test 2: Check Speech Service Status</strong><br>';
+            try {
+                const response = await fetch(`${API_BASE}/speech/status`);
+                const data = await response.json();
+                html += `<span class="${data.data.isReady ? 'pass' : 'fail'}">Service Ready: ${data.data.isReady}</span><br>`;
+                html += `<span class="info">Language: ${data.data.currentLanguage}</span>`;
+            } catch (error) {
+                html += `<span class="fail">✗ Failed: ${error.message}</span>`;
+            }
+            html += '</div>';
+
+            
+            // Test 3: Test Transcribe with Dummy Data
+            html += '<div class="test">';
+            html += '<strong>Test 3: Test Transcribe Endpoint (Dummy Data)</strong><br>';
+            try {
+                const testData = {
+                    audioData: btoa("test audio data"),
+                    format: "WEBM",
+                    sampleRate: 48000,
+                    channels: 1,
+                    sessionId: "test-session"
+                };
+                
+                html += '<pre>' + JSON.stringify(testData, null, 2) + '</pre>';
+                
+                const response = await fetch(`${API_BASE}/speech/transcribe`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const responseText = await response.text();
+                html += `<span class="info">Status: ${response.status}</span><br>`;
+                html += `<span class="info">Response:</span><pre>${responseText}</pre>`;
+                
+                if (response.ok) {
+                    html += `<span class="pass">✓ Endpoint accessible</span>`;
+                } else {
+                    html += `<span class="fail">✗ Request failed with status ${response.status}</span>`;
+                }
+            } catch (error) {
+                html += `<span class="fail">✗ Failed: ${error.message}</span>`;
+            }
+            html += '</div>';
+            
+            results.innerHTML = html;
+        }
+        
+        async function testRealRecording() {
+            const btn = document.getElementById('recordBtn');
+            const results = document.getElementById('results');
+            
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+                    
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        results.innerHTML = '<p class="info">Processing recording...</p>';
+                        
+                        // Convert to base64
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        
+                        reader.onloadend = async () => {
+                            const base64Audio = reader.result.split(',')[1];
+                            
+                            let html = '<div class="test">';
+                            html += '<strong>Real Recording Test</strong><br>';
+                            html += `<span class="info">Audio size: ${audioBlob.size} bytes</span><br>`;
+                            html += `<span class="info">Base64 length: ${base64Audio.length} chars</span><br>`;
+                            
+                            try {
+                                const response = await fetch(`${API_BASE}/speech/transcribe`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${authToken}`
+                                    },
+                                    body: JSON.stringify({
+                                        audioData: base64Audio,
+                                        format: 'WEBM',
+                                        sampleRate: 48000,
+                                        channels: 1,
+                                        sessionId: 'test-session'
+                                    })
+                                });
+                                
+                                const responseText = await response.text();
+                                html += `<span class="info">Status: ${response.status}</span><br>`;
+                                html += `<span class="info">Response:</span><pre>${responseText}</pre>`;
+                                
+                                if (response.ok) {
+                                    const data = JSON.parse(responseText);
+                                    html += `<span class="pass">✓ Transcription: ${data.data.text}</span>`;
+                                } else {
+                                    html += `<span class="fail">✗ Failed with status ${response.status}</span>`;
+                                }
+                            } catch (error) {
+                                html += `<span class="fail">✗ Error: ${error.message}</span>`;
+                            }
+                            
+                            html += '</div>';
+                            results.innerHTML = html;
+                        };
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                        btn.textContent = '🎤 Test Real Recording';
+                        btn.classList.remove('recording');
+                    };
+                    
+                    mediaRecorder.start();
+                    btn.textContent = '⏹️ Stop Recording';
+                    btn.classList.add('recording');
+                    results.innerHTML = '<p class="info">🎤 Recording... Click stop when done.</p>';
+                    
+                } catch (error) {
+                    results.innerHTML = `<div class="test"><span class="fail">✗ Microphone error: ${error.message}</span></div>`;
+                }
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+            }
+        }
+        
+        // Auto-run tests on load
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>
