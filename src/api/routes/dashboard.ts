@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { monitoringIntegration } from '../../utils/monitoring-integration';
-import { logger } from '../../utils/logger';
+import path from 'path';
 
 const router = Router();
 
@@ -8,6 +7,7 @@ const router = Router();
  * Serve monitoring dashboard HTML
  */
 router.get('/', (req: Request, res: Response) => {
+<<<<<<< Updated upstream
   // Serve the static dashboard.html file
   res.sendFile('dashboard.html', { root: 'public' });
 });
@@ -15,6 +15,12 @@ router.get('/', (req: Request, res: Response) => {
 /**
  * Legacy inline dashboard (kept for reference)
  */
+=======
+  res.sendFile('dashboard.html', { root: path.join(process.cwd(), 'public') });
+});
+
+// Legacy inline dashboard (keeping for reference, but not used)
+>>>>>>> Stashed changes
 router.get('/legacy', (req: Request, res: Response) => {
   const dashboardHTML = `
 <!DOCTYPE html>

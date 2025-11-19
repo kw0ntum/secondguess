@@ -97,7 +97,9 @@ export enum AudioFormat {
   WAV = 'wav',
   MP3 = 'mp3',
   OGG = 'ogg',
-  FLAC = 'flac'
+  FLAC = 'flac',
+  WEBM = 'webm',
+  OPUS = 'opus'
 }
 
 /**
@@ -181,14 +183,22 @@ export function validateWorkflowSummary(summary: WorkflowSummary): boolean {
 }
 
 export function validateAudioStream(stream: AudioStream): boolean {
-  if (!stream.data || !stream.timestamp) {
+  // Check if data exists and has content
+  if (!stream.data || stream.data.byteLength === 0) {
     return false;
   }
   
+  // Check timestamp
+  if (!stream.timestamp) {
+    return false;
+  }
+  
+  // Check sample rate and channels
   if (stream.sampleRate <= 0 || stream.channels <= 0) {
     return false;
   }
   
+  // Check format
   if (!Object.values(AudioFormat).includes(stream.format)) {
     return false;
   }

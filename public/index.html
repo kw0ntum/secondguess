@@ -996,15 +996,61 @@
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                     console.log('Audio recorded, size:', audioBlob.size);
                     
-                    // For now, just show a message that voice is recorded
-                    // In a full implementation, this would be sent to the API
-                    addMessageToConversation('assistant', 
-                        '🎤 Voice recorded! Note: Voice-to-text processing requires additional backend setup. ' +
-                        'Please use the text input for now.'
-                    );
-                    
                     // Stop all tracks
                     stream.getTracks().forEach(track => track.stop());
+                    
+                    // Show processing message
+                    addMessageToConversation('assistant', '🎤 Processing your voice input...');
+                    
+                    try {
+                        // Convert audio blob to base64
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        
+                        reader.onloadend = async () => {
+                            const base64Audio = reader.result.split(',')[1]; // Remove data:audio/webm;base64, prefix
+                            
+                            // Send to speech-to-text API
+                            const response = await fetch(`${API_BASE}/speech/transcribe`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${authToken}`
+                                },
+                                body: JSON.stringify({
+                                    audioData: base64Audio,
+                                    format: 'webm',
+                                    sampleRate: 48000,
+                                    channels: 1,
+                                    sessionId: currentSessionId
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                throw new Error(`Speech-to-text failed: ${response.status}`);
+                            }
+                            
+                            const result = await response.json();
+                            
+                            if (result.success && result.data.text) {
+                                // Display transcribed text
+                                addMessageToConversation('user', result.data.text);
+                                
+                                // Send transcribed text to conversation
+                                await sendMessage(result.data.text);
+                            } else {
+                                throw new Error('No text transcribed from audio');
+                            }
+                        };
+                        
+                        reader.onerror = () => {
+                            throw new Error('Failed to read audio data');
+                        };
+                        
+                    } catch (error) {
+                        console.error('Speech-to-text failed:', error);
+                        showError('Failed to process voice input: ' + error.message + '. Please try again or use text input.');
+                    }
                 };
                 
                 // Start recording

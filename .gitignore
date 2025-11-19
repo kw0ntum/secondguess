@@ -87,3 +87,6 @@ Thumbs.db
 test-results/
 test-reports/
 .vercel
+
+# Google credentials
+google-credentials.json
