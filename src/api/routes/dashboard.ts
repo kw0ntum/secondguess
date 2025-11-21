@@ -8,7 +8,6 @@ const router = Router();
  */
 router.get('/', (req: Request, res: Response) => {
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
   // Serve the static dashboard.html file
   res.sendFile('dashboard.html', { root: 'public' });
 });
@@ -17,15 +16,10 @@ router.get('/', (req: Request, res: Response) => {
  * Legacy inline dashboard (kept for reference)
  */
 =======
-=======
->>>>>>> Stashed changes
   res.sendFile('dashboard.html', { root: path.join(process.cwd(), 'public') });
 });
 
 // Legacy inline dashboard (keeping for reference, but not used)
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
 router.get('/legacy', (req: Request, res: Response) => {
   const dashboardHTML = `
