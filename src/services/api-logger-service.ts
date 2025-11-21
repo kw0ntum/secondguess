@@ -39,6 +39,17 @@ export class ApiLoggerService {
     let filteredLogs = [...this.logs];
 
     if (filter) {
+      // Log messageHash filtering for debugging
+      if (filter.messageHash) {
+        const logsWithHash = filteredLogs.filter(log => log.messageHash);
+        logger.info('MessageHash filter applied', { 
+          filterHash: filter.messageHash, 
+          totalLogs: filteredLogs.length,
+          logsWithHash: logsWithHash.length,
+          sampleHashes: logsWithHash.slice(0, 5).map(l => l.messageHash)
+        });
+      }
+      
       filteredLogs = filteredLogs.filter(log => {
         if (filter.startDate && log.timestamp < filter.startDate) return false;
         if (filter.endDate && log.timestamp > filter.endDate) return false;
@@ -50,6 +61,7 @@ export class ApiLoggerService {
         if (filter.userId && log.userId !== filter.userId) return false;
         if (filter.sessionId && log.sessionId !== filter.sessionId) return false;
         if (filter.hasError !== undefined && (!!log.error) !== filter.hasError) return false;
+        if (filter.messageHash && log.messageHash !== filter.messageHash) return false;
         return true;
       });
     }

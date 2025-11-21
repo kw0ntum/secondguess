@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API Monitoring Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <style>
         * {
             margin: 0;
@@ -650,6 +651,10 @@
                             <option value="false">Success Only</option>
                         </select>
                     </div>
+                    <div class="filter-group">
+                        <label>Message ID</label>
+                        <input type="text" id="filter-message-hash" placeholder="Enter message ID">
+                    </div>
                 </div>
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
@@ -892,6 +897,12 @@
                     ...currentFilters
                 });
                 
+                // Debug logging
+                if (currentFilters.messageHash) {
+                    console.log('Filtering by messageHash:', currentFilters.messageHash);
+                }
+                console.log('API Request URL:', `/api/logs?${params}`);
+                
                 const response = await fetch(`/api/logs?${params}`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -899,6 +910,7 @@
                 if (!response.ok) throw new Error('Failed to load logs');
                 
                 const data = await response.json();
+                console.log('Received logs:', data.logs.length, 'Total:', data.pagination.total);
                 renderLogs(data.logs, data.pagination);
             } catch (error) {
                 console.error('Failed to load logs:', error);
@@ -933,6 +945,7 @@
                     <th>Status</th>
                     <th>Duration</th>
                     <th>Size</th>
+                    <th>Message ID</th>
                     <th>Actions</th>
                 </tr>
             `;
@@ -973,6 +986,19 @@
                 const sizeCell = document.createElement('td');
                 sizeCell.textContent = formatBytes(log.networkMetrics.responseSize);
                 tr.appendChild(sizeCell);
+                
+                const hashCell = document.createElement('td');
+                if (log.messageHash) {
+                    hashCell.style.fontFamily = 'monospace';
+                    hashCell.style.fontSize = '0.75rem';
+                    hashCell.textContent = log.messageHash;
+                    hashCell.title = 'Click to copy';
+                    hashCell.style.cursor = 'pointer';
+                    hashCell.onclick = () => copyToClipboard(log.messageHash, hashCell);
+                } else {
+                    hashCell.textContent = '-';
+                }
+                tr.appendChild(hashCell);
                 
                 const actionsCell = document.createElement('td');
                 const viewBtn = document.createElement('button');
@@ -1107,6 +1133,7 @@
             const endpoint = document.getElementById('filter-endpoint').value;
             const status = document.getElementById('filter-status').value;
             const hasError = document.getElementById('filter-error').value;
+            const messageHash = document.getElementById('filter-message-hash').value.trim();
             
             if (startDate) currentFilters.startDate = new Date(startDate).toISOString();
             if (endDate) currentFilters.endDate = new Date(endDate).toISOString();
@@ -1114,6 +1141,7 @@
             if (endpoint) currentFilters.endpoint = endpoint;
             if (status) currentFilters.statusCode = status;
             if (hasError) currentFilters.hasError = hasError;
+            if (messageHash) currentFilters.messageHash = messageHash;
             
             loadLogs();
         }
@@ -1125,6 +1153,7 @@
             document.getElementById('filter-endpoint').value = '';
             document.getElementById('filter-status').value = '';
             document.getElementById('filter-error').value = '';
+            document.getElementById('filter-message-hash').value = '';
             currentFilters = {};
             currentPage = 0;
             loadLogs();
@@ -1370,6 +1399,12 @@
                     <div class="detail-grid">
                         <div class="detail-label">Log ID:</div>
                         <div class="detail-value">${log.id}</div>
+                        ${log.messageHash ? `
+                        <div class="detail-label">Message ID:</div>
+                        <div class="detail-value" style="font-family: monospace; background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('hash-${log.id}', this)" title="Click to copy">
+                            <span id="hash-${log.id}">${log.messageHash}</span>
+                        </div>
+                        ` : ''}
                         <div class="detail-label">Timestamp:</div>
                         <div class="detail-value">${new Date(log.timestamp).toLocaleString()}</div>
                         <div class="detail-label">Method:</div>

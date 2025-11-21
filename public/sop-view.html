@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOP Document</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            line-height: 1.8;
+        }
+
+        /* Print styles */
+        @media print {
+            body {
+                background: white;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+        }
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #1a1a1a;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+            color: #1a1a1a;
+        }
+
+        /* Document Container */
+        .document-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Cover Page */
+        .cover-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cover-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1)"/><stop offset="100%" style="stop-color:rgba(255,255,255,0)"/></linearGradient></defs><path d="M0,400 Q300,200 600,400 T1200,400 L1200,800 L0,800 Z" fill="url(%23grad)"/></svg>');
+            background-size: cover;
+            opacity: 0.3;
+        }
+
+        .cover-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cover-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .cover-subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            margin-bottom: 3rem;
+            opacity: 0.95;
+        }
+
+        .cover-metadata {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .cover-metadata div {
+            margin: 0.5rem 0;
+        }
+
+        /* Table of Contents */
+        .toc-page {
+            padding: 4rem;
+            min-height: 100vh;
+        }
+
+        .toc-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 1rem;
+        }
+
+        .toc-list {
+            list-style: none;
+        }
+
+        .toc-item {
+            margin: 1rem 0;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toc-item:hover {
+            background: #f9fafb;
+        }
+
+        .toc-number {
+            font-weight: 600;
+            color: #667eea;
+            margin-right: 1rem;
+            min-width: 3rem;
+        }
+
+        .toc-title-text {
+            flex: 1;
+        }
+
+        .toc-subsection {
+            margin-left: 4rem;
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        /* Charts Section */
+        .charts-section {
+            padding: 4rem;
+        }
+
+        .chart-container {
+            margin: 3rem 0;
+            page-break-inside: avoid;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .chart-description {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .chart-diagram {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+
+        .chart-caption {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        /* Content Section */
+        .content-section {
+            padding: 4rem;
+        }
+
+        .section {
+            margin: 3rem 0;
+            page-break-inside: avoid;
+        }
+
+        .section-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .section-content {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .section-content p {
+            margin: 1rem 0;
+        }
+
+        .section-content ul,
+        .section-content ol {
+            margin: 1rem 0 1rem 2rem;
+            line-height: 1.8;
+        }
+
+        .section-content ul {
+            list-style-type: disc;
+        }
+
+        .section-content ol {
+            list-style-type: decimal;
+        }
+
+        .section-content li {
+            margin: 0.75rem 0;
+            padding-left: 0.5rem;
+        }
+
+        .section-content li::marker {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .sop-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sop-table th,
+        .sop-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        .sop-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .sop-table tbody tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .sop-table tbody tr:hover {
+            background: #f3f4f6;
+        }
+
+        .section-content code {
+            background: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #667eea;
+        }
+
+        .section-content strong {
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .section-content em {
+            font-style: italic;
+            color: #666;
+        }
+
+        .subsection {
+            margin: 2rem 0 2rem 2rem;
+        }
+
+        .subsection-number {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #764ba2;
+            margin-bottom: 0.5rem;
+        }
+
+        .subsection-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 1rem;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            gap: 2rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid #f3f4f6;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .loading-steps {
+            text-align: center;
+            color: #999;
+        }
+
+        .loading-step {
+            margin: 0.5rem 0;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+        }
+
+        .loading-step.active {
+            opacity: 1;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* Error State */
+        .error-container {
+            max-width: 600px;
+            margin: 4rem auto;
+            padding: 2rem;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            color: #dc2626;
+            margin-bottom: 1rem;
+        }
+
+        .error-message {
+            color: #991b1b;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header no-print">
+        <div class="header-content">
+            <div class="header-title">📋 SOP Document</div>
+            <div class="header-actions">
+                <a href="/new" class="btn btn-secondary">← Back to Chat</a>
+                <button class="btn btn-secondary" onclick="exportDocument('pdf')">📄 Export PDF</button>
+                <button class="btn btn-secondary" onclick="exportDocument('docx')">📝 Export Word</button>
+                <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Generating your SOP document...</div>
+        <div class="loading-steps">
+            <div class="loading-step active" id="step-1">Analyzing workflow data</div>
+            <div class="loading-step" id="step-2">Generating process diagrams</div>
+            <div class="loading-step" id="step-3">Creating ISO-formatted documentation</div>
+            <div class="loading-step" id="step-4">Assembling final document</div>
+        </div>
+    </div>
+
+    <!-- Document Container -->
+    <div id="document" class="document-container" style="display: none;"></div>
+
+    <!-- Error Container -->
+    <div id="error" class="error-container" style="display: none;">
+        <div class="error-title">Failed to Generate SOP</div>
+        <div class="error-message" id="error-message"></div>
+        <a href="/new" class="btn btn-primary">Return to Chat</a>
+    </div>
+
+    <script>
+        // Initialize Mermaid
+        mermaid.initialize({ 
+            startOnLoad: false,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis'
+            }
+        });
+
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        // Simulate loading progress
+        const progressInterval = setInterval(() => {
+            if (currentStep < totalSteps) {
+                document.getElementById(`step-${currentStep}`).classList.remove('active');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.add('active');
+            }
+        }, 1500);
+
+        // Get SOP data from URL or sessionStorage
+        async function loadSOPDocument() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionId = urlParams.get('sessionId');
+                
+                console.log('Loading SOP for session:', sessionId);
+                
+                if (!sessionId) {
+                    throw new Error('No session ID provided');
+                }
+
+                // Get auth token
+                const authToken = sessionStorage.getItem('authToken');
+                if (!authToken) {
+                    throw new Error('Not authenticated. Please return to chat and try again.');
+                }
+
+                console.log('Finalizing workflow...');
+                // Finalize workflow
+                const finalizeResponse = await fetch(`/api/conversations/${sessionId}/finalize`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!finalizeResponse.ok) {
+                    const errorData = await finalizeResponse.json();
+                    console.error('Finalize error:', errorData);
+                    throw new Error(errorData.error?.message || 'Failed to finalize workflow');
+                }
+
+                const workflowDefinition = await finalizeResponse.json();
+                console.log('Workflow finalized:', workflowDefinition);
+
+                console.log('Generating SOP document...');
+                // Generate SOP
+                const sopResponse = await fetch('/api/sops', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        workflowDefinition,
+                        sopType: 'process_improvement'
+                    })
+                });
+
+                if (!sopResponse.ok) {
+                    const errorData = await sopResponse.json();
+                    console.error('SOP generation error:', errorData);
+                    throw new Error(errorData.error?.message || 'Failed to generate SOP');
+                }
+
+                const sopDocument = await sopResponse.json();
+                console.log('SOP generated successfully:', sopDocument);
+                
+                clearInterval(progressInterval);
+                renderSOPDocument(sopDocument);
+                
+            } catch (error) {
+                console.error('Error loading SOP:', error);
+                clearInterval(progressInterval);
+                showError(error.message || 'An unexpected error occurred');
+            }
+        }
+
+        // Export document
+        async function exportDocument(format) {
+            try {
+                const authToken = sessionStorage.getItem('authToken');
+                if (!authToken) {
+                    alert('Not authenticated');
+                    return;
+                }
+
+                // Get the document content
+                const documentElement = document.getElementById('document');
+                if (!documentElement || documentElement.style.display === 'none') {
+                    alert('No document to export');
+                    return;
+                }
+
+                // For now, show a message that export is coming soon
+                alert(`Export to ${format.toUpperCase()} will be available soon. For now, please use the Print button to save as PDF.`);
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export document');
+            }
+        }
+
+        function renderSOPDocument(sop) {
+            const container = document.getElementById('document');
+            
+            // Cover Page
+            let html = `
+                <div class="cover-page page-break">
+                    <div class="cover-content">
+                        <div class="cover-title">${sop.metadata.title}</div>
+                        <div class="cover-subtitle">Standard Operating Procedure</div>
+                        <div class="cover-metadata">
+                            <div><strong>Document Number:</strong> ${sop.metadata.documentNumber}</div>
+                            <div><strong>Version:</strong> ${sop.metadata.version}</div>
+                            <div><strong>Effective Date:</strong> ${sop.metadata.effectiveDate}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Table of Contents
+            html += `
+                <div class="toc-page page-break">
+                    <h1 class="toc-title">Table of Contents</h1>
+                    <ul class="toc-list">
+            `;
+
+            sop.tableOfContents.forEach(entry => {
+                html += `
+                    <li class="toc-item">
+                        <span class="toc-number">${entry.number}</span>
+                        <span class="toc-title-text">${entry.title}</span>
+                    </li>
+                `;
+                if (entry.subsections) {
+                    entry.subsections.forEach(sub => {
+                        html += `
+                            <li class="toc-item toc-subsection">
+                                <span class="toc-number">${sub.number}</span>
+                                <span class="toc-title-text">${sub.title}</span>
+                            </li>
+                        `;
+                    });
+                }
+            });
+
+            html += `
+                    </ul>
+                </div>
+            `;
+
+            // Charts Section
+            if (sop.charts && sop.charts.length > 0) {
+                html += `<div class="charts-section page-break">`;
+                
+                sop.charts.forEach((chart, index) => {
+                    html += `
+                        <div class="chart-container">
+                            <h2 class="chart-title">${chart.title}</h2>
+                            <p class="chart-description">${chart.description}</p>
+                            <div class="chart-diagram">
+                                <div class="mermaid" id="chart-${index}">
+${chart.mermaidCode}
+                                </div>
+                            </div>
+                            <p class="chart-caption">${chart.caption}</p>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+            }
+
+            // Content Sections
+            html += `<div class="content-section">`;
+            
+            sop.sections.forEach(section => {
+                html += `
+                    <div class="section">
+                        <div class="section-number">${section.number}</div>
+                        <h2 class="section-title">${section.title}</h2>
+                        <div class="section-content">${formatContent(section.content)}</div>
+                `;
+                
+                if (section.subsections) {
+                    section.subsections.forEach(subsection => {
+                        html += `
+                            <div class="subsection">
+                                <div class="subsection-number">${subsection.number}</div>
+                                <h3 class="subsection-title">${subsection.title}</h3>
+                                <div class="section-content">${formatContent(subsection.content)}</div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += `</div>`;
+            });
+            
+            html += `</div>`;
+
+            container.innerHTML = html;
+            
+            // Render Mermaid diagrams with error handling
+            try {
+                mermaid.run({
+                    querySelector: '.mermaid',
+                    suppressErrors: true
+                }).catch(error => {
+                    console.error('Mermaid rendering error:', error);
+                    // Replace failed diagrams with error message
+                    document.querySelectorAll('.mermaid').forEach(el => {
+                        if (el.getAttribute('data-processed') !== 'true') {
+                            el.innerHTML = '<div style="padding: 2rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626;">⚠️ Chart rendering failed. The diagram syntax may need adjustment.</div>';
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Mermaid initialization error:', error);
+            }
+
+            // Show document, hide loading
+            document.getElementById('loading').style.display = 'none';
+            container.style.display = 'block';
+        }
+
+        function formatContent(content) {
+            if (!content) return '';
+            
+            // Split into paragraphs
+            let html = '';
+            const paragraphs = content.split('\n\n');
+            
+            for (const para of paragraphs) {
+                const trimmed = para.trim();
+                if (!trimmed) continue;
+                
+                // Check if it's a list
+                if (trimmed.match(/^[\*\-\+]\s/m)) {
+                    // Unordered list
+                    const items = trimmed.split('\n')
+                        .filter(line => line.trim())
+                        .map(line => line.replace(/^[\*\-\+]\s+/, '').trim());
+                    html += '<ul>';
+                    items.forEach(item => {
+                        html += `<li>${formatInline(item)}</li>`;
+                    });
+                    html += '</ul>';
+                } else if (trimmed.match(/^\d+\.\s/m)) {
+                    // Ordered list
+                    const items = trimmed.split('\n')
+                        .filter(line => line.trim())
+                        .map(line => line.replace(/^\d+\.\s+/, '').trim());
+                    html += '<ol>';
+                    items.forEach(item => {
+                        html += `<li>${formatInline(item)}</li>`;
+                    });
+                    html += '</ol>';
+                } else if (trimmed.startsWith('|')) {
+                    // Table
+                    html += formatTable(trimmed);
+                } else {
+                    // Regular paragraph
+                    html += `<p>${formatInline(trimmed)}</p>`;
+                }
+            }
+            
+            return html;
+        }
+
+        function formatInline(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code>$1</code>');
+        }
+
+        function formatTable(tableText) {
+            const lines = tableText.split('\n').filter(l => l.trim());
+            if (lines.length < 2) return '';
+            
+            let html = '<table class="sop-table">';
+            
+            // Header row
+            const headers = lines[0].split('|').filter(h => h.trim()).map(h => h.trim());
+            html += '<thead><tr>';
+            headers.forEach(header => {
+                html += `<th>${formatInline(header)}</th>`;
+            });
+            html += '</tr></thead>';
+            
+            // Skip separator line (line 1)
+            // Data rows
+            html += '<tbody>';
+            for (let i = 2; i < lines.length; i++) {
+                const cells = lines[i].split('|').filter(c => c.trim()).map(c => c.trim());
+                html += '<tr>';
+                cells.forEach(cell => {
+                    html += `<td>${formatInline(cell)}</td>`;
+                });
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+            
+            return html;
+        }
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error-message').textContent = message;
+        }
+
+        // Load document on page load
+        document.addEventListener('DOMContentLoaded', loadSOPDocument);
+    </script>
+</body>
+</html>

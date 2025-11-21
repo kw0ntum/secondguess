@@ -28,6 +28,7 @@ router.get('/', authenticateUser, async (req: Request, res: Response) => {
       userId,
       sessionId,
       hasError,
+      messageHash,
       limit = '100',
       offset = '0'
     } = req.query;
@@ -43,6 +44,10 @@ router.get('/', authenticateUser, async (req: Request, res: Response) => {
     if (userId) filter.userId = userId as string;
     if (sessionId) filter.sessionId = sessionId as string;
     if (hasError !== undefined) filter.hasError = hasError === 'true';
+    if (messageHash) {
+      filter.messageHash = (messageHash as string).trim();
+      logger.info('Filtering logs by messageHash', { messageHash: filter.messageHash });
+    }
 
     const logs = apiLoggerService.getLogs(
       filter,
