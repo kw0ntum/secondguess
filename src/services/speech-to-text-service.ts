@@ -1,5 +1,18 @@
 /**
  * Speech-to-Text Service Implementation using Google Cloud Speech-to-Text
+ * 
+ * @deprecated This file is deprecated and no longer used by the codebase.
+ * Use the modular implementation instead:
+ * - Import: import { SpeechToTextFactory } from './speech-to-text-factory'
+ * - Usage: const service = SpeechToTextFactory.createWithFallback()
+ * 
+ * The functionality has been moved to:
+ * - src/services/speech-providers/google-cloud-adapter.ts (Google Cloud implementation)
+ * - src/services/speech-providers/mock-adapter.ts (Mock for testing)
+ * - src/services/speech-to-text-factory.ts (Factory pattern)
+ * 
+ * This file is kept for backward compatibility only and may be removed in a future version.
+ * See MIGRATION_TO_MODULAR.md for details.
  */
 
 import { SpeechToTextService } from '@/interfaces';

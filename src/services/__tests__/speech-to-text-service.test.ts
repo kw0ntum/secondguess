@@ -1,8 +1,10 @@
 /**
- * Tests for Speech-to-Text Service
+ * Tests for Speech-to-Text Service (Modular Implementation)
  */
 
-import { SpeechToTextServiceImpl } from '../speech-to-text-service';
+import { GoogleCloudAdapter } from '../speech-providers/google-cloud-adapter';
+import { MockAdapter } from '../speech-providers/mock-adapter';
+import { SpeechToTextFactory } from '../speech-to-text-factory';
 import { SpeechToTextService } from '@/interfaces';
 import { AudioStream, AudioFormat, TranscriptionResult } from '@/models';
 
@@ -28,7 +30,7 @@ jest.mock('@/utils/logger', () => ({
   },
 }));
 
-describe('SpeechToTextServiceImpl', () => {
+describe('Speech-to-Text Service (Modular)', () => {
   let sttService: SpeechToTextService;
   let mockAudioStream: AudioStream;
 
@@ -36,7 +38,8 @@ describe('SpeechToTextServiceImpl', () => {
     jest.clearAllMocks();
     mockInitialize.mockResolvedValue(undefined);
     
-    sttService = new SpeechToTextServiceImpl();
+    // Use GoogleCloudAdapter for testing (same functionality as old SpeechToTextServiceImpl)
+    sttService = new GoogleCloudAdapter();
     
     mockAudioStream = {
       data: new ArrayBuffer(1024),
@@ -52,7 +55,7 @@ describe('SpeechToTextServiceImpl', () => {
 
   describe('initialization', () => {
     it('should initialize successfully', () => {
-      expect(sttService).toBeInstanceOf(SpeechToTextServiceImpl);
+      expect(sttService).toBeInstanceOf(GoogleCloudAdapter);
       expect(mockInitialize).toHaveBeenCalled();
     });
 
@@ -217,5 +220,63 @@ describe('SpeechToTextServiceImpl', () => {
         expect(result.text).toBe('Test');
       }
     });
+  });
+});
+
+
+describe('SpeechToTextFactory', () => {
+  afterEach(() => {
+    SpeechToTextFactory.reset();
+  });
+
+  it('should create GoogleCloudAdapter by default', () => {
+    const service = SpeechToTextFactory.create();
+    expect(service).toBeInstanceOf(GoogleCloudAdapter);
+  });
+
+  it('should create MockAdapter when configured', () => {
+    const service = SpeechToTextFactory.create({ provider: 'mock' });
+    expect(service).toBeInstanceOf(MockAdapter);
+  });
+
+  it('should create service with fallback support', () => {
+    const service = SpeechToTextFactory.createWithFallback({
+      provider: 'google',
+      fallbackProvider: 'mock',
+      enableFallback: true
+    });
+    expect(service).toBeDefined();
+  });
+});
+
+describe('MockAdapter', () => {
+  let mockService: MockAdapter;
+  let mockAudioStream: AudioStream;
+
+  beforeEach(() => {
+    mockService = new MockAdapter();
+    mockAudioStream = {
+      data: new ArrayBuffer(1024),
+      sampleRate: 16000,
+      channels: 1,
+      format: AudioFormat.WAV,
+      timestamp: new Date(),
+    };
+  });
+
+  it('should always be ready', () => {
+    expect(mockService.isReady()).toBe(true);
+  });
+
+  it('should return mock transcription', async () => {
+    const result = await mockService.transcribe(mockAudioStream);
+    expect(result.text).toBeDefined();
+    expect(result.confidence).toBe(0.95);
+    expect(result.segments).toHaveLength(1);
+  });
+
+  it('should support custom mock responses', () => {
+    mockService.addMockResponse('Custom test response');
+    expect(mockService).toBeDefined();
   });
 });

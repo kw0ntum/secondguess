@@ -1034,11 +1034,25 @@
                             const result = await response.json();
                             
                             if (result.success && result.data.text) {
+<<<<<<< Updated upstream
                                 // Display transcribed text
                                 addMessageToConversation('user', result.data.text);
                                 
                                 // Send transcribed text to conversation
                                 await sendMessage(result.data.text);
+=======
+                                // Populate the text input field with transcribed text
+                                const messageInput = document.getElementById('messageInput');
+                                messageInput.value = result.data.text;
+                                
+                                // Focus the input field so user can review/edit
+                                messageInput.focus();
+                                
+                                // Show success message
+                                addMessageToConversation('assistant', 
+                                    '✅ Voice transcribed! Review the text below and click Send when ready.'
+                                );
+>>>>>>> Stashed changes
                             } else {
                                 throw new Error('No text transcribed from audio');
                             }

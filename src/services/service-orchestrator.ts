@@ -5,7 +5,8 @@ import { errorRecovery } from '../utils/error-recovery';
 
 // Import service interfaces and implementations
 import { VoiceUserInterfaceService } from './voice-user-interface-service';
-import { SpeechToTextServiceImpl as SpeechToTextService } from './speech-to-text-service';
+import { SpeechToTextFactory } from './speech-to-text-factory';
+import { SpeechToTextService } from '@/interfaces';
 import { ConversationManagerService } from './conversation-manager-service';
 import { SOPGeneratorService } from './sop-generator-service';
 import { VisualGeneratorService } from './visual-generator-service';
@@ -97,7 +98,7 @@ export class ServiceOrchestratorImpl implements ServiceOrchestrator {
     // Initialize all services
     this.services = {
       voiceUI: new VoiceUserInterfaceService(),
-      speechToText: new SpeechToTextService(),
+      speechToText: SpeechToTextFactory.createWithFallback(), // Use factory for modular provider support
       conversationManager: new ConversationManagerService(),
       sopGenerator: new SOPGeneratorService(),
       visualGenerator: new VisualGeneratorService(),

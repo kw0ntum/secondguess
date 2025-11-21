@@ -14,7 +14,11 @@ import sopRoutes from './routes/sop';
 import monitoringRoutes from './routes/monitoring';
 import dashboardRoutes from './routes/dashboard';
 import summarizationRoutes from './routes/summarization';
+<<<<<<< Updated upstream
 import apiLogsRoutes from './routes/api-logs';
+=======
+import speechRoutes from './routes/speech';
+>>>>>>> Stashed changes
 
 // Import middleware
 import { errorHandler, notFoundHandler } from './middleware/error-handler';
@@ -132,10 +136,17 @@ export function createApp(): Application {
     routeSpecificMonitoring('summarization'),
     summarizationRoutes
   );
+<<<<<<< Updated upstream
   app.use('/api/logs', 
     rateLimit(rateLimitConfigs.general), 
     routeSpecificMonitoring('logs'),
     apiLogsRoutes
+=======
+  app.use('/api/speech',
+    rateLimit(rateLimitConfigs.general),
+    routeSpecificMonitoring('speech'),
+    speechRoutes
+>>>>>>> Stashed changes
   );
 
   // 404 handler for unmatched routes
