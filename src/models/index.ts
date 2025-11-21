@@ -6,6 +6,7 @@ export * from './validation-models';
 export * from './sop-models';
 export * from './chart-models';
 export * from './api-log-models';
+export * from './memory-models';
 
 // Feedback models - export specific items to avoid conflicts
 export {

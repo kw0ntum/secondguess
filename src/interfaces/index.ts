@@ -6,3 +6,4 @@ export * from './sop-generator';
 export * from './visual-generator';
 export * from './document-exporter';
 export * from './text-to-speech-service';
+export * from './memory-service';

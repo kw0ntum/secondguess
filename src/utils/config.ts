@@ -9,6 +9,7 @@ export interface AppConfig {
   ai: AIConfig;
   export: ExportConfig;
   logging: LoggingConfig;
+  memory: MemoryConfig;
 }
 
 export interface ServerConfig {
@@ -108,6 +109,15 @@ export interface ConsoleLoggingConfig {
   colorize: boolean;
 }
 
+export interface MemoryConfig {
+  enabled: boolean;
+  apiKey: string;
+  endpoint?: string;
+  timeout: number;
+  retryAttempts: number;
+  retryDelay: number;
+}
+
 /**
  * Default configuration values
  */
@@ -186,6 +196,14 @@ export const defaultConfig: AppConfig = {
       enabled: process.env.CONSOLE_LOGGING !== 'false',
       colorize: process.env.LOG_COLORIZE !== 'false'
     }
+  },
+  memory: {
+    enabled: process.env.MEM0_ENABLED === 'true',
+    apiKey: process.env.MEM0_API_KEY || '',
+    ...(process.env.MEM0_ENDPOINT && { endpoint: process.env.MEM0_ENDPOINT }),
+    timeout: parseInt(process.env.MEM0_TIMEOUT || '5000'),
+    retryAttempts: parseInt(process.env.MEM0_RETRY_ATTEMPTS || '3'),
+    retryDelay: parseInt(process.env.MEM0_RETRY_DELAY || '1000')
   }
 };
 
