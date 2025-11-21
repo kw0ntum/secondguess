@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Voice SOP Agent</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <style>
         * {
             margin: 0;
@@ -179,6 +180,32 @@
         .message-text {
             color: #1a1a1a;
             word-wrap: break-word;
+        }
+
+        .message-hash {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .message-hash-label {
+            font-weight: 500;
+        }
+
+        .message-hash-value {
+            background: #f3f4f6;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            user-select: all;
+            cursor: pointer;
+        }
+
+        .message-hash-value:hover {
+            background: #e5e7eb;
         }
 
         /* AI Response Blocks */
@@ -687,7 +714,11 @@
             const messageInput = document.getElementById('message-input');
             messageInput.addEventListener('input', (e) => {
                 const hasText = e.target.value.trim().length > 0;
-                document.getElementById('send-button').disabled = !hasText || isProcessing;
+                const sendButton = document.getElementById('send-button');
+                const shouldEnable = hasText && !isProcessing;
+                sendButton.disabled = !shouldEnable;
+                
+                console.log('Input changed:', { hasText, isProcessing, disabled: sendButton.disabled });
                 
                 // Auto-resize textarea
                 e.target.style.height = 'auto';
@@ -885,7 +916,7 @@
                     // Hide typing indicator
                     document.getElementById('typing-indicator').classList.remove('visible');
                     
-                    // Add assistant response with metadata
+                    // Add assistant response with metadata (includes messageHash)
                     addMessage('assistant', data.message, data.metadata);
                     
                     // Update conversation history
@@ -940,6 +971,26 @@
             if (role === 'assistant' && metadata) {
                 // Format AI response with structured blocks
                 textDiv.appendChild(formatAIResponse(content, metadata));
+                
+                // Add message hash if available
+                if (metadata.messageHash) {
+                    const hashDiv = document.createElement('div');
+                    hashDiv.className = 'message-hash';
+                    
+                    const hashLabel = document.createElement('span');
+                    hashLabel.className = 'message-hash-label';
+                    hashLabel.textContent = 'ID:';
+                    
+                    const hashValue = document.createElement('span');
+                    hashValue.className = 'message-hash-value';
+                    hashValue.textContent = metadata.messageHash;
+                    hashValue.title = 'Click to copy message ID';
+                    hashValue.onclick = () => copyMessageHash(metadata.messageHash);
+                    
+                    hashDiv.appendChild(hashLabel);
+                    hashDiv.appendChild(hashValue);
+                    contentDiv.appendChild(hashDiv);
+                }
             } else {
                 textDiv.textContent = content;
             }
@@ -952,6 +1003,27 @@
             
             // Enhanced smooth scroll with multiple attempts to ensure visibility
             smoothScrollToElement(messageDiv);
+        }
+
+        // Copy message hash to clipboard
+        function copyMessageHash(hash) {
+            navigator.clipboard.writeText(hash).then(() => {
+                // Show brief feedback
+                const hashElements = document.querySelectorAll('.message-hash-value');
+                hashElements.forEach(el => {
+                    if (el.textContent === hash) {
+                        const originalText = el.textContent;
+                        el.textContent = 'Copied!';
+                        el.style.background = '#d1fae5';
+                        setTimeout(() => {
+                            el.textContent = originalText;
+                            el.style.background = '';
+                        }, 1000);
+                    }
+                });
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
         }
 
         // Enhanced smooth scroll function
@@ -1114,62 +1186,14 @@
             
             const generateBtn = document.getElementById('generate-btn');
             generateBtn.disabled = true;
-            generateBtn.textContent = '⏳ Generating...';
+            generateBtn.textContent = '⏳ Generating SOP...';
             
             try {
-                // First finalize the workflow
-                const finalizeResponse = await fetch(`${API_BASE}/conversations/${currentSessionId}/finalize`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-                
-                if (!finalizeResponse.ok) {
-                    throw new Error('Failed to finalize workflow');
-                }
-                
-                const workflowDefinition = await finalizeResponse.json();
-                
-                // Then generate SOP
-                const sopResponse = await fetch(`${API_BASE}/sops`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        workflowDefinition: workflowDefinition,
-                        sopType: 'process_improvement'
-                    })
-                });
-                
-                if (sopResponse.ok) {
-                    const sopDocument = await sopResponse.json();
-                    
-                    // Display SOP
-                    const sopContent = document.getElementById('sop-content');
-                    let sopText = `${sopDocument.title}\n\n`;
-                    sopDocument.sections.forEach(section => {
-                        sopText += `${section.title}\n${section.content}\n\n`;
-                    });
-                    sopContent.textContent = sopText;
-                    
-                    const sopSection = document.getElementById('sop-section');
-                    sopSection.classList.add('visible');
-                    
-                    // Smooth scroll to SOP with delay to ensure rendering
-                    setTimeout(() => {
-                        sopSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }, 300);
-                } else {
-                    throw new Error('Failed to generate SOP');
-                }
+                // Redirect to SOP view page with session ID
+                window.location.href = `/sop-view.html?sessionId=${currentSessionId}`;
             } catch (error) {
                 console.error('SOP generation error:', error);
                 showError('Failed to generate SOP. Please try again.');
-            } finally {
                 generateBtn.disabled = false;
                 generateBtn.textContent = '📋 Generate SOP';
             }

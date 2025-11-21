@@ -5,6 +5,7 @@ import { authenticateUser } from '../middleware/auth';
 import { logger } from '../../utils/logger';
 import { ConversationInputRequest, ConversationResponse, ApiError } from '../types/api-types';
 import { UserInputType } from '../../models/enums';
+import { generateResponseHash } from '../../utils/hash-generator';
 
 const router = Router();
 
@@ -36,6 +37,13 @@ router.post('/:sessionId/input', authenticateUser, validateRequest('conversation
     const summaryHistory = await conversationManager.getSummaryHistory(sessionId);
     const latestSummary = summaryHistory.length > 0 ? summaryHistory[summaryHistory.length - 1] : null;
     
+    // Generate message hash FIRST for consistent tracking
+    const messageHash = generateResponseHash({
+      message: conversationResponse.message,
+      sessionId,
+      timestamp: new Date().toISOString()
+    });
+    
     const response: ConversationResponse = {
       message: conversationResponse.message,
       requiresConfirmation: conversationResponse.requiresConfirmation,
@@ -45,11 +53,15 @@ router.post('/:sessionId/input', authenticateUser, validateRequest('conversation
       timestamp: new Date().toISOString(),
       metadata: {
         ...conversationResponse.metadata,
-        summary: latestSummary
+        summary: latestSummary,
+        messageHash // Include hash in metadata
       }
     };
     
-    logger.info('Conversation input processed successfully', { sessionId, inputType: type });
+    // Attach hash to request for API logger middleware to use
+    (req as any).messageHash = messageHash;
+    
+    logger.info('Conversation input processed successfully', { sessionId, inputType: type, messageHash });
     res.json(response);
     
   } catch (error) {

@@ -171,14 +171,14 @@ export const rateLimitConfigs = {
   // Rate limit for conversation input (more lenient for real-time interaction)
   conversation: {
     windowMs: 1 * 60 * 1000, // 1 minute
-    maxRequests: 30,
+    maxRequests: 100, // Increased from 30 to 100
     message: 'Too many conversation requests, please slow down'
   },
 
   // Rate limit for SOP generation (resource intensive)
   sopGeneration: {
     windowMs: 5 * 60 * 1000, // 5 minutes
-    maxRequests: 10,
+    maxRequests: 50, // Increased for testing
     message: 'Too many SOP generation requests, please wait before generating more SOPs'
   },
 

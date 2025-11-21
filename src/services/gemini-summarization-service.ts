@@ -28,7 +28,7 @@ export class GeminiSummarizationService {
 
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({ 
-      model: process.env.GEMINI_MODEL || 'gemini-2.5-pro' 
+      model: process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite' 
     });
 
     logger.info('Gemini Summarization Service initialized');

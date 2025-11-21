@@ -4,6 +4,7 @@ import { validateRequest } from '../middleware/validation';
 import { authenticateUser } from '../middleware/auth';
 import { logger } from '../../utils/logger';
 import { SOPGenerationRequest, SOPUpdateRequest, SOPExportRequest, ApiError } from '../types/api-types';
+import { SOPDocumentGenerator } from '../../services/sop-document-generator';
 
 const router = Router();
 
@@ -11,15 +12,41 @@ const router = Router();
  * POST /api/sops
  * Generate a new SOP from workflow definition
  */
-router.post('/', authenticateUser, validateRequest('sopGeneration'), async (req: Request, res: Response) => {
+router.post('/', authenticateUser, async (req: Request, res: Response) => {
   try {
     const { workflowDefinition, sopType } = req.body as SOPGenerationRequest;
     
-    const sopGenerator = ServiceContainer.getSOPGenerator();
-    const sopDocument = await sopGenerator.generateSOP(workflowDefinition, sopType);
+    if (!workflowDefinition) {
+      logger.error('No workflow definition provided');
+      const apiError: ApiError = {
+        code: 'INVALID_REQUEST',
+        message: 'Workflow definition is required',
+        details: 'Missing workflowDefinition in request body'
+      };
+      res.status(400).json({ error: apiError });
+      return;
+    }
     
-    logger.info('SOP generated successfully', { sopId: sopDocument.id, type: sopType });
-    res.status(201).json(sopDocument);
+    logger.info('Starting SOP generation', { 
+      title: workflowDefinition?.title,
+      sopType,
+      stepsCount: workflowDefinition?.steps?.length,
+      inputsCount: workflowDefinition?.inputs?.length,
+      outputsCount: workflowDefinition?.outputs?.length,
+      workflowKeys: Object.keys(workflowDefinition)
+    });
+    
+    // Use new comprehensive SOP generator
+    const documentGenerator = new SOPDocumentGenerator();
+    const completeDocument = await documentGenerator.generateCompleteDocument(workflowDefinition);
+    
+    logger.info('Complete SOP document generated successfully', { 
+      documentNumber: completeDocument.metadata.documentNumber,
+      chartCount: completeDocument.charts.length,
+      sectionCount: completeDocument.sections.length
+    });
+    
+    res.status(201).json(completeDocument);
     
   } catch (error) {
     logger.error('Failed to generate SOP:', error);

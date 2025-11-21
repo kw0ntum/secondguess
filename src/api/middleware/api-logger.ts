@@ -7,6 +7,7 @@ import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { apiLoggerService } from '../../services/api-logger-service';
 import { ApiLogEntry, NetworkMetrics } from '../../models/api-log-models';
+import { generateResponseHash } from '../../utils/hash-generator';
 
 interface RequestWithTiming extends Request {
   startTime?: number;
@@ -78,6 +79,9 @@ export function apiLoggerMiddleware(req: RequestWithTiming, res: Response, next:
     const userId = (req as any).user?.id || (req as any).userId;
     const sessionId = req.params.sessionId || (req as any).sessionId;
 
+    // Use message hash from request if available (set by route), otherwise generate new one
+    const messageHash = (req as any).messageHash || generateResponseHash(responseBody);
+    
     // Create log entry
     const errorMessage = res.statusCode >= 400 ? extractError(responseBody) : undefined;
     const logEntry: ApiLogEntry = {
@@ -94,6 +98,7 @@ export function apiLoggerMiddleware(req: RequestWithTiming, res: Response, next:
       sessionId,
       duration,
       networkMetrics,
+      messageHash,
       ...(errorMessage && { error: errorMessage })
     };
 
