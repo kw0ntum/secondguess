@@ -18,6 +18,7 @@ export interface ApiLogEntry {
   duration: number; // milliseconds
   networkMetrics: NetworkMetrics;
   error?: string;
+  messageHash?: string; // 15-character hash for message identification
 }
 
 export interface NetworkMetrics {
@@ -40,6 +41,7 @@ export interface ApiLogFilter {
   userId?: string;
   sessionId?: string;
   hasError?: boolean;
+  messageHash?: string;
 }
 
 export interface ApiLogStats {
