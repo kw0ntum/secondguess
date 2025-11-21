@@ -166,4 +166,86 @@ describe('MemoryService', () => {
       expect(['active', 'degraded', 'disabled']).toContain(status.mode);
     });
   });
+
+  describe('retrieveMemory', () => {
+    it('should return an empty array when service is not available', async () => {
+      const query = {
+        sessionId: 'test-session-123'
+      };
+
+      const result = await memoryService.retrieveMemory(query);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(0);
+    });
+
+    it('should return an empty array for invalid query', async () => {
+      const invalidQuery = {
+        sessionId: 'test-session-123',
+        limit: -1 // Invalid limit
+      };
+
+      const result = await memoryService.retrieveMemory(invalidQuery);
+      
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(0);
+    });
+
+    it('should handle query with all filter parameters', async () => {
+      const query = {
+        sessionId: 'test-session-123',
+        userId: 'user-456',
+        workflowType: 'workflow_summarization',
+        step: 'test_step',
+        limit: 10,
+        offset: 0,
+        startDate: new Date('2024-01-01'),
+        endDate: new Date('2024-12-31')
+      };
+
+      const result = await memoryService.retrieveMemory(query);
+      
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should handle query with minimal parameters', async () => {
+      const query = {
+        sessionId: 'test-session-123'
+      };
+
+      const result = await memoryService.retrieveMemory(query);
+      
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should not throw on retrieval errors', async () => {
+      const query = {
+        sessionId: 'test-session-123',
+        limit: 5
+      };
+
+      // Should not throw even if Mem0 is not configured
+      await expect(memoryService.retrieveMemory(query)).resolves.not.toThrow();
+    });
+
+    it('should handle empty query object', async () => {
+      const query = {};
+
+      const result = await memoryService.retrieveMemory(query);
+      
+      expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should handle query with date range', async () => {
+      const query = {
+        sessionId: 'test-session-123',
+        startDate: new Date('2024-01-01'),
+        endDate: new Date('2024-12-31')
+      };
+
+      const result = await memoryService.retrieveMemory(query);
+      
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
 });

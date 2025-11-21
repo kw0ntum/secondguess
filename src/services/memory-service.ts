@@ -244,9 +244,232 @@ export class MemoryServiceImpl implements MemoryService {
    * Returns empty array on failure
    */
   async retrieveMemory(query: MemoryQuery): Promise<MemoryEntry[]> {
-    // Implementation will be added in task 5
-    this.logger.debug('retrieveMemory called', { query });
-    return [];
+    try {
+      // Log the operation
+      this.logger.info('retrieveMemory called', {
+        sessionId: query.sessionId,
+        userId: query.userId,
+        workflowType: query.workflowType,
+        step: query.step,
+        limit: query.limit,
+        offset: query.offset,
+        hasStartDate: !!query.startDate,
+        hasEndDate: !!query.endDate
+      });
+
+      // Check if service is enabled and should attempt operation
+      if (!this.shouldAttemptOperation()) {
+        this.logger.debug('Skipping memory retrieval - service not available', {
+          enabled: this.isEnabled,
+          healthy: this.isHealthy,
+          failureCount: this.failureCount
+        });
+        return [];
+      }
+
+      // Validate query parameters
+      const { validateMemoryQuery } = require('@/models/memory-models');
+      if (!validateMemoryQuery(query)) {
+        this.logger.error('Invalid memory query - validation failed', {
+          query,
+          type: 'validation_error'
+        });
+        return [];
+      }
+
+      // Build Mem0 query parameters
+      const mem0Query: any = {};
+
+      // Set user_id for filtering (use sessionId if userId not provided)
+      if (query.userId) {
+        mem0Query.user_id = query.userId;
+      } else if (query.sessionId) {
+        mem0Query.user_id = query.sessionId;
+      }
+
+      // Set limit (default to 10 if not specified)
+      mem0Query.limit = query.limit || 10;
+
+      // Retrieve memories from Mem0 with timeout
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Retrieval operation timeout')), this.config.timeout);
+      });
+
+      const retrievePromise = this.mem0Client.getAll(mem0Query);
+
+      const mem0Results = await Promise.race([retrievePromise, timeoutPromise]);
+
+      // Parse and filter results
+      let entries: MemoryEntry[] = [];
+
+      if (mem0Results && Array.isArray(mem0Results)) {
+        entries = mem0Results
+          .map((mem0Entry: any) => this.parseMemoryEntry(mem0Entry))
+          .filter((entry: MemoryEntry | null) => entry !== null)
+          .filter((entry: MemoryEntry) => this.applyFilters(entry, query)) as MemoryEntry[];
+      }
+
+      // Sort by timestamp in chronological order (most recent first)
+      entries.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+      // Apply offset if specified
+      if (query.offset && query.offset > 0) {
+        entries = entries.slice(query.offset);
+      }
+
+      // Apply limit again after filtering (in case Mem0 returned more than expected)
+      if (query.limit && entries.length > query.limit) {
+        entries = entries.slice(0, query.limit);
+      }
+
+      // Record success
+      this.recordSuccess();
+
+      // Log successful retrieval
+      this.logger.info('Memory retrieved successfully', {
+        sessionId: query.sessionId,
+        userId: query.userId,
+        resultCount: entries.length,
+        type: 'memory_operation'
+      });
+
+      return entries;
+
+    } catch (error: any) {
+      // Error isolation - return empty array on failure
+      this.recordFailure();
+
+      this.logger.error('Memory retrieval failed', {
+        query,
+        error: error.message,
+        stack: error.stack,
+        type: 'memory_error'
+      });
+
+      // Return empty array instead of throwing
+      return [];
+    }
+  }
+
+  /**
+   * Parse a Mem0 entry into a MemoryEntry
+   * Returns null if parsing fails
+   */
+  private parseMemoryEntry(mem0Entry: any): MemoryEntry | null {
+    try {
+      // Mem0 entries have an id and memory field
+      if (!mem0Entry || !mem0Entry.id) {
+        return null;
+      }
+
+      // Extract metadata
+      const metadata = mem0Entry.metadata || {};
+      
+      // Try to parse the memory content
+      // The memory field might contain the stored data
+      let step = metadata.step || 'unknown';
+      let sessionId = metadata.sessionId || '';
+      let workflowType = metadata.workflowType;
+      let timestamp = metadata.timestamp ? new Date(metadata.timestamp) : new Date();
+      let input: Record<string, any> = {};
+      let output: Record<string, any> = {};
+      let userId: string | undefined;
+
+      // Try to extract data from messages if available
+      if (mem0Entry.messages && Array.isArray(mem0Entry.messages)) {
+        for (const message of mem0Entry.messages) {
+          if (message.role === 'user' && message.content) {
+            try {
+              const userData = JSON.parse(message.content);
+              step = userData.step || step;
+              input = userData.input || input;
+              sessionId = userData.sessionId || sessionId;
+              userId = userData.userId;
+              workflowType = userData.workflowType || workflowType;
+              if (userData.timestamp) {
+                timestamp = new Date(userData.timestamp);
+              }
+            } catch (e) {
+              // If parsing fails, use the content as-is
+              input = { content: message.content };
+            }
+          } else if (message.role === 'assistant' && message.content) {
+            try {
+              output = JSON.parse(message.content);
+            } catch (e) {
+              // If parsing fails, use the content as-is
+              output = { content: message.content };
+            }
+          }
+        }
+      }
+
+      // Construct MemoryEntry
+      const entry: MemoryEntry = {
+        id: mem0Entry.id,
+        step,
+        input,
+        output,
+        sessionId,
+        timestamp,
+        mem0Metadata: mem0Entry.metadata
+      };
+
+      // Add optional fields only if they exist
+      if (userId !== undefined) {
+        entry.userId = userId;
+      }
+      
+      if (workflowType !== undefined) {
+        entry.workflowType = workflowType;
+      }
+
+      return entry;
+
+    } catch (error: any) {
+      this.logger.warn('Failed to parse memory entry', {
+        entryId: mem0Entry?.id,
+        error: error.message
+      });
+      return null;
+    }
+  }
+
+  /**
+   * Apply query filters to a memory entry
+   * Returns true if the entry matches all filters
+   */
+  private applyFilters(entry: MemoryEntry, query: MemoryQuery): boolean {
+    // Filter by sessionId
+    if (query.sessionId && entry.sessionId !== query.sessionId) {
+      return false;
+    }
+
+    // Filter by userId
+    if (query.userId && entry.userId !== query.userId) {
+      return false;
+    }
+
+    // Filter by workflowType
+    if (query.workflowType && entry.workflowType !== query.workflowType) {
+      return false;
+    }
+
+    // Filter by step
+    if (query.step && entry.step !== query.step) {
+      return false;
+    }
+
+    // Filter by date range
+    if (query.startDate && entry.timestamp < query.startDate) {
+      return false;
+    }
+
+    if (query.endDate && entry.timestamp > query.endDate) {
+      return false;
+    }
+
+    return true;
   }
 
   /**
