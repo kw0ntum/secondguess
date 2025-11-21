@@ -7,20 +7,12 @@ const router = Router();
  * Serve monitoring dashboard HTML
  */
 router.get('/', (req: Request, res: Response) => {
-<<<<<<< Updated upstream
-  // Serve the static dashboard.html file
-  res.sendFile('dashboard.html', { root: 'public' });
+  res.sendFile('dashboard.html', { root: path.join(process.cwd(), 'public') });
 });
 
 /**
  * Legacy inline dashboard (kept for reference)
  */
-=======
-  res.sendFile('dashboard.html', { root: path.join(process.cwd(), 'public') });
-});
-
-// Legacy inline dashboard (keeping for reference, but not used)
->>>>>>> Stashed changes
 router.get('/legacy', (req: Request, res: Response) => {
   const dashboardHTML = `
 <!DOCTYPE html>
