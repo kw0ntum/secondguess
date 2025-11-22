@@ -423,6 +423,109 @@
             to { transform: rotate(360deg); }
         }
 
+        /* Voice Recording Button */
+        .voice-recording-container {
+            position: fixed;
+            bottom: 30px;
+            left: calc(50% - 520px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        @media (max-width: 1100px) {
+            .voice-recording-container {
+                left: 20px;
+            }
+        }
+
+        .voice-recording-container.hidden {
+            display: none;
+        }
+
+        .mic-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .mic-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Sound Waves */
+        .sound-waves {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            height: 40px;
+        }
+
+        .sound-waves.active {
+            display: flex;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: #667eea;
+            border-radius: 3px;
+            animation: wave 0.8s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+        .wave-bar:nth-child(2) { height: 15px; animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { height: 25px; animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { height: 20px; animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { height: 30px; animation-delay: 0.4s; }
+        .wave-bar:nth-child(6) { height: 20px; animation-delay: 0.5s; }
+        .wave-bar:nth-child(7) { height: 25px; animation-delay: 0.6s; }
+        .wave-bar:nth-child(8) { height: 15px; animation-delay: 0.7s; }
+        .wave-bar:nth-child(9) { height: 10px; animation-delay: 0.8s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+
+        /* Stop Button */
+        .stop-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #ef4444;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .stop-button.active {
+            display: flex;
+        }
+
+        .stop-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
 
         /* Action Buttons */
         .action-buttons {
@@ -677,6 +780,32 @@
         </div>
     </div>
 
+    <!-- Voice Recording UI -->
+    <div class="voice-recording-container" id="voice-container">
+        <!-- Mic Button -->
+        <button class="mic-button" id="mic-button" onclick="toggleVoiceRecording()" title="Voice Input">
+            🎤
+        </button>
+        
+        <!-- Sound Waves (shown when recording) -->
+        <div class="sound-waves" id="sound-waves">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+        
+        <!-- Stop Button (shown when recording) -->
+        <button class="stop-button" id="stop-button" onclick="stopVoiceRecording()" title="Stop Recording">
+            ⏹
+        </button>
+    </div>
+
     <!-- Input Container (Fixed at bottom) -->
     <div class="input-container">
         <div class="input-wrapper">
@@ -700,6 +829,15 @@
         let conversationHistory = [];
         let authToken = null;
         let isProcessing = false;
+
+        // Voice recording state
+        let isRecording = false;
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let stream = null;
+        let audioContext = null;
+        let analyser = null;
+        let animationFrame = null;
 
         const API_BASE = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api' 
@@ -1289,6 +1427,146 @@
                 errorDiv.remove();
             }, 5000);
         }
+
+        // Voice Recording Functions
+        async function toggleVoiceRecording() {
+            if (isRecording) {
+                stopVoiceRecording();
+            } else {
+                startVoiceRecording();
+            }
+        }
+
+        async function startVoiceRecording() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showError('Voice input not supported in your browser');
+                    return;
+                }
+
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+                // Setup audio context for visualization
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                analyser.fftSize = 256;
+
+                // Setup media recorder
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    
+                    // Stop visualization
+                    if (animationFrame) {
+                        cancelAnimationFrame(animationFrame);
+                    }
+                    if (audioContext) {
+                        audioContext.close();
+                    }
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+
+                    // Hide recording UI
+                    document.getElementById('sound-waves').classList.remove('active');
+                    document.getElementById('stop-button').classList.remove('active');
+
+                    // Process transcription
+                    try {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(audioBlob);
+                        
+                        reader.onloadend = async () => {
+                            const base64Audio = reader.result.split(',')[1];
+                            
+                            const response = await fetch(`${API_BASE}/speech/transcribe`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${authToken}`
+                                },
+                                body: JSON.stringify({
+                                    audioData: base64Audio,
+                                    format: 'webm'
+                                })
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Transcription failed');
+                            }
+
+                            const data = await response.json();
+                            
+                            // Populate input field
+                            const messageInput = document.getElementById('message-input');
+                            if (data.transcript) {
+                                messageInput.value = data.transcript;
+                                messageInput.dispatchEvent(new Event('input'));
+                                messageInput.focus();
+                            }
+                        };
+                    } catch (error) {
+                        console.error('Transcription error:', error);
+                        showError('Speech-to-text failed. Please try again.');
+                    }
+                };
+
+                // Start recording
+                mediaRecorder.start();
+                isRecording = true;
+
+                // Show recording UI
+                document.getElementById('sound-waves').classList.add('active');
+                document.getElementById('stop-button').classList.add('active');
+
+                // Start visualization
+                visualizeAudio();
+
+            } catch (error) {
+                console.error('Voice recording error:', error);
+                showError('Failed to access microphone');
+            }
+        }
+
+        function stopVoiceRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            isRecording = false;
+        }
+
+        function visualizeAudio() {
+            if (!analyser || !isRecording) return;
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+
+            // Calculate average volume
+            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            const normalizedVolume = average / 255;
+
+            // Update wave bars based on audio level
+            const waveBars = document.querySelectorAll('.wave-bar');
+            waveBars.forEach((bar, index) => {
+                const scale = 0.5 + (normalizedVolume * 1.5);
+                bar.style.transform = `scaleY(${scale})`;
+            });
+
+            animationFrame = requestAnimationFrame(visualizeAudio);
+        }
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>
