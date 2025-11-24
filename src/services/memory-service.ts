@@ -474,24 +474,232 @@ export class MemoryServiceImpl implements MemoryService {
 
   /**
    * Clear memory for a specific session
+   * Removes all memory entries associated with the given session ID
    */
   async clearSessionMemory(sessionId: string): Promise<boolean> {
-    // Implementation will be added in task 6
-    this.logger.debug('clearSessionMemory called', { sessionId });
-    return false;
+    try {
+      // Log the operation
+      this.logger.debug('clearSessionMemory called', { sessionId });
+
+      // Validate session ID
+      if (!sessionId || typeof sessionId !== 'string' || sessionId.trim().length === 0) {
+        this.logger.error('Invalid session ID for memory clearing', {
+          sessionId,
+          type: 'validation_error'
+        });
+        return false;
+      }
+
+      // Check if service is enabled and should attempt operation
+      if (!this.shouldAttemptOperation()) {
+        this.logger.debug('Skipping memory clearing - service not available', {
+          enabled: this.isEnabled,
+          healthy: this.isHealthy,
+          failureCount: this.failureCount
+        });
+        return false;
+      }
+
+      // First, retrieve all memories for this session to get their IDs
+      const memories = await this.retrieveMemory({
+        sessionId,
+        limit: 1000 // Get a large batch to ensure we get all entries
+      });
+
+      // If no memories found, consider it a success (nothing to delete)
+      if (memories.length === 0) {
+        this.logger.info('No memories found for session - nothing to clear', {
+          sessionId,
+          type: 'memory_operation'
+        });
+        return true;
+      }
+
+      // Delete each memory entry
+      let successCount = 0;
+      let failureCount = 0;
+
+      for (const memory of memories) {
+        try {
+          // Delete using Mem0 client with timeout
+          const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Delete operation timeout')), this.config.timeout);
+          });
+
+          const deletePromise = this.mem0Client.delete(memory.id);
+
+          await Promise.race([deletePromise, timeoutPromise]);
+
+          successCount++;
+        } catch (deleteError: any) {
+          failureCount++;
+          this.logger.warn('Failed to delete individual memory entry', {
+            sessionId,
+            memoryId: memory.id,
+            error: deleteError.message
+          });
+        }
+      }
+
+      // Determine overall success
+      const allDeleted = failureCount === 0;
+
+      if (allDeleted) {
+        // Record success
+        this.recordSuccess();
+
+        this.logger.info('Session memory cleared successfully', {
+          sessionId,
+          deletedCount: successCount,
+          type: 'memory_operation'
+        });
+      } else {
+        // Partial failure
+        this.recordFailure();
+
+        this.logger.error('Session memory clearing partially failed', {
+          sessionId,
+          successCount,
+          failureCount,
+          totalCount: memories.length,
+          type: 'memory_error'
+        });
+      }
+
+      return allDeleted;
+
+    } catch (error: any) {
+      // Error isolation - return false on failure
+      this.recordFailure();
+
+      this.logger.error('Session memory clearing failed', {
+        sessionId,
+        error: error.message,
+        stack: error.stack,
+        type: 'memory_error'
+      });
+
+      return false;
+    }
   }
 
   /**
    * Get memory statistics for a session
+   * Retrieves aggregate statistics about memory entries
    */
   async getMemoryStats(sessionId: string): Promise<MemoryStats> {
-    // Implementation will be added in task 6
-    this.logger.debug('getMemoryStats called', { sessionId });
-    return {
-      totalEntries: 0,
-      entriesByStep: {},
-      averageEntriesPerSession: 0
-    };
+    try {
+      // Log the operation
+      this.logger.debug('getMemoryStats called', { sessionId });
+
+      // Validate session ID
+      if (!sessionId || typeof sessionId !== 'string' || sessionId.trim().length === 0) {
+        this.logger.error('Invalid session ID for memory stats', {
+          sessionId,
+          type: 'validation_error'
+        });
+        return {
+          totalEntries: 0,
+          entriesByStep: {},
+          averageEntriesPerSession: 0
+        };
+      }
+
+      // Check if service is enabled and should attempt operation
+      if (!this.shouldAttemptOperation()) {
+        this.logger.debug('Skipping memory stats - service not available', {
+          enabled: this.isEnabled,
+          healthy: this.isHealthy,
+          failureCount: this.failureCount
+        });
+        return {
+          totalEntries: 0,
+          entriesByStep: {},
+          averageEntriesPerSession: 0
+        };
+      }
+
+      // Retrieve all memory entries for this session
+      const memories = await this.retrieveMemory({
+        sessionId,
+        limit: 1000 // Get a large batch to calculate accurate statistics
+      });
+
+      // Calculate statistics
+      const totalEntries = memories.length;
+      const entriesByStep: Record<string, number> = {};
+      let oldestEntry: Date | undefined;
+      let newestEntry: Date | undefined;
+
+      // Process each memory entry
+      for (const memory of memories) {
+        // Count by step
+        if (memory.step) {
+          entriesByStep[memory.step] = (entriesByStep[memory.step] || 0) + 1;
+        }
+
+        // Track oldest and newest entries
+        if (!oldestEntry || memory.timestamp < oldestEntry) {
+          oldestEntry = memory.timestamp;
+        }
+
+        if (!newestEntry || memory.timestamp > newestEntry) {
+          newestEntry = memory.timestamp;
+        }
+      }
+
+      // Calculate average entries per session
+      // For a single session query, this is just the total count
+      // In a more complex implementation, this could query across multiple sessions
+      const averageEntriesPerSession = totalEntries;
+
+      // Record success
+      this.recordSuccess();
+
+      // Build stats object
+      const stats: MemoryStats = {
+        totalEntries,
+        entriesByStep,
+        averageEntriesPerSession
+      };
+
+      // Add optional fields only if they exist
+      if (oldestEntry !== undefined) {
+        stats.oldestEntry = oldestEntry;
+      }
+
+      if (newestEntry !== undefined) {
+        stats.newestEntry = newestEntry;
+      }
+
+      // Log successful stats retrieval
+      this.logger.debug('Memory stats retrieved successfully', {
+        sessionId,
+        totalEntries,
+        stepCount: Object.keys(entriesByStep).length,
+        type: 'memory_operation'
+      });
+
+      return stats;
+
+    } catch (error: any) {
+      // Error isolation - return empty stats on failure
+      this.recordFailure();
+
+      this.logger.error('Memory stats retrieval failed', {
+        sessionId,
+        error: error.message,
+        stack: error.stack,
+        type: 'memory_error'
+      });
+
+      // Return empty stats instead of throwing
+      return {
+        totalEntries: 0,
+        entriesByStep: {},
+        averageEntriesPerSession: 0
+      };
+    }
   }
 
   /**
