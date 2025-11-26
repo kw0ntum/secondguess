@@ -4,4 +4,4 @@
  */
 
 export { GoogleCloudAdapter } from './google-cloud-adapter';
-export { MockAdapter } from './mock-adapter';
+export { MockSpeechAdapter as MockAdapter } from './mock-adapter';

@@ -1,27 +1,33 @@
 /**
- * Speech Service - Factory for speech providers
+ * Speech Service - Unified interface for speech-to-text
+ * @deprecated Use SpeechToTextFactory instead for better modularity
  */
 
-import { SpeechToTextAdapter } from '@/interfaces/speech-to-text-adapter';
-import { GoogleSpeechAdapter } from './speech-providers/google-adapter';
-import { MockSpeechAdapter } from './speech-providers/mock-adapter';
-import { getConfig } from '@/utils/config';
+import { SpeechToTextService } from '@/interfaces/speech-to-text-service';
+import { SpeechToTextFactory } from './speech-to-text-factory';
+import { AudioStream, TranscriptionResult } from '@/models';
 
 export class SpeechService {
-  private adapter: SpeechToTextAdapter;
+  private service: SpeechToTextService;
 
   constructor() {
-    const config = getConfig();
-    const provider = process.env.SPEECH_PROVIDER || 'mock';
-
-    if (provider === 'google') {
-      this.adapter = new GoogleSpeechAdapter();
-    } else {
-      this.adapter = new MockSpeechAdapter();
-    }
+    // Use factory with automatic fallback
+    this.service = SpeechToTextFactory.createWithFallback();
   }
 
-  async transcribe(audioData: string, format: string) {
-    return this.adapter.transcribe(audioData, format);
+  async transcribe(audioStream: AudioStream): Promise<TranscriptionResult> {
+    return this.service.transcribe(audioStream);
+  }
+
+  setLanguage(language: string): void {
+    this.service.setLanguage(language);
+  }
+
+  getCurrentLanguage(): string {
+    return this.service.getCurrentLanguage();
+  }
+
+  isReady(): boolean {
+    return this.service.isReady();
   }
 }

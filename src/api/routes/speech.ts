@@ -15,18 +15,30 @@ const speechService = new SpeechService();
  */
 router.post('/transcribe', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { audioData, format } = req.body;
+    const { audioData, format, sampleRate, channels } = req.body;
 
     if (!audioData) {
       res.status(400).json({ error: 'Audio data is required' });
       return;
     }
 
-    const result = await speechService.transcribe(audioData, format || 'webm');
+    // Convert base64 audio data to ArrayBuffer
+    const buffer = Buffer.from(audioData, 'base64');
+    const audioStream = {
+      data: buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength),
+      sampleRate: sampleRate || 16000,
+      channels: channels || 1,
+      format: format || 'webm',
+      timestamp: new Date()
+    };
+
+    const result = await speechService.transcribe(audioStream);
 
     res.json({
-      transcript: result.transcript,
+      text: result.text,
       confidence: result.confidence,
+      segments: result.segments,
+      language: result.language
     });
   } catch (error) {
     logger.error('Speech transcription error:', error);
