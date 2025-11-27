@@ -529,8 +529,9 @@
             <div class="header-title">📋 SOP Document</div>
             <div class="header-actions">
                 <a href="/new" class="btn btn-secondary">← Back to Chat</a>
-                <button class="btn btn-secondary" onclick="exportDocument('pdf')">📄 Export PDF</button>
-                <button class="btn btn-secondary" onclick="exportDocument('docx')">📝 Export Word</button>
+                <button class="btn btn-secondary" onclick="exportDocument('pdf')" id="export-pdf-btn">📄 Export PDF</button>
+                <button class="btn btn-secondary" onclick="exportDocument('docx')" id="export-docx-btn">📝 Export Word</button>
+                <button class="btn btn-secondary" onclick="exportDocument('md')" id="export-md-btn">🤖 Export Agent.MD</button>
                 <button class="btn btn-primary" onclick="window.print()">🖨️ Print</button>
             </div>
         </div>
@@ -646,6 +647,10 @@
                 const sopDocument = await sopResponse.json();
                 console.log('SOP generated successfully:', sopDocument);
                 
+                // Store SOP data for export
+                sessionStorage.setItem('currentSOPData', JSON.stringify(sopDocument));
+                sessionStorage.setItem('currentSOPId', sessionId);
+                
                 clearInterval(progressInterval);
                 renderSOPDocument(sopDocument);
                 
@@ -656,30 +661,7 @@
             }
         }
 
-        // Export document
-        async function exportDocument(format) {
-            try {
-                const authToken = sessionStorage.getItem('authToken');
-                if (!authToken) {
-                    alert('Not authenticated');
-                    return;
-                }
 
-                // Get the document content
-                const documentElement = document.getElementById('document');
-                if (!documentElement || documentElement.style.display === 'none') {
-                    alert('No document to export');
-                    return;
-                }
-
-                // For now, show a message that export is coming soon
-                alert(`Export to ${format.toUpperCase()} will be available soon. For now, please use the Print button to save as PDF.`);
-                
-            } catch (error) {
-                console.error('Export error:', error);
-                alert('Failed to export document');
-            }
-        }
 
         function renderSOPDocument(sop) {
             const container = document.getElementById('document');
@@ -964,6 +946,88 @@ ${chart.mermaidCode}
             document.getElementById('loading').style.display = 'none';
             document.getElementById('error').style.display = 'block';
             document.getElementById('error-message').textContent = message;
+        }
+
+        // Export document function
+        async function exportDocument(format) {
+            const sopData = sessionStorage.getItem('currentSOPData');
+            
+            if (!sopData) {
+                alert('No SOP data available for export. Please generate the SOP first.');
+                return;
+            }
+            
+            const btnIds = {
+                'pdf': 'export-pdf-btn',
+                'docx': 'export-docx-btn',
+                'md': 'export-md-btn'
+            };
+            
+            const exportBtn = document.getElementById(btnIds[format]);
+            const originalText = exportBtn.textContent;
+            exportBtn.disabled = true;
+            exportBtn.textContent = `⏳ Exporting...`;
+            
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const sessionId = urlParams.get('sessionId');
+                const parsedSOPData = JSON.parse(sopData);
+                
+                const API_BASE = window.location.hostname === 'localhost' 
+                    ? 'http://localhost:3000/api' 
+                    : `${window.location.origin}/api`;
+                
+                const authToken = sessionStorage.getItem('authToken');
+                
+                const response = await fetch(`${API_BASE}/sops/${sessionId}/export`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        format: format,
+                        sopData: parsedSOPData,
+                        options: {
+                            includeMetadata: true,
+                            headerFooter: {
+                                includeHeader: true,
+                                includeFooter: true
+                            },
+                            agentFormat: format === 'md'
+                        }
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    
+                    const title = parsedSOPData.metadata?.title || parsedSOPData.title || 'SOP';
+                    const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
+                    const version = parsedSOPData.metadata?.version || parsedSOPData.version || '1.0';
+                    const extension = format === 'md' ? 'md' : format;
+                    a.download = `${cleanTitle}_v${version}.${extension}`;
+                    
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    console.log(`SOP exported successfully as ${format.toUpperCase()}`);
+                } else {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Export failed');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                alert(`Failed to export SOP as ${format.toUpperCase()}. Please try again.`);
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
+            }
         }
 
         // Load document on page load

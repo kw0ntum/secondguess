@@ -178,30 +178,109 @@ router.post('/:sopId/validate', authenticateUser, async (req: Request, res: Resp
 
 /**
  * POST /api/sops/:sopId/export
- * Export SOP in specified format
+ * Export SOP in specified format (PDF, DOCX, MD)
  */
-router.post('/:sopId/export', authenticateUser, validateRequest('sopExport'), async (req: Request, res: Response) => {
+router.post('/:sopId/export', authenticateUser, async (req: Request, res: Response) => {
   try {
     const { sopId } = req.params;
-    const { format, options } = req.body as SOPExportRequest;
+    const { format, options, sopData } = req.body;
+    
+    if (!sopData) {
+      const apiError: ApiError = {
+        code: 'INVALID_REQUEST',
+        message: 'SOP data is required for export',
+        details: 'Missing sopData in request body'
+      };
+      res.status(400).json({ error: apiError });
+      return;
+    }
     
     const documentExporter = ServiceContainer.getDocumentExporter();
     
-    // TODO: Get SOP document and export it
-    // const sopGenerator = new SOPGeneratorService();
-    // const sopDocument = await sopGenerator.getSOP(sopId);
-    // const exportResult = await documentExporter.exportDocument(sopDocument, format, options);
+    logger.info('Starting SOP export', { sopId, format });
     
-    // For now, return a placeholder export result
-    const exportResult = {
-      downloadUrl: `/api/downloads/${sopId}.${format}`,
-      format,
-      size: 1024,
-      generatedAt: new Date().toISOString()
+    // Convert CompleteSOPDocument to SOPDocument format
+    const sopDocument: any = {
+      id: sopId,
+      title: sopData.metadata?.title || sopData.coverPage?.title || 'SOP Document',
+      type: 'process_improvement',
+      sections: sopData.sections || [],
+      charts: sopData.charts || [],
+      metadata: {
+        author: 'AI Voice SOP Agent',
+        department: 'Operations',
+        effectiveDate: new Date(sopData.metadata?.effectiveDate || Date.now()),
+        reviewDate: new Date(),
+        version: sopData.metadata?.version || '1.0',
+        status: 'active',
+        tags: [],
+        category: 'Process',
+        audience: [],
+        purpose: 'Standard Operating Procedure',
+        scope: 'Process documentation',
+        references: []
+      },
+      version: sopData.metadata?.version || '1.0',
+      createdAt: new Date(sopData.metadata?.generatedAt || Date.now()),
+      updatedAt: new Date()
     };
     
-    logger.info('SOP export completed', { sopId, format });
-    res.json(exportResult);
+    // Export the document
+    const exportResult = await documentExporter.exportDocument(sopDocument, format, options);
+    
+    if (!exportResult.success) {
+      throw new Error(exportResult.error || 'Export failed');
+    }
+    
+    // Read the file and send it
+    const fs = require('fs');
+    const filePath = exportResult.filePath!;
+    const fileBuffer = fs.readFileSync(filePath);
+    
+    // Set appropriate headers
+    const mimeTypes: Record<string, string> = {
+      pdf: 'application/pdf',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      markdown: 'text/markdown',
+      md: 'text/markdown'
+    };
+    
+    const extensions: Record<string, string> = {
+      pdf: 'pdf',
+      docx: 'docx',
+      markdown: 'md',
+      md: 'md'
+    };
+    
+    const mimeType = mimeTypes[format] || 'application/octet-stream';
+    const extension = extensions[format] || format;
+    
+    // Get title from metadata or fallback and truncate to prevent filename too long errors
+    const title = sopData.metadata?.title || sopData.title || 'SOP_Document';
+    const version = sopData.metadata?.version || sopData.version || '1.0';
+    const sanitizedTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
+    const maxTitleLength = 100;
+    const truncatedTitle = sanitizedTitle.length > maxTitleLength 
+      ? sanitizedTitle.substring(0, maxTitleLength) 
+      : sanitizedTitle;
+    const filename = `${truncatedTitle}_v${version}.${extension}`;
+    
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', fileBuffer.length);
+    
+    res.send(fileBuffer);
+    
+    // Clean up the file after sending
+    setTimeout(() => {
+      try {
+        fs.unlinkSync(filePath);
+      } catch (err) {
+        logger.warn('Failed to delete temporary export file', { filePath, error: err });
+      }
+    }, 1000);
+    
+    logger.info('SOP export completed successfully', { sopId, format, fileSize: exportResult.fileSize });
     
   } catch (error) {
     logger.error('Failed to export SOP:', error);

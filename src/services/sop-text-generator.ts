@@ -121,25 +121,25 @@ Create a complete SOP document following ISO 9001 structure with these sections:
 
 ### PROCEDURE
    CRITICAL FORMATTING REQUIREMENTS:
-   - Main steps MUST use format: "1. Step Title - Brief description"
-   - Number, title, dash, and description MUST be on ONE LINE
-   - Related sub-steps MUST use sub-numbering: 1.1, 1.2, 1.3 (NOT separate numbers)
-   - Sub-steps should be additional details or warnings related to the main step
-   - Each sub-step on its own line with proper numbering
+   - Main steps MUST use format: "1. Step Title - Brief description" (ALL on ONE LINE)
+   - Number, title, dash, and description MUST be on ONE LINE (no line breaks)
+   - Related sub-steps MUST use indented sub-numbering: "   1.1", "   1.2", "   1.3" with 3 spaces indent
+   - Sub-steps are additional details, warnings, or notes for the main step
+   - Each sub-step on its own line with proper indentation and numbering
    
-   EXACT FORMAT TO FOLLOW:
+   EXACT FORMAT TO FOLLOW (copy this exactly):
    
-   1. Prepare Materials - Gather all required materials and tools
+1. Prepare Materials - Gather all required materials and tools
    1.1 Check material quality and expiration dates
    1.2 Verify quantities match requirements
    1.3 Organize materials in work area
-   
-   2. Execute Process - Follow the documented procedure
+
+2. Execute Process - Follow the documented procedure
    2.1 Monitor progress at each checkpoint
    2.2 Record observations and measurements
    2.3 Address any deviations immediately
-   
-   3. Complete Documentation - Record all results and observations
+
+3. Complete Documentation - Record all results and observations
    3.1 Fill out required forms
    3.2 Sign and date all documents
    3.3 File records in appropriate location
@@ -157,10 +157,24 @@ Create a complete SOP document following ISO 9001 structure with these sections:
    - Storage requirements
 
 ### QUALITY CONTROL
-   - Quality standards
-   - Inspection points
-   - Acceptance criteria
-   - Non-conformance handling
+   CRITICAL FORMATTING FOR QUALITY CONTROL:
+   - Main quality items use bullet points (-)
+   - Sub-items MUST be indented with 3 spaces and use different bullet (•)
+   
+   EXACT FORMAT TO FOLLOW:
+   
+- Quality standards and specifications
+   • Detailed specification 1
+   • Detailed specification 2
+- Inspection points and checkpoints
+   • Checkpoint 1 details
+   • Checkpoint 2 details
+- Acceptance criteria
+   • Criteria 1
+   • Criteria 2
+- Non-conformance handling procedures
+   • Step 1 for handling issues
+   • Step 2 for handling issues
 
 ### SAFETY AND COMPLIANCE
    - Safety precautions
@@ -183,31 +197,52 @@ Requirements:
 - Write in imperative mood for procedures (e.g., "Complete the form", not "The form should be completed")
 - Include specific details and avoid ambiguity
 
-CRITICAL PROCEDURE FORMATTING (MUST FOLLOW EXACTLY):
-- Main steps: "1. Step Title - Brief description" (ALL on ONE line)
-- Sub-steps: Use sub-numbering "1.1", "1.2", "1.3" (NOT dashes, NOT separate numbers)
-- Sub-steps are additional details, warnings, or notes for the main step
-- Example:
-  1. Prepare Materials - Gather all required materials and tools
-  1.1 Check material quality and expiration dates
-  1.2 Verify quantities match requirements
-  1.3 Organize materials in work area
-  2. Execute Process - Follow the documented procedure
-  2.1 Monitor progress at each checkpoint
-  2.2 Record observations and measurements
-  2.3 Address any deviations immediately
+CRITICAL FORMATTING RULES (MUST FOLLOW EXACTLY):
 
-OTHER FORMATTING:
-- Use numbered lists (1. 2. 3.) for main sequential steps in PROCEDURE section
-- Use bullet points (use - not *) for non-sequential items and sub-details
-- Maintain consistent formatting throughout
-- Include quality checkpoints
-- Address potential issues and their solutions
-- DO NOT add numbers before section titles - they will be added automatically
-- Use "###" for main section titles (without numbers)
-- Use "####" for subsection titles (without numbers)
+1. SECTION HEADERS:
+   - Format: "### Section Title" (ONE line, NO numbers, NO line breaks)
+   - Example: "### PURPOSE" NOT "### 1. PURPOSE" or "###\nPURPOSE"
+   - All headers must have consistent spacing (one blank line before and after)
 
-Format your response as structured sections with clear headings. Use "###" for section titles and "####" for subsection titles. DO NOT include section numbers in the headings.`;
+2. PROCEDURE SECTION NUMBERING:
+   - Main steps: "1. Step Title - Brief description" (ALL on ONE line)
+   - Sub-steps: "   1.1 Sub-step description" (3 spaces indent, sub-number, description)
+   - Format example:
+   
+1. Prepare Materials - Gather all required materials and tools
+   1.1 Check material quality and expiration dates
+   1.2 Verify quantities match requirements
+   1.3 Organize materials in work area
+
+2. Execute Process - Follow the documented procedure
+   2.1 Monitor progress at each checkpoint
+   2.2 Record observations and measurements
+   2.3 Address any deviations immediately
+
+3. QUALITY CONTROL BULLETS:
+   - Main items: "- Main quality item"
+   - Sub-items: "   • Sub-item detail" (3 spaces indent, bullet •)
+   - Format example:
+   
+- Quality standards and specifications
+   • Detailed specification 1
+   • Detailed specification 2
+- Inspection points and checkpoints
+   • Checkpoint 1 details
+   • Checkpoint 2 details
+
+4. OTHER SECTIONS:
+   - Use bullet points (- not *) for non-sequential items
+   - Use numbered lists (1. 2. 3.) only in PROCEDURE section
+   - Maintain consistent formatting throughout
+
+5. SPACING:
+   - One blank line before each section header
+   - One blank line after each section header
+   - NO extra line breaks within headers
+   - Consistent margins for all sections
+
+Format your response as structured sections with clear headings. Use "###" for section titles and "####" for subsection titles. DO NOT include section numbers in the headings. Keep all headers on a single line with NO line breaks.`;
   }
 
   /**
@@ -219,7 +254,7 @@ Format your response as structured sections with clear headings. Use "###" for s
     
     let currentSection: SOPSection | null = null;
     let currentSubsection: SOPSection | null = null;
-    let sectionNumber = 1;
+    let sectionNumber = 2; // Start from 2 since Process Diagrams will be section 1
     let subsectionNumber = 1;
 
     for (const line of lines) {
@@ -231,11 +266,12 @@ Format your response as structured sections with clear headings. Use "###" for s
           sections.push(currentSection);
         }
         
-        // Remove ### and any existing numbering
+        // Remove ### and any existing numbering, also remove line breaks
         const title = trimmedLine
           .replace(/^###\s*/, '')
           .replace(/^\d+\.\s*/, '')
           .replace(/^\d+\s+/, '')
+          .replace(/\n/g, ' ')
           .trim();
         
         currentSection = {
@@ -251,11 +287,12 @@ Format your response as structured sections with clear headings. Use "###" for s
       // Subsection (#### Title or #### 1.1 Title)
       else if (trimmedLine.startsWith('####')) {
         if (currentSection) {
-          // Remove #### and any existing numbering
+          // Remove #### and any existing numbering, also remove line breaks
           const title = trimmedLine
             .replace(/^####\s*/, '')
             .replace(/^\d+\.\d+\s*/, '')
             .replace(/^\d+\.\d+\.\s*/, '')
+            .replace(/\n/g, ' ')
             .trim();
           
           currentSubsection = {

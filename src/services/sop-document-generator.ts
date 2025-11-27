@@ -211,26 +211,25 @@ export class SOPDocumentGenerator {
   ): TableOfContentsEntry[] {
     const toc: TableOfContentsEntry[] = [];
 
-    // Add charts section
-    if (charts.length > 0) {
-      const chartsEntry: TableOfContentsEntry = {
-        number: '0',
-        title: 'Process Diagrams',
-        subsections: charts.map((chart, index) => ({
-          number: `0.${index + 1}`,
-          title: chart.title
-        }))
-      };
-      toc.push(chartsEntry);
-    }
+    // Add charts section FIRST (always include, even if empty for consistency)
+    const chartsEntry: TableOfContentsEntry = {
+      number: '1',
+      title: 'Process Diagrams',
+      subsections: charts.length > 0 ? charts.map((chart, index) => ({
+        number: `1.${index + 1}`,
+        title: chart.title
+      })) : undefined
+    };
+    toc.push(chartsEntry);
 
-    // Add text sections
-    sopText.sections.forEach((section) => {
+    // Add text sections (renumber starting from 2)
+    sopText.sections.forEach((section, index) => {
+      const sectionNumber = index + 2; // Start from 2 since Process Diagrams is 1
       const entry: TableOfContentsEntry = {
-        number: section.number,
+        number: `${sectionNumber}`,
         title: section.title,
-        subsections: section.subsections ? section.subsections.map((sub: any) => ({
-          number: sub.number,
+        subsections: section.subsections ? section.subsections.map((sub: any, subIndex: number) => ({
+          number: `${sectionNumber}.${subIndex + 1}`,
           title: sub.title
         })) : undefined
       };

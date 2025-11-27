@@ -68,6 +68,7 @@ export interface QualityCheckpoint {
   frequency: CheckpointFrequency;
   responsible: string;
   documentation: string[];
+  required?: boolean; // Whether this checkpoint is mandatory
 }
 
 export interface SOPReference {
@@ -109,6 +110,7 @@ export interface ExportOptions {
   watermark?: string;
   headerFooter?: HeaderFooterOptions;
   styling?: DocumentStyling;
+  agentFormat?: boolean; // For Agent.MD format
 }
 
 export interface ExportResult {

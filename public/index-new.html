@@ -425,6 +425,12 @@
             position: relative;
         }
 
+        .mic-button .mic-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
         .mic-button:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
@@ -788,6 +794,9 @@
                 <button class="action-btn" onclick="exportSOP('docx')" id="export-docx-btn">
                     📝 Export Word
                 </button>
+                <button class="action-btn" onclick="exportSOP('md')" id="export-md-btn">
+                    🤖 Export Agent.MD
+                </button>
             </div>
         </div>
     </div>
@@ -804,7 +813,11 @@
             ></textarea>
             <div class="button-group">
                 <button class="mic-button" id="mic-button" onclick="toggleVoiceRecording()" title="Voice input">
-                    <span class="mic-icon" id="mic-icon">🎤</span>
+                    <svg class="mic-icon" id="mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                    </svg>
                     <div class="recording-indicator" id="recording-indicator"></div>
                 </button>
                 <button class="send-button" id="send-button" onclick="sendMessage()" disabled>
@@ -1369,23 +1382,46 @@
 
         // Export SOP
         async function exportSOP(format) {
-            const sopContent = document.getElementById('sop-content').textContent;
+            // Get the stored SOP data
+            const sopData = sessionStorage.getItem('currentSOPData');
             
-            if (!sopContent) {
+            if (!sopData) {
                 showError('No SOP to export. Please generate an SOP first.');
                 return;
             }
             
+            const btnIds = {
+                'pdf': 'export-pdf-btn',
+                'docx': 'export-docx-btn',
+                'md': 'export-md-btn'
+            };
+            
+            const exportBtn = document.getElementById(btnIds[format]);
+            const originalText = exportBtn.textContent;
+            exportBtn.disabled = true;
+            exportBtn.textContent = `⏳ Exporting ${format.toUpperCase()}...`;
+            
             try {
-                const response = await fetch(`${API_BASE}/sop/export`, {
+                const sopId = sessionStorage.getItem('currentSOPId') || currentSessionId;
+                const parsedSOPData = JSON.parse(sopData);
+                
+                const response = await fetch(`${API_BASE}/sops/${sopId}/export`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
-                        content: sopContent,
-                        format: format
+                        format: format,
+                        sopData: parsedSOPData,
+                        options: {
+                            includeMetadata: true,
+                            headerFooter: {
+                                includeHeader: true,
+                                includeFooter: true
+                            },
+                            agentFormat: format === 'md' // Special flag for Agent.MD format
+                        }
                     })
                 });
                 
@@ -1394,17 +1430,32 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `sop-${Date.now()}.${format}`;
+                    
+                    // Set appropriate filename
+                    const title = parsedSOPData.title || 'SOP';
+                    const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
+                    const extension = format === 'md' ? 'md' : format;
+                    a.download = `${cleanTitle}_v${parsedSOPData.version || '1.0'}.${extension}`;
+                    
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
+                    
+                    // Show success message
+                    const formatName = format === 'md' ? 'Agent.MD' : format.toUpperCase();
+                    addSystemMessage(`✅ SOP exported successfully as ${formatName}`);
                 } else {
-                    throw new Error('Export failed');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Export failed');
                 }
             } catch (error) {
                 console.error('Export error:', error);
-                showError(`Failed to export SOP as ${format.toUpperCase()}. Please try again.`);
+                const formatName = format === 'md' ? 'Agent.MD' : format.toUpperCase();
+                showError(`Failed to export SOP as ${formatName}. Please try again.`);
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
             }
         }
 
