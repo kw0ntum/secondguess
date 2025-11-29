@@ -3,33 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workfl0 - AI SOP Generator</title>
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <title>AI Voice SOP Agent</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0a0a0a;
-            --bg-secondary: #141414;
-            --bg-tertiary: #1f1f1f;
-            --bg-hover: #2a2a2a;
-            --bg-glass: rgba(20, 20, 20, 0.8);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --border-hover: rgba(255, 255, 255, 0.15);
+            --bg-primary: #0d0d0d;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #2a2a2a;
+            --bg-hover: #333333;
+            --bg-glass: rgba(26, 26, 26, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
             --text-primary: #ffffff;
-            --text-secondary: #a0a0a0;
-            --text-tertiary: #707070;
+            --text-secondary: #b4b4b4;
+            --text-tertiary: #8e8e8e;
             --accent-primary: #10a37f;
             --accent-hover: #0d8c6f;
-            --accent-glow: rgba(16, 163, 127, 0.3);
+            --accent-secondary: #6e59d9;
             --error: #ef4444;
+            --warning: #f59e0b;
             --success: #10b981;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.8);
-            --glow-primary: 0 0 20px rgba(16, 163, 127, 0.4);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
         }
 
         * {
@@ -48,33 +47,18 @@
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Animated Background with Aero Effect */
+        /* Animated Background */
         .bg-gradient {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(16, 163, 127, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 40% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 50%, rgba(110, 89, 217, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(16, 163, 127, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
-            animation: gradientShift 15s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
-        }
-
-        /* Glass Morphism Effect */
-        .glass {
-            background: var(--bg-glass);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--border-color);
         }
 
         /* Sidebar */
@@ -101,26 +85,13 @@
             margin-bottom: 20px;
         }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .logo-img {
-            height: 32px;
-            width: auto;
-            filter: drop-shadow(0 0 10px rgba(16, 163, 127, 0.3));
-        }
-
-        .logo-text {
+        .logo {
             font-size: 24px;
             font-weight: 700;
-            background: linear-gradient(135deg, var(--accent-primary), #14b8a6);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: -0.02em;
         }
 
         .new-chat-btn {
@@ -128,7 +99,7 @@
             padding: 12px 16px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--text-primary);
             font-size: 14px;
             font-weight: 500;
@@ -142,9 +113,7 @@
 
         .new-chat-btn:hover {
             background: var(--bg-hover);
-            border-color: var(--border-hover);
             transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
         }
 
         .session-list {
@@ -156,7 +125,7 @@
         .session-item {
             padding: 10px 12px;
             margin-bottom: 4px;
-            border-radius: 8px;
+            border-radius: 6px;
             color: var(--text-secondary);
             font-size: 13px;
             cursor: pointer;
@@ -189,7 +158,7 @@
             color: var(--text-secondary);
             text-decoration: none;
             font-size: 13px;
-            border-radius: 8px;
+            border-radius: 6px;
             transition: all 0.2s ease;
             margin-bottom: 4px;
         }
@@ -231,7 +200,7 @@
             padding: 8px 16px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--text-primary);
             font-size: 13px;
             font-weight: 500;
@@ -241,7 +210,6 @@
 
         .model-selector:hover {
             background: var(--bg-hover);
-            border-color: var(--border-hover);
         }
 
         .status-badge {
@@ -266,8 +234,8 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--accent-glow); }
-            50% { opacity: 0.6; }
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         /* Chat Container */
@@ -295,7 +263,6 @@
             font-size: 64px;
             margin-bottom: 24px;
             animation: float 3s ease-in-out infinite;
-            filter: drop-shadow(0 0 20px var(--accent-glow));
         }
 
         @keyframes float {
@@ -304,14 +271,13 @@
         }
 
         .welcome-title {
-            font-size: 36px;
+            font-size: 32px;
             font-weight: 700;
             margin-bottom: 12px;
             background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            letter-spacing: -0.02em;
         }
 
         .welcome-subtitle {
@@ -319,7 +285,6 @@
             color: var(--text-secondary);
             margin-bottom: 40px;
             max-width: 600px;
-            line-height: 1.6;
         }
 
         .quick-actions {
@@ -331,7 +296,7 @@
         }
 
         .quick-action-card {
-            padding: 24px;
+            padding: 20px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 12px;
@@ -343,25 +308,24 @@
         .quick-action-card:hover {
             background: var(--bg-tertiary);
             border-color: var(--accent-primary);
-            transform: translateY(-4px);
-            box-shadow: var(--glow-primary), var(--shadow-lg);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .quick-action-icon {
-            font-size: 28px;
+            font-size: 24px;
             margin-bottom: 12px;
-            display: block;
         }
 
         .quick-action-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-primary);
             margin-bottom: 6px;
         }
 
         .quick-action-desc {
-            font-size: 13px;
+            font-size: 12px;
             color: var(--text-tertiary);
             line-height: 1.5;
         }
@@ -395,7 +359,7 @@
         .message-avatar {
             width: 36px;
             height: 36px;
-            border-radius: 10px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -404,13 +368,11 @@
         }
 
         .message.user .message-avatar {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+            background: linear-gradient(135deg, var(--accent-secondary), #8b5cf6);
         }
 
         .message.assistant .message-avatar {
             background: linear-gradient(135deg, var(--accent-primary), #14b8a6);
-            box-shadow: 0 0 15px var(--accent-glow);
         }
 
         .message-content {
@@ -430,6 +392,37 @@
 
         .message-content p {
             margin-bottom: 12px;
+        }
+
+        .message-content ul, .message-content ol {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .message-content li {
+            margin-bottom: 6px;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .message-action-btn {
+            padding: 6px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .message-action-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
         }
 
         /* Input Area */
@@ -454,7 +447,7 @@
 
         .input-wrapper:focus-within {
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px var(--accent-glow), var(--shadow-lg);
+            box-shadow: 0 0 0 3px rgba(16, 163, 127, 0.1);
         }
 
         .message-input {
@@ -480,98 +473,30 @@
             align-items: center;
         }
 
-        /* Microphone Button with Sound Wave Animation */
-        .mic-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             border: none;
-            background: var(--bg-tertiary);
+            background: transparent;
             color: var(--text-secondary);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s ease;
+            font-size: 18px;
         }
 
-        .mic-btn:hover {
-            background: var(--bg-hover);
+        .icon-btn:hover {
+            background: var(--bg-tertiary);
             color: var(--text-primary);
-            transform: scale(1.05);
-        }
-
-        .mic-btn.recording {
-            background: var(--accent-primary);
-            color: white;
-            box-shadow: var(--glow-primary);
-        }
-
-        .mic-icon {
-            font-size: 20px;
-            transition: all 0.3s ease;
-        }
-
-        /* Sound Wave Animation */
-        .sound-wave {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            height: 100%;
-        }
-
-        .sound-wave.active {
-            display: flex;
-        }
-
-        .wave-bar {
-            width: 3px;
-            background: white;
-            border-radius: 2px;
-            animation: wave 1s ease-in-out infinite;
-        }
-
-        .wave-bar:nth-child(1) {
-            height: 8px;
-            animation-delay: 0s;
-        }
-
-        .wave-bar:nth-child(2) {
-            height: 14px;
-            animation-delay: 0.1s;
-        }
-
-        .wave-bar:nth-child(3) {
-            height: 18px;
-            animation-delay: 0.2s;
-        }
-
-        .wave-bar:nth-child(4) {
-            height: 14px;
-            animation-delay: 0.3s;
-        }
-
-        .wave-bar:nth-child(5) {
-            height: 8px;
-            animation-delay: 0.4s;
-        }
-
-        @keyframes wave {
-            0%, 100% {
-                transform: scaleY(1);
-            }
-            50% {
-                transform: scaleY(1.5);
-            }
         }
 
         .send-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             border: none;
             background: var(--accent-primary);
             color: white;
@@ -586,11 +511,10 @@
         .send-btn:hover:not(:disabled) {
             background: var(--accent-hover);
             transform: scale(1.05);
-            box-shadow: var(--glow-primary);
         }
 
         .send-btn:disabled {
-            opacity: 0.4;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
@@ -606,7 +530,7 @@
             padding: 10px 20px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: 8px;
             color: var(--text-primary);
             font-size: 14px;
             font-weight: 500;
@@ -621,11 +545,10 @@
             background: var(--bg-tertiary);
             border-color: var(--accent-primary);
             transform: translateY(-1px);
-            box-shadow: var(--shadow-md);
         }
 
         .action-btn:disabled {
-            opacity: 0.4;
+            opacity: 0.5;
             cursor: not-allowed;
         }
 
@@ -637,7 +560,18 @@
 
         .action-btn.primary:hover:not(:disabled) {
             background: var(--accent-hover);
-            box-shadow: var(--glow-primary);
+        }
+
+        .action-btn.recording {
+            background: var(--error);
+            border-color: var(--error);
+            color: white;
+            animation: recordPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         /* SOP Panel */
@@ -676,7 +610,7 @@
         .close-btn {
             width: 32px;
             height: 32px;
-            border-radius: 8px;
+            border-radius: 6px;
             border: none;
             background: var(--bg-tertiary);
             color: var(--text-secondary);
@@ -738,6 +672,12 @@
             color: var(--text-secondary);
         }
 
+        .sop-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
         /* Loading States */
         .loading-message {
             display: flex;
@@ -748,13 +688,12 @@
         .loading-avatar {
             width: 36px;
             height: 36px;
-            border-radius: 10px;
+            border-radius: 8px;
             background: linear-gradient(135deg, var(--accent-primary), #14b8a6);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
-            box-shadow: 0 0 15px var(--accent-glow);
         }
 
         .loading-dots {
@@ -791,7 +730,7 @@
             }
         }
 
-        /* Alert Messages */
+        /* Error/Alert Messages */
         .alert {
             padding: 16px;
             border-radius: 12px;
@@ -814,10 +753,10 @@
             color: #6ee7b7;
         }
 
-        .alert-info {
-            background: rgba(99, 102, 241, 0.1);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: #a5b4fc;
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fcd34d;
         }
 
         .alert-icon {
@@ -874,7 +813,7 @@
             }
 
             .welcome-title {
-                font-size: 28px;
+                font-size: 24px;
             }
 
             .quick-actions {
@@ -903,10 +842,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <div class="logo-container">
-                <img src="/logo_white.png" alt="Workfl0" class="logo-img">
-                <div class="logo-text">Workfl0</div>
-            </div>
+            <div class="logo">🎙️ SOP Agent</div>
         </div>
 
         <button class="new-chat-btn" onclick="startNewSession()">
@@ -961,8 +897,8 @@
         <div class="chat-container">
             <!-- Welcome Screen -->
             <div class="welcome-screen" id="welcomeScreen">
-                <div class="welcome-icon">🎯</div>
-                <h1 class="welcome-title">Welcome to Workfl0</h1>
+                <div class="welcome-icon">🎙️</div>
+                <h1 class="welcome-title">AI Voice SOP Agent</h1>
                 <p class="welcome-subtitle">
                     Generate comprehensive Standard Operating Procedures through natural conversation.
                     Describe your workflow, and I'll help you create professional documentation.
@@ -993,6 +929,14 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons hidden" id="actionButtons">
+                <button class="action-btn" id="voiceBtn" onclick="toggleVoice()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                    </svg>
+                    <span id="voiceBtnText">Start Voice</span>
+                </button>
                 <button class="action-btn primary" id="generateBtn" onclick="generateSOP()" disabled>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -1021,16 +965,6 @@
                         oninput="autoResize(this)"
                     ></textarea>
                     <div class="input-actions">
-                        <button class="mic-btn" id="micBtn" onclick="toggleVoice()">
-                            <span class="mic-icon" id="micIcon">🎤</span>
-                            <div class="sound-wave" id="soundWave">
-                                <div class="wave-bar"></div>
-                                <div class="wave-bar"></div>
-                                <div class="wave-bar"></div>
-                                <div class="wave-bar"></div>
-                                <div class="wave-bar"></div>
-                            </div>
-                        </button>
                         <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -1059,7 +993,7 @@
                 Your generated SOP will appear here after you complete the conversation and click "Generate SOP".
             </p>
         </div>
-        <div class="action-buttons">
+        <div class="sop-actions">
             <button class="action-btn primary" onclick="exportSOP('pdf')" id="exportPdfBtn" disabled>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1099,7 +1033,7 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Workfl0 initialized');
+            console.log('Application initialized');
             await obtainAuthToken();
             if (authToken) {
                 await checkAPIConnection();
@@ -1374,7 +1308,7 @@
             content.className = 'message-content';
             
             const label = document.createElement('strong');
-            label.textContent = sender === 'user' ? 'You' : 'Workfl0 AI';
+            label.textContent = sender === 'user' ? 'You' : 'AI Assistant';
             
             const textNode = document.createElement('div');
             textNode.textContent = text;
@@ -1434,22 +1368,19 @@
             setTimeout(() => alertDiv.remove(), 5000);
         }
 
-        // Voice toggle with animation
+        // Voice toggle
         function toggleVoice() {
             isRecording = !isRecording;
-            const micBtn = document.getElementById('micBtn');
-            const micIcon = document.getElementById('micIcon');
-            const soundWave = document.getElementById('soundWave');
+            const btn = document.getElementById('voiceBtn');
+            const btnText = document.getElementById('voiceBtnText');
             
             if (isRecording) {
-                micBtn.classList.add('recording');
-                micIcon.style.display = 'none';
-                soundWave.classList.add('active');
+                btn.classList.add('recording');
+                btnText.textContent = 'Stop Recording';
                 showAlert('Voice recording started', 'info');
             } else {
-                micBtn.classList.remove('recording');
-                micIcon.style.display = 'block';
-                soundWave.classList.remove('active');
+                btn.classList.remove('recording');
+                btnText.textContent = 'Start Voice';
                 showAlert('Voice recording stopped', 'info');
             }
         }
@@ -1460,7 +1391,6 @@
 
             const generateBtn = document.getElementById('generateBtn');
             generateBtn.disabled = true;
-            const originalHTML = generateBtn.innerHTML;
             generateBtn.innerHTML = '<div class="loading-dot"></div> Generating...';
 
             showLoadingMessage();
@@ -1513,7 +1443,13 @@
                 showAlert('Failed to generate SOP. Please try again.', 'error');
             } finally {
                 generateBtn.disabled = false;
-                generateBtn.innerHTML = originalHTML;
+                generateBtn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Generate SOP
+                `;
             }
         }
 
@@ -1578,7 +1514,7 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `workfl0-sop-${currentSOP.id}.${format}`;
+                    a.download = `sop-${currentSOP.id}.${format}`;
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);
