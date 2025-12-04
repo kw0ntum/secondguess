@@ -60,9 +60,15 @@ export const handler: Handler = async (event) => {
     });
 
     // Call Gemini API
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    let aiMessage: string;
     
-    const prompt = `You are an AI assistant helping users create Standard Operating Procedures (SOPs).
+    try {
+      // Use the same model as development environment
+      const model = genAI.getGenerativeModel({ 
+        model: process.env.GEMINI_MODEL || 'gemini-2.0-flash-lite' 
+      });
+      
+      const prompt = `You are an AI assistant helping users create Standard Operating Procedures (SOPs).
 
 User message: ${userMessage}
 
@@ -75,9 +81,14 @@ Analyze the user's input and provide a helpful response. If they're describing a
 
 Respond in a conversational, helpful manner.`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const aiMessage = response.text();
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      aiMessage = response.text();
+    } catch (geminiError) {
+      // Fallback response matching development behavior
+      console.error('Gemini API error:', geminiError);
+      aiMessage = `Thank you for starting to describe your workflow. To create a comprehensive SOP, please provide: the complete sequence of steps from start to finish, who is responsible for each step, what inputs and resources are needed, what outputs are produced, any dependencies or prerequisites, and how exceptions or errors are handled.`;
+    }
 
     // Add AI response to history
     session.conversationHistory.push({
@@ -100,9 +111,9 @@ Respond in a conversational, helpful manner.`;
         identifiedOutputs: [],
         missingInformation: [],
         suggestedNextQuestions: [
-          'Can you provide more details about the process?',
-          'What are the main steps involved?',
-          'What inputs are required?',
+          'Describe complete process flow',
+          'Explain roles and responsibilities',
+          'Detail inputs, outputs, and dependencies',
         ],
       },
     };

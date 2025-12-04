@@ -6,45 +6,295 @@
     <title>Connection Diagnostic</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: monospace;
-            padding: 20px;
-            background: #1e1e1e;
-            color: #00ff00;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
         }
-        .test {
-            margin: 10px 0;
-            padding: 10px;
-            border: 1px solid #333;
+
+        /* Header */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
         }
-        .pass { color: #00ff00; }
-        .fail { color: #ff0000; }
-        .info { color: #ffff00; }
-        button {
-            background: #00ff00;
-            color: #000;
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #1a1a1a;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
             border: none;
-            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
-            font-family: monospace;
-            font-weight: bold;
+            transition: all 0.2s;
         }
-        button:hover {
-            background: #00cc00;
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        /* Results */
+        .results {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+        }
+
+        .test-item {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            background: #f9fafb;
+        }
+
+        .test-item.pass {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .test-item.fail {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .test-item.info {
+            border-left-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        .test-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1a1a1a;
+            font-size: 1.1rem;
+        }
+
+        .test-message {
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .test-details {
+            margin-top: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.05);
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #1a1a1a;
+        }
+
+        .summary {
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            font-weight: 500;
+        }
+
+        .summary.success {
+            background: #f0fdf4;
+            border: 2px solid #10b981;
+            color: #065f46;
+        }
+
+        .summary.error {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .summary-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .summary ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .summary li {
+            margin: 0.5rem 0;
+        }
+
+        .env-info {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.85rem;
+        }
+
+        .env-info-item {
+            padding: 0.25rem 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>🔍 Connection Diagnostic Tool</h1>
-    <p>This tool will help diagnose connection issues.</p>
-    
-    <button onclick="runTests()">▶ Run Tests</button>
-    <button onclick="location.href='/'">← Back to App</button>
-    
-    <div id="results"></div>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🔍 Connection Diagnostic</div>
+            <div class="nav-links">
+                <a href="/new" class="nav-link">🏠 Home</a>
+                <a href="/dashboard" class="nav-link">📈 System Dashboard</a>
+                <a href="/api-dashboard-new.html" class="nav-link">🔍 API Logs</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="title">Connection Diagnostic Tool</h1>
+        <p class="subtitle">Diagnose connection issues and verify system configuration</p>
+        
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="runTests()">▶ Run Diagnostic Tests</button>
+            <button class="btn btn-secondary" onclick="location.href='/new'">← Back to Home</button>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Initializing diagnostic tests...</p>
+            </div>
+        </div>
+    </div>
     
     <script>
-        const results = document.getElementById('results');
         let authToken = null;
         
         async function obtainAuthToken() {
@@ -68,165 +318,193 @@
             }
         }
         
-        async function runTests() {
-            results.innerHTML = '<p class="info">Obtaining authentication token...</p>';
+        function addTestResult(name, pass, message, details) {
+            const results = document.getElementById('results');
             
-            if (!await obtainAuthToken()) {
-                results.innerHTML += '<p class="fail">❌ Failed to obtain auth token</p>';
-                return;
+            const item = document.createElement('div');
+            item.className = `test-item ${pass ? 'pass' : 'fail'}`;
+            
+            const title = document.createElement('div');
+            title.className = 'test-title';
+            const icon = pass ? '✅' : '❌';
+            title.textContent = `${icon} ${name}`;
+            
+            const msg = document.createElement('div');
+            msg.className = 'test-message';
+            msg.textContent = message;
+            
+            item.appendChild(title);
+            item.appendChild(msg);
+            
+            if (details) {
+                const det = document.createElement('div');
+                det.className = 'test-details';
+                det.textContent = details;
+                item.appendChild(det);
             }
             
-            results.innerHTML += '<p class="pass">✅ Auth token obtained</p>';
-            results.innerHTML += '<p class="info">Running tests...</p>';
+            results.appendChild(item);
+        }
+        
+        async function runTests() {
+            const results = document.getElementById('results');
+            results.textContent = '';
             
             const tests = [];
-            
-            // Test 1: Check protocol
-            tests.push({
-                name: 'Protocol Check',
-                test: () => {
-                    const protocol = window.location.protocol;
-                    return {
-                        pass: protocol === 'http:' || protocol === 'https:',
-                        message: `Protocol: ${protocol}`,
-                        details: protocol === 'file:' ? 'ERROR: You opened the HTML file directly! Use http://localhost:3000 instead.' : 'OK'
-                    };
-                }
-            });
-            
-            // Test 2: Check hostname
-            tests.push({
-                name: 'Hostname Check',
-                test: () => {
-                    const hostname = window.location.hostname;
-                    return {
-                        pass: hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('vercel.app'),
-                        message: `Hostname: ${hostname}`,
-                        details: hostname === 'localhost' ? 'OK' : 'Warning: Expected localhost'
-                    };
-                }
-            });
-            
-            // Test 3: Check port
-            tests.push({
-                name: 'Port Check',
-                test: () => {
-                    const port = window.location.port;
-                    return {
-                        pass: port === '3000' || port === '',
-                        message: `Port: ${port || 'default'}`,
-                        details: port === '3000' ? 'OK' : 'Warning: Expected port 3000'
-                    };
-                }
-            });
-            
-            // Test 4: API Health Check
-            tests.push({
-                name: 'API Health Check',
-                test: async () => {
-                    try {
-                        const response = await fetch('http://localhost:3000/api/monitoring/health');
-                        const data = await response.json();
-                        return {
-                            pass: response.ok && data.status === 'healthy',
-                            message: `API Status: ${data.status}`,
-                            details: response.ok ? 'OK - Server is running' : 'FAIL - Server not responding'
-                        };
-                    } catch (error) {
-                        return {
-                            pass: false,
-                            message: 'API Status: ERROR',
-                            details: `Cannot connect: ${error.message}`
-                        };
-                    }
-                }
-            });
-            
-            // Test 5: Session Creation
-            tests.push({
-                name: 'Session Creation Test',
-                test: async () => {
-                    try {
-                        const response = await fetch('http://localhost:3000/api/sessions', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${authToken}`
-                            },
-                            body: JSON.stringify({ userId: 'diagnostic-test' })
-                        });
-                        const data = await response.json();
-                        return {
-                            pass: response.ok && data.sessionId,
-                            message: `Session: ${data.sessionId ? 'Created' : 'Failed'}`,
-                            details: data.sessionId ? `ID: ${data.sessionId.substring(0, 30)}...` : 'FAIL'
-                        };
-                    } catch (error) {
-                        return {
-                            pass: false,
-                            message: 'Session: ERROR',
-                            details: `Cannot create: ${error.message}`
-                        };
-                    }
-                }
-            });
-            
-            // Run all tests
-            let html = '<h2>Test Results:</h2>';
             let allPassed = true;
             
-            for (const test of tests) {
-                html += `<div class="test">`;
-                html += `<strong>${test.name}</strong><br>`;
-                
+            // Test 1: Protocol Check
+            const protocol = window.location.protocol;
+            const protocolPass = protocol === 'http:' || protocol === 'https:';
+            addTestResult(
+                'Protocol Check',
+                protocolPass,
+                `Protocol: ${protocol}`,
+                protocol === 'file:' ? 'ERROR: You opened the HTML file directly! Use http://localhost:3000 instead.' : 'OK'
+            );
+            if (!protocolPass) allPassed = false;
+            
+            // Test 2: Hostname Check
+            const hostname = window.location.hostname;
+            const hostnamePass = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.includes('vercel.app');
+            addTestResult(
+                'Hostname Check',
+                hostnamePass,
+                `Hostname: ${hostname}`,
+                hostname === 'localhost' ? 'OK' : 'Warning: Expected localhost'
+            );
+            if (!hostnamePass) allPassed = false;
+            
+            // Test 3: Port Check
+            const port = window.location.port;
+            const portPass = port === '3000' || port === '';
+            addTestResult(
+                'Port Check',
+                portPass,
+                `Port: ${port || 'default'}`,
+                port === '3000' ? 'OK' : 'Warning: Expected port 3000'
+            );
+            if (!portPass) allPassed = false;
+            
+            // Test 4: Authentication
+            const authPass = await obtainAuthToken();
+            addTestResult(
+                'Authentication Test',
+                authPass,
+                authPass ? 'Auth token obtained' : 'Failed to obtain auth token',
+                authPass ? `Token: ${authToken.substring(0, 30)}...` : 'Cannot connect to auth endpoint'
+            );
+            if (!authPass) allPassed = false;
+            
+            // Test 5: API Health Check
+            try {
+                const response = await fetch('http://localhost:3000/api/monitoring/health');
+                const data = await response.json();
+                const healthPass = response.ok && data.status === 'healthy';
+                addTestResult(
+                    'API Health Check',
+                    healthPass,
+                    `API Status: ${data.status}`,
+                    response.ok ? 'OK - Server is running' : 'FAIL - Server not responding'
+                );
+                if (!healthPass) allPassed = false;
+            } catch (error) {
+                addTestResult(
+                    'API Health Check',
+                    false,
+                    'API Status: ERROR',
+                    `Cannot connect: ${error.message}`
+                );
+                allPassed = false;
+            }
+            
+            // Test 6: Session Creation
+            if (authPass) {
                 try {
-                    const result = await test.test();
-                    const className = result.pass ? 'pass' : 'fail';
-                    const icon = result.pass ? '✅' : '❌';
-                    
-                    html += `<span class="${className}">${icon} ${result.message}</span><br>`;
-                    html += `<small>${result.details}</small>`;
-                    
-                    if (!result.pass) allPassed = false;
+                    const response = await fetch('http://localhost:3000/api/sessions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: JSON.stringify({ userId: 'diagnostic-test' })
+                    });
+                    const data = await response.json();
+                    const sessionPass = response.ok && data.sessionId;
+                    addTestResult(
+                        'Session Creation Test',
+                        sessionPass,
+                        sessionPass ? 'Session created successfully' : 'Failed to create session',
+                        data.sessionId ? `Session ID: ${data.sessionId.substring(0, 30)}...` : 'FAIL'
+                    );
+                    if (!sessionPass) allPassed = false;
                 } catch (error) {
-                    html += `<span class="fail">❌ Error: ${error.message}</span>`;
+                    addTestResult(
+                        'Session Creation Test',
+                        false,
+                        'Session: ERROR',
+                        `Cannot create: ${error.message}`
+                    );
                     allPassed = false;
                 }
-                
-                html += `</div>`;
             }
             
             // Summary
-            html += '<h2>Summary:</h2>';
+            const summary = document.createElement('div');
+            summary.className = `summary ${allPassed ? 'success' : 'error'}`;
+            
+            const summaryTitle = document.createElement('div');
+            summaryTitle.className = 'summary-title';
+            summaryTitle.textContent = allPassed ? '✅ All Tests Passed!' : '❌ Some Tests Failed';
+            summary.appendChild(summaryTitle);
+            
+            const summaryText = document.createElement('p');
             if (allPassed) {
-                html += '<p class="pass">✅ All tests passed! The application should work.</p>';
-                html += '<p>If you still see errors, try:</p>';
-                html += '<ul>';
-                html += '<li>Clear browser cache (Ctrl+Shift+R)</li>';
-                html += '<li>Try incognito/private mode</li>';
-                html += '<li>Check browser console (F12) for errors</li>';
-                html += '</ul>';
+                summaryText.textContent = 'The application should work correctly. If you still see errors, try:';
+                const ul = document.createElement('ul');
+                ul.innerHTML = `
+                    <li>Clear browser cache (Ctrl+Shift+R or Cmd+Shift+R)</li>
+                    <li>Try incognito/private mode</li>
+                    <li>Check browser console (F12) for errors</li>
+                `;
+                summary.appendChild(summaryText);
+                summary.appendChild(ul);
             } else {
-                html += '<p class="fail">❌ Some tests failed. See details above.</p>';
-                html += '<p>Common fixes:</p>';
-                html += '<ul>';
-                html += '<li>Make sure server is running: <code>npm run dev</code></li>';
-                html += '<li>Access via http://localhost:3000 (not file://)</li>';
-                html += '<li>Check firewall settings</li>';
-                html += '</ul>';
+                summaryText.textContent = 'Some tests failed. See details above. Common fixes:';
+                const ul = document.createElement('ul');
+                ul.innerHTML = `
+                    <li>Make sure server is running: <code>npm run dev</code></li>
+                    <li>Access via http://localhost:3000 (not file://)</li>
+                    <li>Check firewall settings</li>
+                    <li>Verify .env configuration</li>
+                `;
+                summary.appendChild(summaryText);
+                summary.appendChild(ul);
             }
             
-            // Environment info
-            html += '<h2>Environment Info:</h2>';
-            html += '<div class="test">';
-            html += `<strong>Current URL:</strong> ${window.location.href}<br>`;
-            html += `<strong>Protocol:</strong> ${window.location.protocol}<br>`;
-            html += `<strong>Hostname:</strong> ${window.location.hostname}<br>`;
-            html += `<strong>Port:</strong> ${window.location.port || 'default'}<br>`;
-            html += `<strong>Browser:</strong> ${navigator.userAgent}<br>`;
-            html += '</div>';
+            results.appendChild(summary);
             
-            results.innerHTML = html;
+            // Environment info
+            const envInfo = document.createElement('div');
+            envInfo.className = 'test-item info';
+            
+            const envTitle = document.createElement('div');
+            envTitle.className = 'test-title';
+            envTitle.textContent = 'ℹ️ Environment Information';
+            envInfo.appendChild(envTitle);
+            
+            const envDetails = document.createElement('div');
+            envDetails.className = 'env-info';
+            envDetails.innerHTML = `
+                <div class="env-info-item"><strong>Current URL:</strong> ${window.location.href}</div>
+                <div class="env-info-item"><strong>Protocol:</strong> ${window.location.protocol}</div>
+                <div class="env-info-item"><strong>Hostname:</strong> ${window.location.hostname}</div>
+                <div class="env-info-item"><strong>Port:</strong> ${window.location.port || 'default'}</div>
+                <div class="env-info-item"><strong>Browser:</strong> ${navigator.userAgent}</div>
+            `;
+            envInfo.appendChild(envDetails);
+            
+            results.appendChild(envInfo);
         }
         
         // Auto-run on load
