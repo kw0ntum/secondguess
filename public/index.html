@@ -13,195 +13,638 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
+            padding-bottom: 120px; /* Space for fixed input */
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            overflow: hidden;
+        html {
+            scroll-behavior: smooth;
         }
 
-        .nav-bar {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-        }
-
-        .nav-link {
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-
+        /* Header */
         .header {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0;
-            min-height: 600px;
-        }
-
-        .conversation-panel {
-            padding: 30px;
-            border-right: 1px solid #e5e7eb;
-        }
-
-        .sop-panel {
-            padding: 30px;
-            background: #f9fafb;
-        }
-
-        .panel-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #1f2937;
-        }
-
-        .conversation-area {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            height: 300px;
-            padding: 20px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            max-width: 80%;
-        }
-
-        .message.user {
-            background: #4f46e5;
-            color: white;
-            margin-left: auto;
-        }
-
-        .message.assistant {
-            background: #e5e7eb;
-            color: #1f2937;
-        }
-
-        .input-area {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .text-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .text-input:focus {
-            border-color: #4f46e5;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            background: #4f46e5;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #4338ca;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #4b5563;
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #059669;
-        }
-
-        .controls {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .status-bar {
-            background: #1f2937;
-            color: white;
-            padding: 15px 30px;
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
             font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #1a1a1a;
+        }
+
+
+        /* Main Container */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem 1rem 1rem;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Welcome Message */
+        .welcome {
+            text-align: center;
+            padding: 2rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .welcome h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        /* Message */
+        .message {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 12px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            background: #f8f9fa;
+        }
+
+        .message.assistant {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .message.assistant .message-avatar {
+            background: #f3f4f6;
+        }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-role {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .message.user .message-role {
+            color: #667eea;
+        }
+
+        .message.assistant .message-role {
+            color: #1a1a1a;
+        }
+
+        .message-text {
+            color: #1a1a1a;
+            word-wrap: break-word;
+        }
+
+        .message-hash {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .message-hash-label {
+            font-weight: 500;
+        }
+
+        .message-hash-value {
+            background: #f3f4f6;
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            user-select: all;
+            cursor: pointer;
+        }
+
+        .message-hash-value:hover {
+            background: #e5e7eb;
+        }
+
+        /* AI Response Blocks */
+        .ai-response-block {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f9fafb;
+            border-left: 3px solid #667eea;
+            border-radius: 6px;
+        }
+
+        .ai-response-block h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-response-block p {
+            margin: 0.5rem 0;
+            line-height: 1.6;
+        }
+
+        .ai-response-block ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .ai-response-block li {
+            margin: 0.25rem 0;
+            line-height: 1.5;
+        }
+
+        .ai-response-block li::marker {
+            color: #667eea;
+        }
+
+        .completeness-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .completeness-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .completeness-text {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .ai-question {
+            background: #eff6ff;
+            border-left-color: #3b82f6;
+            margin-top: 1rem;
+        }
+
+        .ai-question h4 {
+            color: #3b82f6;
+        }
+
+        /* Formatted content */
+        .message-text h1, .message-text h2, .message-text h3 {
+            margin: 1rem 0 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .message-text h1 { font-size: 1.5rem; }
+        .message-text h2 { font-size: 1.25rem; }
+        .message-text h3 { font-size: 1.1rem; }
+
+        .message-text ul, .message-text ol {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .message-text li {
+            margin: 0.25rem 0;
+        }
+
+        .message-text table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .message-text th, .message-text td {
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            text-align: left;
+        }
+
+        .message-text th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+
+        .message-text strong {
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .message-text code {
+            background: #f3f4f6;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        /* Input Container */
+        .input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            z-index: 90;
+        }
+
+        .input-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            position: relative;
+        }
+
+        .input-box {
+            width: 100%;
+            min-height: 60px;
+            max-height: 200px;
+            padding: 0.75rem 12rem 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            overflow-y: auto;
+            transition: border-color 0.2s;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-box::placeholder {
+            color: #9ca3af;
+        }
+
+        .send-button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            font-size: 1.1rem;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-button.loading {
+            background: #9ca3af;
+        }
+
+        /* Button Group */
+        .button-group {
+            position: absolute;
+            right: 1.25rem;
+            bottom: 0.75rem;
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        /* Microphone Button */
+        .mic-button {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .mic-button .mic-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .mic-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .mic-button.recording {
+            background: #ef4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        .mic-button.recording .mic-icon {
+            animation: micPulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+        }
+
+        @keyframes micPulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.2); }
+        }
+
+        .recording-indicator {
+            display: none;
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 10px;
+            height: 10px;
+            background: #ef4444;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .mic-button.recording .recording-indicator {
+            display: block;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Voice Wave Animation */
+        .voice-wave {
+            display: none;
+            position: absolute;
+            right: 7rem;
+            bottom: 0.75rem;
+            height: 36px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 8px;
+            padding: 6px 10px;
+            align-items: center;
+            gap: 3px;
+            z-index: 100;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        }
+
+        .voice-wave.active {
+            display: flex;
+        }
+
+        .wave-bar {
+            width: 3px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+            height: 10px;
+            transition: height 0.1s ease-out;
+        }
+
+        /* Animation when recording */
+        .voice-wave.active .wave-bar {
+            animation: wave 0.8s ease-in-out infinite;
+        }
+
+        .voice-wave.active .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .voice-wave.active .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .voice-wave.active .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .voice-wave.active .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .voice-wave.active .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { height: 10px; }
+            50% { height: 24px; }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .send-button.loading .spinner {
+            display: block;
+        }
+
+        .send-button.loading .send-icon {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+
+        /* Action Buttons */
+        .action-buttons {
+            max-width: 900px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #1a1a1a;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .action-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* SOP Section */
+        .sop-section {
+            max-width: 900px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            display: none;
+        }
+
+        .sop-section.visible {
+            display: block;
+        }
+
+        .sop-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .sop-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+
+        .sop-content {
+            color: #4b5563;
+            line-height: 1.8;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            max-width: 900px;
+            margin: 0 auto 0.5rem auto;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #9ca3af;
         }
 
         .status-indicator {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 0.5rem;
         }
 
         .status-dot {
@@ -211,146 +654,176 @@
             background: #10b981;
         }
 
-        .sop-preview {
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            height: 400px;
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .sop-content {
-            line-height: 1.6;
-            color: #374151;
-        }
-
-        .sop-content h2 {
-            color: #1f2937;
-            margin-bottom: 10px;
-            font-size: 1.3rem;
-        }
-
-        .sop-content h3 {
-            color: #4b5563;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-        }
-
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: #6b7280;
-        }
-
-        .loading.show {
-            display: block;
-        }
-
-        .error {
+        /* Error Message */
+        .error-message {
+            max-width: 900px;
+            margin: 1rem auto;
+            padding: 1rem;
             background: #fef2f2;
             border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 12px 16px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            color: #dc2626;
         }
 
-        @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
+        /* Loading State */
+        .typing-indicator {
+            display: none;
+            padding: 1.5rem;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .typing-indicator.visible {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .typing-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typingAnimation 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
             }
-            
-            .conversation-panel {
-                border-right: none;
-                border-bottom: 1px solid #e5e7eb;
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        .typing-text {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .action-btn {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div class="nav-bar">
-        <a href="/" class="nav-link">🏠 Home</a>
-        <a href="/api-dashboard.html" class="nav-link" target="_blank">📊 API Dashboard</a>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🎙️ AI Voice SOP Agent</div>
+            <div class="nav-links">
+                <a href="/new" class="nav-link" target="_blank" rel="noopener noreferrer">🏠 Home</a>
+                <a href="/dashboard" class="nav-link" target="_blank" rel="noopener noreferrer">📈 System Dashboard</a>
+                <a href="/api-dashboard-new.html" class="nav-link" target="_blank" rel="noopener noreferrer">🔍 API Logs</a>
+            </div>
+        </div>
     </div>
-    
-    <div class="container">
-        <div class="header">
-            <h1>🎙️ AI Voice SOP Agent</h1>
-            <p>Generate Standard Operating Procedures through conversational AI</p>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Welcome Message (shown when no conversation) -->
+        <div class="welcome" id="welcome-section">
+            <h1>Create SOPs with AI</h1>
+            <p>Describe your workflow or process, and I'll help you create a comprehensive Standard Operating Procedure.</p>
         </div>
 
-        <div class="main-content">
-            <div class="conversation-panel">
-                <h2 class="panel-title">💬 Conversation</h2>
-                
-                <div class="conversation-area" id="conversationArea">
-                    <div class="message assistant">
-                        <strong>AI Assistant:</strong> Hello! I'm here to help you create Standard Operating Procedures. 
-                        Describe the workflow or process you'd like to document, and I'll guide you through creating a comprehensive SOP.
-                    </div>
-                </div>
-
-                <div class="input-area">
-                    <input type="text" class="text-input" id="messageInput" 
-                           placeholder="Describe your workflow or process..." 
-                           onkeypress="handleKeyPress(event)">
-                    <button class="btn btn-primary" onclick="sendMessage()">
-                        📤 Send
-                    </button>
-                </div>
-
-                <div class="controls">
-                    <button class="btn btn-success" onclick="startVoiceConversation()" id="voiceBtn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
-                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                            <line x1="12" y1="19" x2="12" y2="22"/>
-                        </svg>
-                        Start Voice Conversation
-                    </button>
-                    <button class="btn btn-secondary" onclick="startNewSession()">
-                        🔄 New Session
-                    </button>
-                    <button class="btn btn-success" onclick="generateSOP()" id="generateBtn" disabled>
-                        📋 Generate SOP
-                    </button>
-                </div>
-            </div>
-
-            <div class="sop-panel">
-                <h2 class="panel-title">📄 SOP Preview</h2>
-                
-                <div class="sop-preview" id="sopPreview">
-                    <div class="loading" id="sopLoading">
-                        <p>🔄 Generating SOP...</p>
-                    </div>
-                    <div class="sop-content" id="sopContent">
-                        <p style="color: #6b7280; text-align: center; padding: 40px;">
-                            Your generated SOP will appear here after you complete the conversation and click "Generate SOP".
-                        </p>
-                    </div>
-                </div>
-
-                <div class="controls" style="margin-top: 20px;">
-                    <button class="btn btn-secondary" onclick="exportSOP('pdf')" id="exportPdfBtn" disabled>
-                        📄 Export PDF
-                    </button>
-                    <button class="btn btn-secondary" onclick="exportSOP('docx')" id="exportDocxBtn" disabled>
-                        📝 Export Word
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="status-bar">
+        <!-- Status Bar -->
+        <div class="status-bar" id="status-bar" style="display: none;">
             <div class="status-indicator">
-                <div class="status-dot" id="statusDot"></div>
-                <span id="statusText">Connected to API</span>
+                <div class="status-dot" id="status-dot"></div>
+                <span id="status-text">Connected</span>
             </div>
-            <div>
-                <span id="sessionInfo">No active session</span>
+            <div id="session-info">No active session</div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="chat-container" id="chat-container"></div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typing-indicator">
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <span class="typing-text">AI is thinking...</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons" id="action-buttons" style="display: none;">
+            <button class="action-btn primary" onclick="generateSOP()" id="generate-btn" disabled>
+                📋 Generate SOP
+            </button>
+        </div>
+
+        <!-- SOP Section -->
+        <div class="sop-section" id="sop-section">
+            <div class="sop-card">
+                <h2>📄 Generated SOP</h2>
+                <div class="sop-content" id="sop-content"></div>
+            </div>
+            <div class="action-buttons">
+                <button class="action-btn" onclick="exportSOP('pdf')" id="export-pdf-btn">
+                    📄 Export PDF
+                </button>
+                <button class="action-btn" onclick="exportSOP('docx')" id="export-docx-btn">
+                    📝 Export Word
+                </button>
+                <button class="action-btn" onclick="exportSOP('md')" id="export-md-btn">
+                    🤖 Export Agent.MD
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Container (Fixed at bottom) -->
+    <div class="input-container">
+        <div class="input-wrapper">
+            <textarea 
+                id="message-input" 
+                class="input-box" 
+                placeholder="Describe your workflow or process... (or use voice 🎤)"
+                rows="10"
+                onkeydown="handleKeyPress(event)"
+            ></textarea>
+            <div class="button-group">
+                <button class="mic-button" id="mic-button" onclick="toggleVoiceRecording()" title="Voice input">
+                    <svg class="mic-icon" id="mic-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                    </svg>
+                    <div class="recording-indicator" id="recording-indicator"></div>
+                </button>
+                <button class="send-button" id="send-button" onclick="sendMessage()" disabled>
+                    <span class="send-icon">➤</span>
+                    <div class="spinner"></div>
+                </button>
             </div>
         </div>
     </div>
@@ -359,158 +832,83 @@
         // Global state
         let currentSessionId = null;
         let conversationHistory = [];
-        let currentWorkflow = null;
-        let currentSOP = null;
-        let authToken = null; // Will be fetched dynamically
+        let authToken = null;
+        let isProcessing = false;
+        
+        // Voice recording state
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordingStartTime = null;
+        let recordingTimer = null;
+        let audioContext = null;
+        let analyser = null;
+        let animationFrame = null;
+        let waveElement = null;
 
-        // Detect if running on Vercel or locally
         const API_BASE = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api' 
             : `${window.location.origin}/api`;
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('Application initialized');
-            console.log('API_BASE:', API_BASE);
-            console.log('Window location:', window.location.href);
-            console.log('Protocol:', window.location.protocol);
-            console.log('Hostname:', window.location.hostname);
-            console.log('Browser:', navigator.userAgent);
-            
-            // Check if opened via file:// protocol
-            if (window.location.protocol === 'file:') {
-                showError('⚠️ Please open this page through the server at http://localhost:3000 (not by opening the HTML file directly)');
-                updateStatus('Wrong URL', false);
-                return;
-            }
-            
-            // Check if hostname is correct
-            if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && !window.location.hostname.includes('vercel.app')) {
-                showError('⚠️ Unexpected hostname: ' + window.location.hostname + '. Expected localhost or vercel.app');
-            }
-            
-            // First, obtain authentication token
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
             await obtainAuthToken();
-            
-            if (!authToken) {
-                showError('Failed to obtain authentication token. Please refresh the page.');
-                updateStatus('Auth Failed', false);
-                return;
-            }
-            
-            // Check API connection
-            await checkAPIConnection();
-            
-            // Wait a bit for server to be ready
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Then start session
             await startNewSession();
+            
+            // Enable send button when there's text and auto-resize textarea
+            const messageInput = document.getElementById('message-input');
+            messageInput.addEventListener('input', (e) => {
+                const hasText = e.target.value.trim().length > 0;
+                const sendButton = document.getElementById('send-button');
+                const shouldEnable = hasText && !isProcessing;
+                sendButton.disabled = !shouldEnable;
+                
+                console.log('Input changed:', { hasText, isProcessing, disabled: sendButton.disabled });
+                
+                // Auto-resize textarea
+                e.target.style.height = 'auto';
+                e.target.style.height = Math.min(e.target.scrollHeight, 200) + 'px';
+            });
+            
+            // Reset textarea height on send
+            messageInput.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    setTimeout(() => {
+                        messageInput.style.height = '60px';
+                    }, 100);
+                }
+            });
         });
 
-        // Obtain authentication token
+        // Get auth token
         async function obtainAuthToken() {
             try {
-                console.log('Obtaining authentication token...');
-                
-                // Try to get token from sessionStorage first
                 const storedToken = sessionStorage.getItem('authToken');
-                const tokenExpiry = sessionStorage.getItem('tokenExpiry');
-                
-                if (storedToken && tokenExpiry) {
-                    const expiryTime = new Date(tokenExpiry).getTime();
-                    const now = Date.now();
-                    
-                    // If token is still valid (with 5 minute buffer), use it
-                    if (expiryTime - now > 5 * 60 * 1000) {
-                        authToken = storedToken;
-                        console.log('Using stored authentication token');
-                        return true;
-                    }
+                if (storedToken) {
+                    authToken = storedToken;
+                    return;
                 }
                 
-                // Request a new guest token
                 const response = await fetch(`${API_BASE}/auth/guest`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
                 
                 if (response.ok) {
                     const data = await response.json();
                     authToken = data.token;
-                    
-                    // Store token in sessionStorage (not localStorage for better security)
                     sessionStorage.setItem('authToken', authToken);
-                    
-                    // Calculate expiry time (24 hours from now)
-                    const expiryTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
-                    sessionStorage.setItem('tokenExpiry', expiryTime.toISOString());
-                    
-                    console.log('Authentication token obtained successfully');
-                    return true;
-                } else {
-                    console.error('Failed to obtain auth token:', response.status);
-                    return false;
                 }
             } catch (error) {
-                console.error('Error obtaining auth token:', error);
-                return false;
+                console.error('Failed to obtain auth token:', error);
             }
         }
 
-        // Check API connection
-        async function checkAPIConnection() {
-            try {
-                console.log('Checking API connection...');
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-                
-                const response = await fetch(`${API_BASE}/monitoring/health`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (response.ok) {
-                    const health = await response.json();
-                    console.log('API health check:', health);
-                    updateStatus('Connected', true);
-                    return true;
-                } else {
-                    console.warn('API health check failed:', response.status);
-                    updateStatus('API Degraded', false);
-                    return false;
-                }
-            } catch (error) {
-                console.error('API connection failed:', error);
-                updateStatus('API Offline', false);
-                return false;
-            }
-        }
-
-        // Update status indicator
-        function updateStatus(text, isHealthy) {
-            const statusDot = document.getElementById('statusDot');
-            const statusText = document.getElementById('statusText');
-            
-            statusDot.style.background = isHealthy ? '#10b981' : '#ef4444';
-            statusText.textContent = text;
-        }
-
-        // Start a new conversation session
+        // Start new session
         async function startNewSession() {
             try {
-                console.log('Starting new session with API_BASE:', API_BASE);
-                
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                // Clear API logs before starting new session
+                await clearAPILogs();
                 
                 const response = await fetch(`${API_BASE}/sessions`, {
                     method: 'POST',
@@ -519,125 +917,132 @@
                         'Authorization': `Bearer ${authToken}`
                     },
                     body: JSON.stringify({
-                        userId: 'web-user-' + Date.now()
-                    }),
-                    signal: controller.signal
+                        userId: 'user-' + Date.now()
+                    })
                 });
-                
-                clearTimeout(timeoutId);
-
-                console.log('Session response status:', response.status);
                 
                 if (response.ok) {
-                    const session = await response.json();
-                    currentSessionId = session.sessionId;
+                    const data = await response.json();
+                    currentSessionId = data.sessionId;
                     conversationHistory = [];
-                    currentWorkflow = null;
-                    currentSOP = null;
                     
-                    document.getElementById('sessionInfo').textContent = `Session: ${currentSessionId.substring(0, 20)}...`;
-                    document.getElementById('generateBtn').disabled = true;
-                    document.getElementById('exportPdfBtn').disabled = true;
-                    document.getElementById('exportDocxBtn').disabled = true;
+                    // Update UI
+                    const chatContainer = document.getElementById('chat-container');
+                    chatContainer.textContent = '';
                     
-                    // Clear conversation area except welcome message
-                    const conversationArea = document.getElementById('conversationArea');
-                    conversationArea.innerHTML = `
-                        <div class="message assistant">
-                            <strong>AI Assistant:</strong> Hello! I'm here to help you create Standard Operating Procedures. 
-                            Describe the workflow or process you'd like to document, and I'll guide you through creating a comprehensive SOP.
-                        </div>
-                    `;
+                    // Hide welcome section
+                    document.getElementById('welcome-section').style.display = 'none';
                     
-                    // Clear SOP preview
-                    document.getElementById('sopContent').innerHTML = `
-                        <p style="color: #6b7280; text-align: center; padding: 40px;">
-                            Your generated SOP will appear here after you complete the conversation and click "Generate SOP".
-                        </p>
-                    `;
+                    // Show status bar and update
+                    const statusBar = document.getElementById('status-bar');
+                    statusBar.style.display = 'flex';
+                    document.getElementById('session-info').textContent = `Session: ${currentSessionId.substring(0, 8)}...`;
+                    updateStatus('connected', 'Connected');
                     
-                    console.log('New session started:', currentSessionId);
-                    addMessageToConversation('assistant', '✅ Session started successfully! You can now describe your workflow.');
+                    // Scroll to status bar
+                    statusBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    
+                    // Add welcome message to chat
+                    setTimeout(() => {
+                        addSystemMessage('👋 Welcome! New session started. Tell me about the workflow or process you want to document.');
+                        
+                        // Hide action buttons initially
+                        document.getElementById('action-buttons').style.display = 'none';
+                        document.getElementById('sop-section').classList.remove('visible');
+                        document.getElementById('generate-btn').disabled = true;
+                    }, 300);
                 } else {
-                    const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-                    throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Failed to create session');
                 }
             } catch (error) {
-                console.error('Session creation failed:', error);
-                console.error('Error details:', {
-                    name: error.name,
-                    message: error.message,
-                    stack: error.stack
+                console.error('Failed to start session:', error);
+                showError('Failed to start new session. Please try again.');
+            }
+        }
+
+        // Clear API logs
+        async function clearAPILogs() {
+            try {
+                const response = await fetch(`${API_BASE}/logs`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
                 });
                 
-                // Provide more helpful error messages
-                let errorMessage = 'Failed to start new session: ';
-                if (error.name === 'AbortError') {
-                    errorMessage += 'Request timed out. Server may be slow or not responding.';
-                } else if (error.message === 'Failed to fetch' || error.message.includes('Load failed')) {
-                    errorMessage += 'Cannot connect to server. Is the server running at ' + API_BASE + '?';
-                } else if (error.message.includes('NetworkError')) {
-                    errorMessage += 'Network error. Check your internet connection and server status.';
+                if (response.ok) {
+                    console.log('API logs cleared successfully');
                 } else {
-                    errorMessage += error.message;
+                    console.warn('Failed to clear API logs, but continuing...');
                 }
-                
-                showError(errorMessage);
-                
-                // Update status to show disconnected
-                updateStatus('Disconnected', false);
-                
-                // Add a retry button to the error message
-                const conversationArea = document.getElementById('conversationArea');
-                const retryDiv = document.createElement('div');
-                retryDiv.style.cssText = 'text-align: center; margin: 20px 0;';
-                retryDiv.innerHTML = '<button class="btn btn-primary" onclick="retryConnection()">🔄 Retry Connection</button>';
-                conversationArea.appendChild(retryDiv);
-            }
-        }
-        
-        // Retry connection function
-        async function retryConnection() {
-            console.log('Retrying connection...');
-            const conversationArea = document.getElementById('conversationArea');
-            conversationArea.innerHTML = `
-                <div class="message assistant">
-                    <strong>AI Assistant:</strong> Retrying connection...
-                </div>
-            `;
-            
-            const connected = await checkAPIConnection();
-            if (connected) {
-                await startNewSession();
-            } else {
-                showError('Still cannot connect to server. Please check that the server is running.');
+            } catch (error) {
+                console.warn('Error clearing API logs:', error);
+                // Don't throw error, just log it - we don't want to prevent session creation
             }
         }
 
-        // Send a message
+        // Add system message
+        function addSystemMessage(content) {
+            const container = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.style.background = '#f0f9ff';
+            messageDiv.style.borderLeft = '4px solid #3b82f6';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = '💬';
+            avatar.style.background = '#dbeafe';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            const roleDiv = document.createElement('div');
+            roleDiv.className = 'message-role';
+            roleDiv.textContent = 'System';
+            roleDiv.style.color = '#3b82f6';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            textDiv.textContent = content;
+            
+            contentDiv.appendChild(roleDiv);
+            contentDiv.appendChild(textDiv);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            container.appendChild(messageDiv);
+            
+            // Enhanced smooth scroll
+            smoothScrollToElement(messageDiv);
+        }
+
+        // Send message
         async function sendMessage() {
-            const input = document.getElementById('messageInput');
+            const input = document.getElementById('message-input');
             const message = input.value.trim();
             
-            if (!message) {
-                showError('Please enter a message');
-                return;
-            }
+            if (!message || isProcessing) return;
             
-            if (!currentSessionId) {
-                showError('No active session. Starting a new one...');
-                await startNewSession();
-                // Retry after session is created
-                if (!currentSessionId) return;
-            }
-
-            // Add user message to conversation
-            addMessageToConversation('user', message);
+            isProcessing = true;
             input.value = '';
-
+            input.style.height = '60px'; // Reset height
+            document.getElementById('send-button').disabled = true;
+            document.getElementById('welcome-section').style.display = 'none';
+            
+            // Add user message to UI
+            addMessage('user', message);
+            
+            // Show typing indicator and scroll to it
+            const typingIndicator = document.getElementById('typing-indicator');
+            typingIndicator.classList.add('visible');
+            
+            // Scroll to typing indicator
+            setTimeout(() => {
+                typingIndicator.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 100);
+            
             try {
-                console.log('Sending message to session:', currentSessionId);
-                
                 const response = await fetch(`${API_BASE}/conversations/${currentSessionId}/input`, {
                     method: 'POST',
                     headers: {
@@ -649,264 +1054,358 @@
                         type: 'text'
                     })
                 });
-
-                console.log('Message response status:', response.status);
-
-                if (response.ok) {
-                    const result = await response.json();
-                    addMessageToConversation('assistant', result.message);
-                    
-                    // Generate AI summary after user input
-                    await generateAISummary();
-                    
-                    // Enable generate button after some conversation
-                    if (conversationHistory.length >= 4) {
-                        document.getElementById('generateBtn').disabled = false;
-                    }
-                } else {
-                    const error = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-                    throw new Error(error.error?.message || `HTTP ${response.status}`);
-                }
-            } catch (error) {
-                console.error('Message sending failed:', error);
                 
-                // Provide more helpful error messages
-                let errorMessage = 'Failed to send message: ';
-                if (error.message === 'Failed to fetch' || error.message.includes('Load failed')) {
-                    errorMessage += 'Cannot connect to server. Please make sure the server is running at ' + API_BASE;
-                } else {
-                    errorMessage += error.message;
-                }
-                
-                showError(errorMessage);
-            }
-        }
-
-        // Generate AI summary using Gemini
-        async function generateAISummary() {
-            if (!currentSessionId) return;
-            
-            try {
-                console.log('Generating AI summary for session:', currentSessionId);
-                
-                const response = await fetch(`${API_BASE}/summarization/${currentSessionId}/generate`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-
                 if (response.ok) {
                     const data = await response.json();
-                    const summary = data.summary;
                     
-                    // Format and display the summary (sanitization happens in addMessageToConversation)
-                    let summaryMessage = '📋 **Workflow Summary**\n\n';
-                    summaryMessage += (summary.description || '') + '\n\n';
+                    // Hide typing indicator
+                    document.getElementById('typing-indicator').classList.remove('visible');
                     
-                    if (summary.keySteps && summary.keySteps.length > 0) {
-                        summaryMessage += '**Key Steps:**\n';
-                        summary.keySteps.forEach((step, index) => {
-                            summaryMessage += `${index + 1}. ${step || ''}\n`;
-                        });
-                        summaryMessage += '\n';
-                    }
+                    // Add assistant response with metadata (includes messageHash)
+                    addMessage('assistant', data.message, data.metadata);
                     
-                    if (summary.missingInformation && summary.missingInformation.length > 0) {
-                        summaryMessage += '**Missing Information:**\n';
-                        summary.missingInformation.forEach(item => {
-                            summaryMessage += `• ${item || ''}\n`;
-                        });
-                        summaryMessage += '\n';
-                    }
+                    // Update conversation history
+                    conversationHistory.push(
+                        { role: 'user', content: message },
+                        { role: 'assistant', content: data.message, metadata: data.metadata }
+                    );
                     
-                    // Ensure completenessScore is a safe number
-                    const completeness = parseInt(summary.completenessScore) || 0;
-                    summaryMessage += `**Completeness:** ${completeness}%\n\n`;
-                    
-                    // Add helpful next step message based on completeness
-                    if (completeness >= 70) {
-                        summaryMessage += 'Looking good! You can continue adding details or click "Generate SOP" when ready.';
-                    } else {
-                        summaryMessage += 'Please provide more details to improve the workflow completeness.';
-                    }
-                    
-                    addMessageToConversation('assistant', summaryMessage);
-                    
+                    // Show action buttons after first exchange with smooth animation
+                    setTimeout(() => {
+                        const actionButtons = document.getElementById('action-buttons');
+                        actionButtons.style.display = 'flex';
+                        document.getElementById('generate-btn').disabled = false;
+                        
+                        // Scroll to show action buttons
+                        actionButtons.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }, 500);
                 } else {
-                    console.warn('Failed to generate AI summary:', response.status);
-                    // Don't show error to user, just log it
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Failed to get response');
                 }
             } catch (error) {
-                console.error('AI summary generation failed:', error);
-                // Don't show error to user, just log it
+                console.error('Chat error:', error);
+                document.getElementById('typing-indicator').classList.remove('visible');
+                showError('Failed to send message. Please try again.');
+            } finally {
+                isProcessing = false;
+                document.getElementById('send-button').disabled = false;
             }
         }
 
-        // Handle Enter key press
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        // Add message to conversation display using textContent to prevent XSS
-        function addMessageToConversation(sender, message) {
-            const conversationArea = document.getElementById('conversationArea');
+        // Add message to chat
+        function addMessage(role, content, metadata) {
+            const container = document.getElementById('chat-container');
             const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
+            messageDiv.className = `message ${role}`;
             
-            // Create label using DOM methods (no innerHTML)
-            const label = document.createElement('strong');
-            label.textContent = sender === 'user' ? 'You:' : 'AI Assistant:';
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = role === 'user' ? '👤' : '🤖';
             
-            // Create text node for message content (automatically safe from XSS)
-            const messageText = document.createTextNode(' ' + message);
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
             
-            // Append elements safely
-            messageDiv.appendChild(label);
-            messageDiv.appendChild(messageText);
+            const roleDiv = document.createElement('div');
+            roleDiv.className = 'message-role';
+            roleDiv.textContent = role === 'user' ? 'You' : 'AI Assistant';
             
-            conversationArea.appendChild(messageDiv);
-            conversationArea.scrollTop = conversationArea.scrollHeight;
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
             
-            conversationHistory.push({ sender, message });
+            if (role === 'assistant' && metadata) {
+                // Format AI response with structured blocks
+                textDiv.appendChild(formatAIResponse(content, metadata));
+                
+                // Add message hash if available
+                if (metadata.messageHash) {
+                    const hashDiv = document.createElement('div');
+                    hashDiv.className = 'message-hash';
+                    
+                    const hashLabel = document.createElement('span');
+                    hashLabel.className = 'message-hash-label';
+                    hashLabel.textContent = 'ID:';
+                    
+                    const hashValue = document.createElement('span');
+                    hashValue.className = 'message-hash-value';
+                    hashValue.textContent = metadata.messageHash;
+                    hashValue.title = 'Click to copy message ID';
+                    hashValue.onclick = () => copyMessageHash(metadata.messageHash);
+                    
+                    hashDiv.appendChild(hashLabel);
+                    hashDiv.appendChild(hashValue);
+                    contentDiv.appendChild(hashDiv);
+                }
+            } else {
+                textDiv.textContent = content;
+            }
+            
+            contentDiv.appendChild(roleDiv);
+            contentDiv.appendChild(textDiv);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(contentDiv);
+            container.appendChild(messageDiv);
+            
+            // Enhanced smooth scroll with multiple attempts to ensure visibility
+            smoothScrollToElement(messageDiv);
+        }
+
+        // Copy message hash to clipboard
+        function copyMessageHash(hash) {
+            navigator.clipboard.writeText(hash).then(() => {
+                // Show brief feedback
+                const hashElements = document.querySelectorAll('.message-hash-value');
+                hashElements.forEach(el => {
+                    if (el.textContent === hash) {
+                        const originalText = el.textContent;
+                        el.textContent = 'Copied!';
+                        el.style.background = '#d1fae5';
+                        setTimeout(() => {
+                            el.textContent = originalText;
+                            el.style.background = '';
+                        }, 1000);
+                    }
+                });
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        // Enhanced smooth scroll function
+        function smoothScrollToElement(element) {
+            // First scroll attempt
+            requestAnimationFrame(() => {
+                element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                
+                // Second scroll attempt after a short delay to ensure content is rendered
+                setTimeout(() => {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                }, 100);
+                
+                // Final scroll to ensure we're at the bottom
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: document.documentElement.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 300);
+            });
+        }
+
+        // Clean bullet characters from list items
+        function cleanBulletText(text) {
+            if (!text) return '';
+            // Remove leading bullet characters and numbers multiple times to catch nested markers
+            let cleaned = text.trim();
+            
+            // Keep removing leading markers until none are left
+            let previousLength = 0;
+            while (cleaned.length !== previousLength) {
+                previousLength = cleaned.length;
+                // Remove: -, *, •, ·, ◦, ▪, ▫, numbers with dots, and colons after numbers
+                cleaned = cleaned
+                    .replace(/^[\-\*•·◦▪▫]\s*/, '')
+                    .replace(/^\d+\.\s*/, '')
+                    .replace(/^\d+:\s*/, '')
+                    .replace(/^[:\.\s]+/, '')
+                    .trim();
+            }
+            
+            return cleaned;
+        }
+
+        // Format AI response with structured blocks
+        function formatAIResponse(content, metadata) {
+            const container = document.createElement('div');
+            
+            // Main message
+            const mainText = document.createElement('p');
+            mainText.textContent = content;
+            mainText.style.marginBottom = '1rem';
+            container.appendChild(mainText);
+            
+            // If we have structured data from the response, display it
+            if (metadata && metadata.summary) {
+                const summary = metadata.summary;
+                
+                // Summary block
+                if (summary.description) {
+                    const summaryBlock = createResponseBlock('📋 Summary', summary.description);
+                    container.appendChild(summaryBlock);
+                }
+                
+                // Key Steps
+                if (summary.keySteps && summary.keySteps.length > 0) {
+                    const stepsBlock = createResponseBlock('📝 Key Steps Identified', null);
+                    const stepsList = document.createElement('ul');
+                    summary.keySteps.forEach(step => {
+                        const li = document.createElement('li');
+                        li.textContent = cleanBulletText(step);
+                        stepsList.appendChild(li);
+                    });
+                    stepsBlock.appendChild(stepsList);
+                    container.appendChild(stepsBlock);
+                }
+                
+                // Inputs
+                if (summary.identifiedInputs && summary.identifiedInputs.length > 0) {
+                    const inputsBlock = createResponseBlock('📥 Required Inputs', null);
+                    const inputsList = document.createElement('ul');
+                    summary.identifiedInputs.forEach(input => {
+                        const li = document.createElement('li');
+                        li.textContent = cleanBulletText(input);
+                        inputsList.appendChild(li);
+                    });
+                    inputsBlock.appendChild(inputsList);
+                    container.appendChild(inputsBlock);
+                }
+                
+                // Outputs
+                if (summary.identifiedOutputs && summary.identifiedOutputs.length > 0) {
+                    const outputsBlock = createResponseBlock('📤 Expected Outputs', null);
+                    const outputsList = document.createElement('ul');
+                    summary.identifiedOutputs.forEach(output => {
+                        const li = document.createElement('li');
+                        li.textContent = cleanBulletText(output);
+                        outputsList.appendChild(li);
+                    });
+                    outputsBlock.appendChild(outputsList);
+                    container.appendChild(outputsBlock);
+                }
+                
+                // Missing Information
+                if (summary.missingInformation && summary.missingInformation.length > 0) {
+                    const missingBlock = createResponseBlock('⚠️ Missing Information', null);
+                    const missingList = document.createElement('ul');
+                    summary.missingInformation.forEach(item => {
+                        const li = document.createElement('li');
+                        li.textContent = cleanBulletText(item);
+                        missingList.appendChild(li);
+                    });
+                    missingBlock.appendChild(missingList);
+                    container.appendChild(missingBlock);
+                }
+                
+                // Completeness Score
+                if (summary.completenessScore !== undefined) {
+                    const completenessBlock = createResponseBlock('📊 Workflow Completeness', null);
+                    
+                    const barContainer = document.createElement('div');
+                    barContainer.className = 'completeness-bar';
+                    
+                    const barFill = document.createElement('div');
+                    barFill.className = 'completeness-fill';
+                    barFill.style.width = `${summary.completenessScore}%`;
+                    
+                    barContainer.appendChild(barFill);
+                    completenessBlock.appendChild(barContainer);
+                    
+                    const scoreText = document.createElement('div');
+                    scoreText.className = 'completeness-text';
+                    scoreText.textContent = `${summary.completenessScore}% complete`;
+                    completenessBlock.appendChild(scoreText);
+                    
+                    container.appendChild(completenessBlock);
+                }
+                
+                // Next Questions
+                if (summary.suggestedNextQuestions && summary.suggestedNextQuestions.length > 0) {
+                    const questionsBlock = createResponseBlock('❓ Next Questions', null);
+                    questionsBlock.classList.add('ai-question');
+                    const questionsList = document.createElement('ul');
+                    summary.suggestedNextQuestions.forEach(question => {
+                        const li = document.createElement('li');
+                        li.textContent = cleanBulletText(question);
+                        questionsList.appendChild(li);
+                    });
+                    questionsBlock.appendChild(questionsList);
+                    container.appendChild(questionsBlock);
+                }
+            }
+            
+            return container;
+        }
+
+        // Create a response block
+        function createResponseBlock(title, content) {
+            const block = document.createElement('div');
+            block.className = 'ai-response-block';
+            
+            const heading = document.createElement('h4');
+            heading.textContent = title;
+            block.appendChild(heading);
+            
+            if (content) {
+                const text = document.createElement('p');
+                text.textContent = content;
+                block.appendChild(text);
+            }
+            
+            return block;
         }
 
         // Generate SOP
         async function generateSOP() {
-            if (!currentSessionId) return;
-
-            const sopLoading = document.getElementById('sopLoading');
-            const sopContent = document.getElementById('sopContent');
-            const generateBtn = document.getElementById('generateBtn');
+            if (!currentSessionId || conversationHistory.length === 0) {
+                showError('Please have a conversation first before generating an SOP.');
+                return;
+            }
             
-            sopLoading.classList.add('show');
+            // Prompt for document title
+            const documentTitle = prompt('Enter the SOP document title:', 'Standard Operating Procedure');
+            if (!documentTitle || documentTitle.trim() === '') {
+                return; // User cancelled or entered empty title
+            }
+            
+            const generateBtn = document.getElementById('generate-btn');
             generateBtn.disabled = true;
-
+            generateBtn.textContent = '⏳ Generating SOP...';
+            
             try {
-                // First, finalize the workflow
-                const workflowResponse = await fetch(`${API_BASE}/conversations/${currentSessionId}/finalize`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    }
-                });
-
-                if (!workflowResponse.ok) {
-                    throw new Error('Failed to finalize workflow');
-                }
-
-                currentWorkflow = await workflowResponse.json();
-
-                // Then generate the SOP
-                const sopResponse = await fetch(`${API_BASE}/sops`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: JSON.stringify({
-                        workflowDefinition: currentWorkflow,
-                        sopType: 'process_improvement'
-                    })
-                });
-
-                if (sopResponse.ok) {
-                    currentSOP = await sopResponse.json();
-                    displaySOP(currentSOP);
-                    
-                    document.getElementById('exportPdfBtn').disabled = false;
-                    document.getElementById('exportDocxBtn').disabled = false;
-                } else {
-                    throw new Error('Failed to generate SOP');
-                }
+                // Store document title in sessionStorage
+                sessionStorage.setItem('sopDocumentTitle', documentTitle.trim());
+                
+                // Redirect to SOP view page with session ID
+                window.location.href = `/sop-view.html?sessionId=${currentSessionId}`;
             } catch (error) {
-                showError('Failed to generate SOP: ' + error.message);
-                console.error('SOP generation failed:', error);
-            } finally {
-                sopLoading.classList.remove('show');
+                console.error('SOP generation error:', error);
+                showError('Failed to generate SOP. Please try again.');
                 generateBtn.disabled = false;
+                generateBtn.textContent = '📋 Generate SOP';
             }
         }
 
-        // Escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Display SOP in preview with proper sanitization
-        function displaySOP(sop) {
-            const sopContent = document.getElementById('sopContent');
-            
-            // Clear existing content
-            sopContent.innerHTML = '';
-            
-            // Create title
-            const title = document.createElement('h2');
-            title.textContent = sop.title || 'Untitled SOP';
-            sopContent.appendChild(title);
-            
-            // Create type paragraph
-            const typePara = document.createElement('p');
-            const typeLabel = document.createElement('strong');
-            typeLabel.textContent = 'Type: ';
-            typePara.appendChild(typeLabel);
-            typePara.appendChild(document.createTextNode((sop.type || '').replace('_', ' ').toUpperCase()));
-            sopContent.appendChild(typePara);
-            
-            // Create version paragraph
-            const versionPara = document.createElement('p');
-            const versionLabel = document.createElement('strong');
-            versionLabel.textContent = 'Version: ';
-            versionPara.appendChild(versionLabel);
-            versionPara.appendChild(document.createTextNode(sop.version || '1.0'));
-            sopContent.appendChild(versionPara);
-            
-            // Create horizontal rule
-            const hr = document.createElement('hr');
-            hr.style.cssText = 'margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;';
-            sopContent.appendChild(hr);
-
-            if (sop.sections && sop.sections.length > 0) {
-                sop.sections.forEach((section, index) => {
-                    // Create section heading
-                    const heading = document.createElement('h3');
-                    heading.textContent = `${index + 1}. ${section.title || 'Untitled Section'}`;
-                    sopContent.appendChild(heading);
-                    
-                    // Create section content div
-                    const contentDiv = document.createElement('div');
-                    contentDiv.style.marginBottom = '20px';
-                    
-                    // Split content by newlines and create text nodes with <br> elements
-                    const lines = (section.content || '').split('\n');
-                    lines.forEach((line, lineIndex) => {
-                        contentDiv.appendChild(document.createTextNode(line));
-                        if (lineIndex < lines.length - 1) {
-                            contentDiv.appendChild(document.createElement('br'));
-                        }
-                    });
-                    
-                    sopContent.appendChild(contentDiv);
-                });
-            } else {
-                const placeholder = document.createElement('p');
-                placeholder.textContent = 'SOP content will be displayed here once generated.';
-                sopContent.appendChild(placeholder);
-            }
+        // Voice conversation
+        async function startVoiceConversation() {
+            showError('Voice input feature coming soon!');
         }
 
         // Export SOP
         async function exportSOP(format) {
-            if (!currentSOP) return;
-
+            // Get the stored SOP data
+            const sopData = sessionStorage.getItem('currentSOPData');
+            
+            if (!sopData) {
+                showError('No SOP to export. Please generate an SOP first.');
+                return;
+            }
+            
+            const btnIds = {
+                'pdf': 'export-pdf-btn',
+                'docx': 'export-docx-btn',
+                'md': 'export-md-btn'
+            };
+            
+            const exportBtn = document.getElementById(btnIds[format]);
+            const originalText = exportBtn.textContent;
+            exportBtn.disabled = true;
+            exportBtn.textContent = `⏳ Exporting ${format.toUpperCase()}...`;
+            
             try {
-                const response = await fetch(`${API_BASE}/sops/${currentSOP.id}/export`, {
+                const sopId = sessionStorage.getItem('currentSOPId') || currentSessionId;
+                const parsedSOPData = JSON.parse(sopData);
+                
+                const response = await fetch(`${API_BASE}/sops/${sopId}/export`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -914,147 +1413,405 @@
                     },
                     body: JSON.stringify({
                         format: format,
+                        sopData: parsedSOPData,
                         options: {
-                            includeCharts: true
+                            includeMetadata: true,
+                            headerFooter: {
+                                includeHeader: true,
+                                includeFooter: true
+                            },
+                            agentFormat: format === 'md' // Special flag for Agent.MD format
                         }
                     })
                 });
-
+                
                 if (response.ok) {
-                    const result = await response.json();
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
                     
-                    // Create a temporary link to download the file
-                    const link = document.createElement('a');
-                    link.href = result.downloadUrl;
-                    link.download = `sop.${format}`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
+                    // Set appropriate filename
+                    const title = parsedSOPData.title || 'SOP';
+                    const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
+                    const extension = format === 'md' ? 'md' : format;
+                    a.download = `${cleanTitle}_v${parsedSOPData.version || '1.0'}.${extension}`;
                     
-                    addMessageToConversation('assistant', `✅ SOP exported as ${format.toUpperCase()} successfully!`);
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    // Show success message
+                    const formatName = format === 'md' ? 'Agent.MD' : format.toUpperCase();
+                    addSystemMessage(`✅ SOP exported successfully as ${formatName}`);
                 } else {
-                    throw new Error(`Failed to export SOP as ${format}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Export failed');
                 }
             } catch (error) {
-                showError(`Failed to export SOP: ${error.message}`);
-                console.error('Export failed:', error);
+                console.error('Export error:', error);
+                const formatName = format === 'md' ? 'Agent.MD' : format.toUpperCase();
+                showError(`Failed to export SOP as ${formatName}. Please try again.`);
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = originalText;
             }
         }
 
-        // Show error message
-        function showError(message) {
-            const conversationArea = document.getElementById('conversationArea');
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = '❌ ' + message;
-            conversationArea.appendChild(errorDiv);
-            conversationArea.scrollTop = conversationArea.scrollHeight;
+        // Handle keyboard shortcuts
+        function handleKeyPress(event) {
+            // Send on Ctrl/Cmd + Enter
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                sendMessage();
+            }
         }
 
-        // Voice recording state
-        let isRecording = false;
-        let mediaRecorder = null;
-        let audioChunks = [];
-
-        // Start voice conversation
-        async function startVoiceConversation() {
-            const voiceBtn = document.getElementById('voiceBtn');
+        // Update status
+        function updateStatus(status, text) {
+            const dot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
             
-            // If already recording, stop it
+            if (status === 'connected') {
+                dot.style.background = '#10b981';
+            } else if (status === 'processing') {
+                dot.style.background = '#f59e0b';
+            } else {
+                dot.style.background = '#ef4444';
+            }
+            
+            statusText.textContent = text;
+        }
+
+        // Show error
+        function showError(message) {
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            const mainContainer = document.querySelector('.main-container');
+            mainContainer.insertBefore(errorDiv, mainContainer.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // ========== VOICE RECORDING FUNCTIONS ==========
+
+        // Toggle voice recording
+        async function toggleVoiceRecording() {
             if (isRecording) {
                 stopRecording();
-                return;
+            } else {
+                await startRecording();
             }
-            
+        }
+
+        // Start recording
+        async function startRecording() {
             try {
-                // Check if session exists
-                if (!currentSessionId) {
-                    await startNewSession();
-                    if (!currentSessionId) {
-                        showError('Failed to create session. Please try again.');
-                        return;
+                // Check if browser supports Web Speech API
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    startWebSpeechRecognition();
+                } else {
+                    // Fallback to MediaRecorder
+                    startMediaRecorderRecording();
+                }
+            } catch (error) {
+                console.error('Failed to start recording:', error);
+                showError('Failed to access microphone. Please check permissions.');
+            }
+        }
+
+        // Use Web Speech API (Free, browser-based)
+        function startWebSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            
+            let finalTranscript = '';
+            
+            recognition.onstart = () => {
+                isRecording = true;
+                updateRecordingUI(true);
+                createWaveAnimation();
+                console.log('Web Speech Recognition started');
+            };
+            
+            // Store existing text before starting
+            const messageInput = document.getElementById('message-input');
+            const existingText = messageInput.value;
+            
+            // Position cursor at end of text
+            const endPosition = existingText.length;
+            messageInput.setSelectionRange(endPosition, endPosition);
+            messageInput.focus();
+            
+            const cursorPosition = endPosition;
+            
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    const transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += transcript + ' ';
+                    } else {
+                        interimTranscript += transcript;
                     }
                 }
                 
-                // Check for browser support
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    showError('Voice input is not supported in your browser. Please use Chrome, Firefox, or Edge.');
-                    return;
+                // Combine existing text with new transcription
+                const textBefore = existingText.substring(0, cursorPosition);
+                const textAfter = existingText.substring(cursorPosition);
+                const newText = textBefore + finalTranscript + interimTranscript + textAfter;
+                
+                messageInput.value = newText;
+                messageInput.style.height = 'auto';
+                messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
+                
+                // Auto-scroll to bottom of textarea as text is added
+                messageInput.scrollTop = messageInput.scrollHeight;
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                if (event.error !== 'no-speech') {
+                    showError('Speech recognition error: ' + event.error);
                 }
+                stopRecording();
+            };
+            
+            recognition.onend = () => {
+                isRecording = false;
+                updateRecordingUI(false);
+                removeWaveAnimation();
                 
-                // Request microphone permission
-                voiceBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg> Requesting permission...';
-                voiceBtn.disabled = true;
+                const messageInput = document.getElementById('message-input');
+                if (messageInput.value.trim()) {
+                    document.getElementById('send-button').disabled = false;
+                }
+            };
+            
+            // Store recognition instance
+            window.currentRecognition = recognition;
+            recognition.start();
+        }
+
+        // Fallback: MediaRecorder recording
+        async function startMediaRecorderRecording() {
+            try {
+                // Request microphone access
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 48000
+                    } 
+                });
                 
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Create audio context for visualization
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                const source = audioContext.createMediaStreamSource(stream);
+                source.connect(analyser);
+                analyser.fftSize = 256;
                 
-                // Create MediaRecorder
-                mediaRecorder = new MediaRecorder(stream);
+                // Create media recorder
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'audio/webm;codecs=opus'
+                });
+                
                 audioChunks = [];
                 
+                // Handle data available
                 mediaRecorder.ondataavailable = (event) => {
                     if (event.data.size > 0) {
                         audioChunks.push(event.data);
                     }
                 };
                 
+                // Handle recording stop
                 mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    console.log('Audio recorded, size:', audioBlob.size);
-                    
-                    // For now, just show a message that voice is recorded
-                    // In a full implementation, this would be sent to the API
-                    addMessageToConversation('assistant', 
-                        '🎤 Voice recorded! Note: Voice-to-text processing requires additional backend setup. ' +
-                        'Please use the text input for now.'
-                    );
+                    await processRecording();
                     
                     // Stop all tracks
                     stream.getTracks().forEach(track => track.stop());
+                    
+                    // Close audio context
+                    if (audioContext) {
+                        audioContext.close();
+                        audioContext = null;
+                    }
                 };
                 
                 // Start recording
                 mediaRecorder.start();
                 isRecording = true;
+                recordingStartTime = Date.now();
                 
-                voiceBtn.textContent = '⏹️ Stop Recording';
-                voiceBtn.disabled = false;
-                voiceBtn.style.background = '#ef4444';
+                // Update UI
+                updateRecordingUI(true);
                 
-                addMessageToConversation('assistant', '🎤 Recording... Click the button again to stop.');
+                // Create wave animation
+                createWaveAnimation();
+                
+                // Start audio visualization
+                visualizeAudio();
+                
+                console.log('MediaRecorder recording started');
                 
             } catch (error) {
-                console.error('Voice setup failed:', error);
-                
-                if (error.name === 'NotAllowedError') {
-                    showError('Microphone permission denied. Please allow microphone access and try again.');
-                } else if (error.name === 'NotFoundError') {
-                    showError('No microphone found. Please connect a microphone and try again.');
-                } else {
-                    showError('Failed to setup voice: ' + error.message);
-                }
-                
-                voiceBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg> Start Voice Conversation';
-                voiceBtn.disabled = false;
-                voiceBtn.style.background = '#10b981';
-            }
-        }
-        
-        // Stop recording
-        function stopRecording() {
-            const voiceBtn = document.getElementById('voiceBtn');
-            
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-                
-                voiceBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg> Start Voice Conversation';
-                voiceBtn.style.background = '#10b981';
+                console.error('Failed to start recording:', error);
+                showError('Failed to access microphone. Please check permissions.');
             }
         }
 
-        // Periodic health check
-        setInterval(checkAPIConnection, 30000); // Check every 30 seconds
+        // Stop recording
+        function stopRecording() {
+            // Stop Web Speech Recognition
+            if (window.currentRecognition) {
+                window.currentRecognition.stop();
+                window.currentRecognition = null;
+            }
+            
+            // Stop MediaRecorder
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                // Update UI
+                updateRecordingUI(false);
+                
+                // Remove wave animation
+                removeWaveAnimation();
+                
+                // Stop visualization
+                if (animationFrame) {
+                    cancelAnimationFrame(animationFrame);
+                    animationFrame = null;
+                }
+                
+                console.log('Recording stopped');
+            }
+        }
+
+        // Process recording (only used for MediaRecorder fallback)
+        async function processRecording() {
+            try {
+                // Create blob from chunks
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                
+                console.log('Processing audio:', {
+                    size: audioBlob.size,
+                    type: audioBlob.type
+                });
+                
+                // Show processing message
+                addSystemMessage('🎤 Processing your voice input...');
+                
+                // Use mock transcription for fallback
+                // In production, this would call a free API like Vosk or Whisper
+                setTimeout(() => {
+                    const messageInput = document.getElementById('message-input');
+                    const mockText = 'Voice input captured. Please edit this text with your actual workflow description.';
+                    messageInput.value = mockText;
+                    messageInput.style.height = 'auto';
+                    messageInput.style.height = Math.min(messageInput.scrollHeight, 200) + 'px';
+                    
+                    // Enable send button
+                    document.getElementById('send-button').disabled = false;
+                    
+                    // Focus on input
+                    messageInput.focus();
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Failed to process recording:', error);
+                showError('Failed to process recording. Please try again.');
+            }
+        }
+
+        // Update recording UI
+        function updateRecordingUI(recording) {
+            const micButton = document.getElementById('mic-button');
+            
+            if (recording) {
+                micButton.classList.add('recording');
+            } else {
+                micButton.classList.remove('recording');
+            }
+        }
+
+        // Create wave animation near microphone button
+        function createWaveAnimation() {
+            const inputWrapper = document.querySelector('.input-wrapper');
+            
+            // Create wave element
+            waveElement = document.createElement('div');
+            waveElement.className = 'voice-wave active';
+            waveElement.id = 'voice-wave';
+            
+            // Create wave bars
+            for (let i = 0; i < 5; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                waveElement.appendChild(bar);
+            }
+            
+            // Position is set by CSS (right: 4.5rem, bottom: 0.75rem)
+            // This places it between the mic button and send button
+            
+            inputWrapper.appendChild(waveElement);
+        }
+
+        // Remove wave animation
+        function removeWaveAnimation() {
+            if (waveElement) {
+                waveElement.remove();
+                waveElement = null;
+            }
+        }
+
+        // Visualize audio levels (for MediaRecorder fallback)
+        function visualizeAudio() {
+            if (!analyser || !isRecording) return;
+            
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Calculate average volume
+            const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+            
+            // Update wave bars based on audio level
+            if (waveElement) {
+                const bars = waveElement.querySelectorAll('.wave-bar');
+                bars.forEach((bar, index) => {
+                    const height = Math.max(10, Math.min(24, (average / 255) * 24 + Math.random() * 4));
+                    bar.style.height = `${height}px`;
+                });
+            }
+            
+            animationFrame = requestAnimationFrame(visualizeAudio);
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (isRecording) {
+                stopRecording();
+            }
+        });
     </script>
 </body>
 </html>

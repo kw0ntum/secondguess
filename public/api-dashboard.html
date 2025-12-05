@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Monitoring Dashboard - AI Voice SOP Agent</title>
+    <title>API Monitoring Dashboard</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <style>
         * {
@@ -13,52 +13,72 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            color: #1a1a1a;
+            line-height: 1.6;
         }
-        
+
+        /* Header */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             position: sticky;
             top: 0;
             z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
         }
-        
-        .header h1 {
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        
-        .header-nav {
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
             display: flex;
             gap: 1rem;
-            margin-top: 1rem;
         }
-        
-        .header-nav a {
-            color: white;
+
+        .nav-link {
+            color: #666;
             text-decoration: none;
             padding: 0.5rem 1rem;
-            border-radius: 6px;
-            background: rgba(255,255,255,0.2);
-            transition: background 0.2s;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-size: 0.9rem;
         }
-        
-        .header-nav a:hover {
-            background: rgba(255,255,255,0.3);
+
+        .nav-link:hover {
+            background: #f3f4f6;
+            color: #1a1a1a;
         }
-        
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
-        
+
+        /* Tabs */
         .tabs {
             display: flex;
             gap: 0.5rem;
@@ -89,26 +109,35 @@
         
         .tab-content {
             display: none;
+            animation: fadeIn 0.3s ease-in;
         }
         
         .tab-content.active {
             display: block;
         }
-        
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
         .card {
             background: white;
             border-radius: 12px;
             padding: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb;
         }
         
         .card h2 {
             font-size: 1.25rem;
             margin-bottom: 1rem;
-            color: #333;
+            color: #1a1a1a;
         }
-        
+
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -122,6 +151,8 @@
             padding: 1.5rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             border-left: 4px solid #667eea;
+            border: 1px solid #e5e7eb;
+            border-left: 4px solid #667eea;
         }
         
         .stat-label {
@@ -133,7 +164,7 @@
         .stat-value {
             font-size: 2rem;
             font-weight: 700;
-            color: #333;
+            color: #1a1a1a;
         }
         
         .stat-change {
@@ -148,7 +179,8 @@
         .stat-change.negative {
             color: #ef4444;
         }
-        
+
+        /* Filters */
         .filters {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -172,8 +204,9 @@
         .filter-group select {
             padding: 0.75rem;
             border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.875rem;
+            transition: border-color 0.2s;
         }
         
         .filter-group input:focus,
@@ -181,11 +214,12 @@
             outline: none;
             border-color: #667eea;
         }
-        
+
+        /* Buttons */
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
@@ -193,12 +227,13 @@
         }
         
         .btn-primary {
-            background: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
         
         .btn-primary:hover {
-            background: #5a67d8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
         }
         
         .btn-secondary {
@@ -227,7 +262,14 @@
         .btn-success:hover {
             background: #059669;
         }
-        
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Tables */
         .logs-table {
             width: 100%;
             border-collapse: collapse;
@@ -251,7 +293,8 @@
         .logs-table tr:hover {
             background: #f9fafb;
         }
-        
+
+        /* Badges */
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 12px;
@@ -286,7 +329,8 @@
         .method-post { background: #d1fae5; color: #065f46; }
         .method-put { background: #fef3c7; color: #92400e; }
         .method-delete { background: #fee2e2; color: #991b1b; }
-        
+
+        /* API Tester */
         .api-tester {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -302,11 +346,16 @@
         textarea {
             padding: 0.75rem;
             border: 1px solid #e5e7eb;
-            border-radius: 6px;
+            border-radius: 8px;
             font-family: 'Courier New', monospace;
             font-size: 0.875rem;
             resize: vertical;
             min-height: 200px;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
         }
         
         .response-metrics {
@@ -319,7 +368,7 @@
         .metric-item {
             padding: 0.75rem;
             background: #f9fafb;
-            border-radius: 6px;
+            border-radius: 8px;
             text-align: center;
         }
         
@@ -332,9 +381,10 @@
         .metric-item-value {
             font-size: 1.25rem;
             font-weight: 600;
-            color: #333;
+            color: #1a1a1a;
         }
-        
+
+        /* States */
         .loading {
             text-align: center;
             padding: 2rem;
@@ -351,7 +401,8 @@
             font-size: 3rem;
             margin-bottom: 1rem;
         }
-        
+
+        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -363,15 +414,168 @@
         .pagination button {
             padding: 0.5rem 1rem;
         }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #1a1a1a;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #1a1a1a;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .detail-value {
+            color: #1a1a1a;
+            word-break: break-all;
+        }
+
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .copy-button:hover {
+            background: #5a67d8;
+        }
+
+        .copy-button.copied {
+            background: #10b981;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .api-tester {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal.active {
+                padding: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Header -->
     <div class="header">
-        <h1>📊 API Monitoring Dashboard</h1>
-        <div class="header-nav">
-            <a href="/">🏠 Home</a>
-            <a href="/dashboard">📈 System Dashboard</a>
-            <a href="/api-dashboard.html">🔍 API Logs</a>
+        <div class="header-content">
+            <div class="logo">📊 API Monitoring</div>
+            <div class="nav-links">
+                <a href="/new" class="nav-link">🏠 Home</a>
+                <a href="/dashboard" class="nav-link">📈 System Dashboard</a>
+                <a href="/api-dashboard-new.html" class="nav-link active">🔍 API Logs</a>
+            </div>
         </div>
     </div>
     
@@ -447,8 +651,12 @@
                             <option value="false">Success Only</option>
                         </select>
                     </div>
+                    <div class="filter-group">
+                        <label>Message ID</label>
+                        <input type="text" id="filter-message-hash" placeholder="Enter message ID">
+                    </div>
                 </div>
-                <div style="display: flex; gap: 1rem;">
+                <div class="button-group">
                     <button class="btn btn-primary" onclick="applyFilters()">Apply Filters</button>
                     <button class="btn btn-secondary" onclick="clearFilters()">Clear Filters</button>
                     <button class="btn btn-success" onclick="exportLogs('json')">Export JSON</button>
@@ -542,6 +750,19 @@
         </div>
     </div>
 
+    <!-- Log Details Modal -->
+    <div class="modal" id="log-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">API Log Details</div>
+                <button class="modal-close" onclick="closeLogModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Content will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
     <script>
         // Global state
         let authToken = null;
@@ -624,44 +845,47 @@
         
         function renderStats(stats) {
             const grid = document.getElementById('stats-grid');
-            grid.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-label">Total Requests</div>
-                    <div class="stat-value">${stats.totalRequests.toLocaleString()}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Successful</div>
-                    <div class="stat-value">${stats.successfulRequests.toLocaleString()}</div>
-                    <div class="stat-change positive">
-                        ${((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)}%
-                    </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Failed</div>
-                    <div class="stat-value">${stats.failedRequests.toLocaleString()}</div>
-                    <div class="stat-change negative">${stats.errorRate.toFixed(2)}%</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Avg Latency</div>
-                    <div class="stat-value">${Math.round(stats.averageLatency)}ms</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Avg Processing</div>
-                    <div class="stat-value">${Math.round(stats.averageProcessingTime)}ms</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Throughput</div>
-                    <div class="stat-value">${formatBytes(stats.averageThroughput)}/s</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Slowest Endpoint</div>
-                    <div class="stat-value" style="font-size: 0.875rem;">${stats.slowestEndpoint || 'N/A'}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Most Used</div>
-                    <div class="stat-value" style="font-size: 0.875rem;">${stats.mostUsedEndpoint || 'N/A'}</div>
-                </div>
-            `;
+            grid.innerHTML = '';
+            
+            const statCard = (label, value, change) => {
+                const div = document.createElement('div');
+                div.className = 'stat-card';
+                
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'stat-label';
+                labelDiv.textContent = label;
+                
+                const valueDiv = document.createElement('div');
+                valueDiv.className = 'stat-value';
+                valueDiv.textContent = value;
+                
+                div.appendChild(labelDiv);
+                div.appendChild(valueDiv);
+                
+                if (change) {
+                    const changeDiv = document.createElement('div');
+                    changeDiv.className = `stat-change ${change.type}`;
+                    changeDiv.textContent = change.text;
+                    div.appendChild(changeDiv);
+                }
+                
+                return div;
+            };
+            
+            grid.appendChild(statCard('Total Requests', stats.totalRequests.toLocaleString()));
+            grid.appendChild(statCard('Successful', stats.successfulRequests.toLocaleString(), {
+                type: 'positive',
+                text: `${((stats.successfulRequests / stats.totalRequests) * 100).toFixed(1)}%`
+            }));
+            grid.appendChild(statCard('Failed', stats.failedRequests.toLocaleString(), {
+                type: 'negative',
+                text: `${stats.errorRate.toFixed(2)}%`
+            }));
+            grid.appendChild(statCard('Avg Latency', `${Math.round(stats.averageLatency)}ms`));
+            grid.appendChild(statCard('Avg Processing', `${Math.round(stats.averageProcessingTime)}ms`));
+            grid.appendChild(statCard('Throughput', `${formatBytes(stats.averageThroughput)}/s`));
+            grid.appendChild(statCard('Slowest Endpoint', stats.slowestEndpoint || 'N/A'));
+            grid.appendChild(statCard('Most Used', stats.mostUsedEndpoint || 'N/A'));
         }
         
         // Load logs
@@ -673,6 +897,12 @@
                     ...currentFilters
                 });
                 
+                // Debug logging
+                if (currentFilters.messageHash) {
+                    console.log('Filtering by messageHash:', currentFilters.messageHash);
+                }
+                console.log('API Request URL:', `/api/logs?${params}`);
+                
                 const response = await fetch(`/api/logs?${params}`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -680,6 +910,7 @@
                 if (!response.ok) throw new Error('Failed to load logs');
                 
                 const data = await response.json();
+                console.log('Received logs:', data.logs.length, 'Total:', data.pagination.total);
                 renderLogs(data.logs, data.pagination);
             } catch (error) {
                 console.error('Failed to load logs:', error);
@@ -702,39 +933,89 @@
                 return;
             }
             
-            const table = `
-                <table class="logs-table">
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Method</th>
-                            <th>Endpoint</th>
-                            <th>Status</th>
-                            <th>Duration</th>
-                            <th>Size</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${logs.map(log => `
-                            <tr>
-                                <td>${new Date(log.timestamp).toLocaleString()}</td>
-                                <td><span class="method-badge method-${log.method.toLowerCase()}">${log.method}</span></td>
-                                <td style="font-family: monospace; font-size: 0.8rem;">${log.endpoint}</td>
-                                <td><span class="status-badge ${getStatusClass(log.statusCode)}">${log.statusCode}</span></td>
-                                <td>${log.duration}ms</td>
-                                <td>${formatBytes(log.networkMetrics.responseSize)}</td>
-                                <td>
-                                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
-                                            onclick="viewLogDetails('${log.id}')">View</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+            const table = document.createElement('table');
+            table.className = 'logs-table';
             
-            container.innerHTML = table;
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Time</th>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Size</th>
+                    <th>Message ID</th>
+                    <th>Actions</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+            
+            const tbody = document.createElement('tbody');
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                
+                const timeCell = document.createElement('td');
+                timeCell.textContent = new Date(log.timestamp).toLocaleString();
+                tr.appendChild(timeCell);
+                
+                const methodCell = document.createElement('td');
+                const methodBadge = document.createElement('span');
+                methodBadge.className = `method-badge method-${log.method.toLowerCase()}`;
+                methodBadge.textContent = log.method;
+                methodCell.appendChild(methodBadge);
+                tr.appendChild(methodCell);
+                
+                const endpointCell = document.createElement('td');
+                endpointCell.style.fontFamily = 'monospace';
+                endpointCell.style.fontSize = '0.8rem';
+                endpointCell.textContent = log.endpoint;
+                tr.appendChild(endpointCell);
+                
+                const statusCell = document.createElement('td');
+                const statusBadge = document.createElement('span');
+                statusBadge.className = `status-badge ${getStatusClass(log.statusCode)}`;
+                statusBadge.textContent = log.statusCode;
+                statusCell.appendChild(statusBadge);
+                tr.appendChild(statusCell);
+                
+                const durationCell = document.createElement('td');
+                durationCell.textContent = `${log.duration}ms`;
+                tr.appendChild(durationCell);
+                
+                const sizeCell = document.createElement('td');
+                sizeCell.textContent = formatBytes(log.networkMetrics.responseSize);
+                tr.appendChild(sizeCell);
+                
+                const hashCell = document.createElement('td');
+                if (log.messageHash) {
+                    hashCell.style.fontFamily = 'monospace';
+                    hashCell.style.fontSize = '0.75rem';
+                    hashCell.textContent = log.messageHash;
+                    hashCell.title = 'Click to copy';
+                    hashCell.style.cursor = 'pointer';
+                    hashCell.onclick = () => copyToClipboard(log.messageHash, hashCell);
+                } else {
+                    hashCell.textContent = '-';
+                }
+                tr.appendChild(hashCell);
+                
+                const actionsCell = document.createElement('td');
+                const viewBtn = document.createElement('button');
+                viewBtn.className = 'btn btn-secondary';
+                viewBtn.style.padding = '0.25rem 0.5rem';
+                viewBtn.style.fontSize = '0.75rem';
+                viewBtn.textContent = 'View';
+                viewBtn.onclick = () => viewLogDetails(log.id);
+                actionsCell.appendChild(viewBtn);
+                tr.appendChild(actionsCell);
+                
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            
+            container.textContent = '';
+            container.appendChild(table);
             
             // Update pagination
             document.getElementById('logs-pagination').style.display = 'flex';
@@ -770,41 +1051,75 @@
                 return;
             }
             
-            const table = `
-                <table class="logs-table">
-                    <thead>
-                        <tr>
-                            <th>Method</th>
-                            <th>Path</th>
-                            <th>Total Calls</th>
-                            <th>Avg Response Time</th>
-                            <th>Errors</th>
-                            <th>Last Called</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${endpoints.map(endpoint => `
-                            <tr>
-                                <td><span class="method-badge method-${endpoint.method.toLowerCase()}">${endpoint.method}</span></td>
-                                <td style="font-family: monospace; font-size: 0.8rem;">${endpoint.path}</td>
-                                <td>${endpoint.totalCalls.toLocaleString()}</td>
-                                <td>${endpoint.averageResponseTime}ms</td>
-                                <td><span class="status-badge ${endpoint.errorCount > 0 ? 'status-error' : 'status-success'}">
-                                    ${endpoint.errorCount}
-                                </span></td>
-                                <td>${endpoint.lastCalled ? new Date(endpoint.lastCalled).toLocaleString() : 'Never'}</td>
-                                <td>
-                                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" 
-                                            onclick="testEndpoint('${endpoint.method}', '${endpoint.path}')">Test</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+            const table = document.createElement('table');
+            table.className = 'logs-table';
             
-            container.innerHTML = table;
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th>Method</th>
+                    <th>Path</th>
+                    <th>Total Calls</th>
+                    <th>Avg Response Time</th>
+                    <th>Errors</th>
+                    <th>Last Called</th>
+                    <th>Actions</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+            
+            const tbody = document.createElement('tbody');
+            endpoints.forEach(endpoint => {
+                const tr = document.createElement('tr');
+                
+                const methodCell = document.createElement('td');
+                const methodBadge = document.createElement('span');
+                methodBadge.className = `method-badge method-${endpoint.method.toLowerCase()}`;
+                methodBadge.textContent = endpoint.method;
+                methodCell.appendChild(methodBadge);
+                tr.appendChild(methodCell);
+                
+                const pathCell = document.createElement('td');
+                pathCell.style.fontFamily = 'monospace';
+                pathCell.style.fontSize = '0.8rem';
+                pathCell.textContent = endpoint.path;
+                tr.appendChild(pathCell);
+                
+                const callsCell = document.createElement('td');
+                callsCell.textContent = endpoint.totalCalls.toLocaleString();
+                tr.appendChild(callsCell);
+                
+                const timeCell = document.createElement('td');
+                timeCell.textContent = `${endpoint.averageResponseTime}ms`;
+                tr.appendChild(timeCell);
+                
+                const errorsCell = document.createElement('td');
+                const errorBadge = document.createElement('span');
+                errorBadge.className = `status-badge ${endpoint.errorCount > 0 ? 'status-error' : 'status-success'}`;
+                errorBadge.textContent = endpoint.errorCount;
+                errorsCell.appendChild(errorBadge);
+                tr.appendChild(errorsCell);
+                
+                const lastCalledCell = document.createElement('td');
+                lastCalledCell.textContent = endpoint.lastCalled ? new Date(endpoint.lastCalled).toLocaleString() : 'Never';
+                tr.appendChild(lastCalledCell);
+                
+                const actionsCell = document.createElement('td');
+                const testBtn = document.createElement('button');
+                testBtn.className = 'btn btn-secondary';
+                testBtn.style.padding = '0.25rem 0.5rem';
+                testBtn.style.fontSize = '0.75rem';
+                testBtn.textContent = 'Test';
+                testBtn.onclick = () => testEndpoint(endpoint.method, endpoint.path);
+                actionsCell.appendChild(testBtn);
+                tr.appendChild(actionsCell);
+                
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+            
+            container.textContent = '';
+            container.appendChild(table);
         }
         
         // Filter functions
@@ -818,6 +1133,7 @@
             const endpoint = document.getElementById('filter-endpoint').value;
             const status = document.getElementById('filter-status').value;
             const hasError = document.getElementById('filter-error').value;
+            const messageHash = document.getElementById('filter-message-hash').value.trim();
             
             if (startDate) currentFilters.startDate = new Date(startDate).toISOString();
             if (endDate) currentFilters.endDate = new Date(endDate).toISOString();
@@ -825,6 +1141,7 @@
             if (endpoint) currentFilters.endpoint = endpoint;
             if (status) currentFilters.statusCode = status;
             if (hasError) currentFilters.hasError = hasError;
+            if (messageHash) currentFilters.messageHash = messageHash;
             
             loadLogs();
         }
@@ -836,6 +1153,7 @@
             document.getElementById('filter-endpoint').value = '';
             document.getElementById('filter-status').value = '';
             document.getElementById('filter-error').value = '';
+            document.getElementById('filter-message-hash').value = '';
             currentFilters = {};
             currentPage = 0;
             loadLogs();
@@ -937,25 +1255,21 @@
                 }, null, 2)
             };
             
-            // Don't populate body for GET requests
             if (method === 'GET') {
                 return result;
             }
             
-            // Session endpoints
             if (path.includes('/api/sessions')) {
                 result.body = JSON.stringify({
                     userId: 'user-' + Date.now()
                 }, null, 2);
             }
-            // Conversation input endpoints
             else if (path.includes('/api/conversations') && path.includes('/input')) {
                 result.body = JSON.stringify({
                     text: 'I need to create a workflow for employee onboarding',
                     type: 'text'
                 }, null, 2);
             }
-            // Summarization endpoints
             else if (path.includes('/api/summarization') && path.includes('/feedback')) {
                 result.body = JSON.stringify({
                     summaryId: 'summary-123',
@@ -963,46 +1277,8 @@
                     userComments: 'Looks good!'
                 }, null, 2);
             }
-            // SOP generation endpoints
-            else if (path.includes('/api/sops') && !path.includes('/export')) {
-                result.body = JSON.stringify({
-                    workflowDefinition: {
-                        id: 'workflow-123',
-                        title: 'Sample Workflow',
-                        description: 'A sample workflow for testing',
-                        type: 'sequential',
-                        steps: []
-                    },
-                    sopType: 'process_improvement'
-                }, null, 2);
-            }
-            // SOP export endpoints
-            else if (path.includes('/api/sops') && path.includes('/export')) {
-                result.body = JSON.stringify({
-                    format: 'pdf',
-                    options: {
-                        includeCharts: true
-                    }
-                }, null, 2);
-            }
-            // Auth endpoints
-            else if (path.includes('/api/auth/login')) {
-                result.body = JSON.stringify({
-                    username: 'testuser',
-                    password: 'testpassword'
-                }, null, 2);
-            }
-            else if (path.includes('/api/auth/register')) {
-                result.body = JSON.stringify({
-                    username: 'newuser',
-                    email: 'user@example.com',
-                    password: 'securepassword'
-                }, null, 2);
-            }
-            // Generic POST/PUT/PATCH body
             else if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
                 result.body = JSON.stringify({
-                    // Add your data here
                     example: 'value',
                     timestamp: new Date().toISOString()
                 }, null, 2);
@@ -1111,35 +1387,141 @@
                 const data = await response.json();
                 const log = data.log;
                 
-                const details = `
-Log ID: ${log.id}
-Timestamp: ${new Date(log.timestamp).toLocaleString()}
-Method: ${log.method}
-Endpoint: ${log.endpoint}
-Status: ${log.statusCode}
-Duration: ${log.duration}ms
-
-Network Metrics:
-- Latency: ${log.networkMetrics.latency.toFixed(2)}ms
-- Processing Time: ${log.networkMetrics.processingTime.toFixed(2)}ms
-- Request Size: ${formatBytes(log.networkMetrics.requestSize)}
-- Response Size: ${formatBytes(log.networkMetrics.responseSize)}
-- Throughput: ${formatBytes(log.networkMetrics.throughput)}/s
-
-Request Body:
-${JSON.stringify(log.requestBody, null, 2)}
-
-Response Body:
-${JSON.stringify(log.responseBody, null, 2)}
-
-${log.error ? `Error: ${log.error}` : ''}
-                `.trim();
+                // Build modal content
+                const modalBody = document.getElementById('modal-body');
+                modalBody.innerHTML = '';
                 
-                alert(details);
+                // Basic Information
+                const basicSection = document.createElement('div');
+                basicSection.className = 'detail-section';
+                basicSection.innerHTML = `
+                    <h3>Basic Information</h3>
+                    <div class="detail-grid">
+                        <div class="detail-label">Log ID:</div>
+                        <div class="detail-value">${log.id}</div>
+                        ${log.messageHash ? `
+                        <div class="detail-label">Message ID:</div>
+                        <div class="detail-value" style="font-family: monospace; background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer;" onclick="copyToClipboard('hash-${log.id}', this)" title="Click to copy">
+                            <span id="hash-${log.id}">${log.messageHash}</span>
+                        </div>
+                        ` : ''}
+                        <div class="detail-label">Timestamp:</div>
+                        <div class="detail-value">${new Date(log.timestamp).toLocaleString()}</div>
+                        <div class="detail-label">Method:</div>
+                        <div class="detail-value"><span class="method-badge method-${log.method.toLowerCase()}">${log.method}</span></div>
+                        <div class="detail-label">Endpoint:</div>
+                        <div class="detail-value" style="font-family: monospace;">${log.endpoint}</div>
+                        <div class="detail-label">Status Code:</div>
+                        <div class="detail-value"><span class="status-badge ${getStatusClass(log.statusCode)}">${log.statusCode}</span></div>
+                        <div class="detail-label">Duration:</div>
+                        <div class="detail-value">${log.duration}ms</div>
+                    </div>
+                `;
+                modalBody.appendChild(basicSection);
+                
+                // Network Metrics
+                const metricsSection = document.createElement('div');
+                metricsSection.className = 'detail-section';
+                metricsSection.innerHTML = `
+                    <h3>Network Metrics</h3>
+                    <div class="detail-grid">
+                        <div class="detail-label">Latency:</div>
+                        <div class="detail-value">${log.networkMetrics.latency.toFixed(2)}ms</div>
+                        <div class="detail-label">Processing Time:</div>
+                        <div class="detail-value">${log.networkMetrics.processingTime.toFixed(2)}ms</div>
+                        <div class="detail-label">Request Size:</div>
+                        <div class="detail-value">${formatBytes(log.networkMetrics.requestSize)}</div>
+                        <div class="detail-label">Response Size:</div>
+                        <div class="detail-value">${formatBytes(log.networkMetrics.responseSize)}</div>
+                        <div class="detail-label">Throughput:</div>
+                        <div class="detail-value">${formatBytes(log.networkMetrics.throughput)}/s</div>
+                    </div>
+                `;
+                modalBody.appendChild(metricsSection);
+                
+                // Request Body
+                if (log.requestBody && Object.keys(log.requestBody).length > 0) {
+                    const requestSection = document.createElement('div');
+                    requestSection.className = 'detail-section';
+                    const requestJson = JSON.stringify(log.requestBody, null, 2);
+                    requestSection.innerHTML = `
+                        <h3>Request Body</h3>
+                        <div class="code-block">
+                            <button class="copy-button" onclick="copyToClipboard('request-${log.id}', this)">Copy</button>
+                            <pre id="request-${log.id}">${requestJson}</pre>
+                        </div>
+                    `;
+                    modalBody.appendChild(requestSection);
+                }
+                
+                // Response Body
+                if (log.responseBody) {
+                    const responseSection = document.createElement('div');
+                    responseSection.className = 'detail-section';
+                    const responseJson = typeof log.responseBody === 'object' 
+                        ? JSON.stringify(log.responseBody, null, 2)
+                        : log.responseBody;
+                    responseSection.innerHTML = `
+                        <h3>Response Body</h3>
+                        <div class="code-block">
+                            <button class="copy-button" onclick="copyToClipboard('response-${log.id}', this)">Copy</button>
+                            <pre id="response-${log.id}">${responseJson}</pre>
+                        </div>
+                    `;
+                    modalBody.appendChild(responseSection);
+                }
+                
+                // Error
+                if (log.error) {
+                    const errorSection = document.createElement('div');
+                    errorSection.className = 'detail-section';
+                    errorSection.innerHTML = `
+                        <h3>Error</h3>
+                        <div class="code-block">
+                            <button class="copy-button" onclick="copyToClipboard('error-${log.id}', this)">Copy</button>
+                            <pre id="error-${log.id}">${log.error}</pre>
+                        </div>
+                    `;
+                    modalBody.appendChild(errorSection);
+                }
+                
+                // Show modal
+                document.getElementById('log-modal').classList.add('active');
+                
             } catch (error) {
                 alert('Failed to load log details: ' + error.message);
             }
         }
+        
+        function closeLogModal() {
+            document.getElementById('log-modal').classList.remove('active');
+        }
+        
+        function copyToClipboard(elementId, button) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                alert('Failed to copy: ' + err.message);
+            });
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('log-modal');
+            if (e.target === modal) {
+                closeLogModal();
+            }
+        });
         
         // Utility functions
         function formatBytes(bytes) {

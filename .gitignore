@@ -87,3 +87,6 @@ Thumbs.db
 test-results/
 test-reports/
 .vercel
+
+# Local Netlify folder
+.netlify

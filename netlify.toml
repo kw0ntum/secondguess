@@ -1,0 +1,51 @@
+[build]
+  command = "npm run build"
+  functions = "netlify/functions"
+  publish = "public"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/api/auth/guest"
+  to = "/.netlify/functions/auth-guest"
+  status = 200
+
+[[redirects]]
+  from = "/api/sessions"
+  to = "/.netlify/functions/sessions"
+  status = 200
+
+[[redirects]]
+  from = "/api/conversations/*/input"
+  to = "/.netlify/functions/conversation-input"
+  status = 200
+
+[[redirects]]
+  from = "/api/logs"
+  to = "/.netlify/functions/logs"
+  status = 200
+
+[[redirects]]
+  from = "/api/sops/*/export"
+  to = "/.netlify/functions/sop-export"
+  status = 200
+
+[[redirects]]
+  from = "/api/monitoring/dashboard"
+  to = "/.netlify/functions/monitoring-dashboard"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
+  
+[dev]
+  command = "npm run dev"
+  port = 3000
+  targetPort = 3000
+  framework = "#custom"
