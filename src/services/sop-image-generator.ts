@@ -122,9 +122,9 @@ Composition:
     // Generate different patterns based on keywords
     const pattern = this.selectPatternByKeywords(keywords);
     
-    // A4 size at 300 DPI: 2480 x 3508 pixels (portrait)
+    // US Letter size at 300 DPI: 3300 x 2550 pixels (landscape - 11" x 8.5")
     const svg = `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="2480" height="3508" viewBox="0 0 2480 3508" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="3300" height="2550" viewBox="0 0 3300 2550" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Gradients and Filters -->
   <defs>
     <!-- Main Background Gradient -->
@@ -172,42 +172,42 @@ Composition:
   </defs>
   
   <!-- Base Background -->
-  <rect width="2480" height="3508" fill="#ffffff"/>
+  <rect width="3300" height="2550" fill="#ffffff"/>
   
   <!-- Gradient Overlay -->
-  <rect width="2480" height="3508" fill="url(#bgGradient)"/>
+  <rect width="3300" height="2550" fill="url(#bgGradient)"/>
   
   <!-- Large Decorative Circles -->
-  <circle cx="200" cy="300" r="400" fill="url(#circleGrad1)" filter="url(#blur)"/>
-  <circle cx="2200" cy="600" r="500" fill="url(#circleGrad2)" filter="url(#blur)"/>
-  <circle cx="400" cy="2800" r="450" fill="url(#circleGrad1)" filter="url(#blur)"/>
-  <circle cx="2100" cy="3200" r="400" fill="url(#circleGrad2)" filter="url(#blur)"/>
+  <circle cx="300" cy="200" r="400" fill="url(#circleGrad1)" filter="url(#blur)"/>
+  <circle cx="2900" cy="400" r="500" fill="url(#circleGrad2)" filter="url(#blur)"/>
+  <circle cx="600" cy="2150" r="450" fill="url(#circleGrad1)" filter="url(#blur)"/>
+  <circle cx="2700" cy="2250" r="400" fill="url(#circleGrad2)" filter="url(#blur)"/>
   
   <!-- Abstract Geometric Shapes -->
   <g opacity="0.65" filter="url(#shadow)">
     <!-- Top Left Corner -->
-    <rect x="100" y="100" width="600" height="600" rx="80" fill="url(#accent1)" transform="rotate(-15 400 400)"/>
-    <circle cx="500" cy="400" r="200" fill="url(#accent2)"/>
+    <rect x="100" y="100" width="500" height="500" rx="70" fill="url(#accent1)" transform="rotate(-15 350 350)"/>
+    <circle cx="400" cy="350" r="180" fill="url(#accent2)"/>
     
     <!-- Top Right -->
-    <polygon points="2000,200 2300,400 2200,700 1900,600" fill="url(#accent3)"/>
-    <rect x="1900" y="500" width="400" height="400" rx="60" fill="url(#accent1)" transform="rotate(20 2100 700)"/>
+    <polygon points="2900,150 3200,300 3100,550 2800,450" fill="url(#accent3)"/>
+    <rect x="2800" y="350" width="350" height="350" rx="50" fill="url(#accent1)" transform="rotate(20 2975 525)"/>
     
     <!-- Middle Left -->
-    <circle cx="300" cy="1750" r="250" fill="url(#accent2)"/>
-    <rect x="200" y="1500" width="500" height="500" rx="70" fill="url(#accent1)" transform="rotate(-10 450 1750)"/>
+    <circle cx="300" cy="1240" r="220" fill="url(#accent2)"/>
+    <rect x="200" y="1000" width="450" height="450" rx="60" fill="url(#accent1)" transform="rotate(-10 425 1225)"/>
     
     <!-- Middle Right -->
-    <polygon points="2100,1600 2400,1800 2300,2100 2000,1900" fill="url(#accent3)"/>
-    <circle cx="2200" cy="1850" r="220" fill="url(#accent1)"/>
+    <polygon points="3000,1100 3300,1250 3200,1500 2900,1350" fill="url(#accent3)"/>
+    <circle cx="3100" cy="1300" r="200" fill="url(#accent1)"/>
     
     <!-- Bottom Left -->
-    <rect x="150" y="2800" width="550" height="550" rx="75" fill="url(#accent2)" transform="rotate(12 425 3075)"/>
-    <circle cx="400" cy="3100" r="180" fill="url(#accent3)"/>
+    <rect x="150" y="1900" width="500" height="500" rx="70" fill="url(#accent2)" transform="rotate(12 400 2150)"/>
+    <circle cx="400" cy="2200" r="160" fill="url(#accent3)"/>
     
     <!-- Bottom Right -->
-    <polygon points="1950,3000 2250,3200 2150,3450 1850,3250" fill="url(#accent1)"/>
-    <rect x="2000" y="3100" width="350" height="350" rx="50" fill="url(#accent2)" transform="rotate(-18 2175 3275)"/>
+    <polygon points="2850,2000 3150,2150 3050,2400 2750,2250" fill="url(#accent1)"/>
+    <rect x="2900" y="2100" width="320" height="320" rx="45" fill="url(#accent2)" transform="rotate(-18 3060 2260)"/>
   </g>
   
   <!-- Industry-Specific Pattern (Centered) -->
@@ -216,35 +216,44 @@ Composition:
   <!-- Flowing Lines - Abstract Workflow -->
   <g opacity="0.5" stroke-linecap="round">
     <!-- Horizontal Flows -->
-    <path d="M200 1200 Q800 1100 1400 1200 T2200 1200" stroke="#667eea" stroke-width="8" fill="none"/>
-    <path d="M200 1400 Q800 1300 1400 1400 T2200 1400" stroke="#764ba2" stroke-width="6" fill="none"/>
-    <path d="M200 1600 Q800 1500 1400 1600 T2200 1600" stroke="#667eea" stroke-width="6" fill="none"/>
+    <path d="M200 800 Q1200 700 2200 800 T3300 800" stroke="#667eea" stroke-width="8" fill="none"/>
+    <path d="M200 1240 Q1200 1140 2200 1240 T3300 1240" stroke="#764ba2" stroke-width="6" fill="none"/>
+    <path d="M200 1680 Q1200 1580 2200 1680 T3300 1680" stroke="#667eea" stroke-width="6" fill="none"/>
     
     <!-- Vertical Flows -->
-    <path d="M600 200 Q500 900 600 1600 T600 3300" stroke="#764ba2" stroke-width="6" fill="none"/>
-    <path d="M1240 200 Q1140 900 1240 1600 T1240 3300" stroke="#667eea" stroke-width="8" fill="none"/>
-    <path d="M1880 200 Q1780 900 1880 1600 T1880 3300" stroke="#764ba2" stroke-width="6" fill="none"/>
+    <path d="M800 200 Q700 900 800 1600 T800 2280" stroke="#764ba2" stroke-width="6" fill="none"/>
+    <path d="M1754 200 Q1654 900 1754 1600 T1754 2280" stroke="#667eea" stroke-width="8" fill="none"/>
+    <path d="M2708 200 Q2608 900 2708 1600 T2708 2280" stroke="#764ba2" stroke-width="6" fill="none"/>
   </g>
   
   <!-- Connected Nodes -->
   <g opacity="0.7" filter="url(#shadow)">
-    <circle cx="600" cy="1200" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
-    <circle cx="600" cy="1200" r="35" fill="#667eea"/>
+    <circle cx="800" cy="800" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
+    <circle cx="800" cy="800" r="35" fill="#667eea"/>
     
-    <circle cx="1240" cy="1200" r="80" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
-    <circle cx="1240" cy="1200" r="35" fill="#764ba2"/>
+    <circle cx="1754" cy="800" r="80" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
+    <circle cx="1754" cy="800" r="35" fill="#764ba2"/>
     
-    <circle cx="1880" cy="1200" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
-    <circle cx="1880" cy="1200" r="35" fill="#667eea"/>
+    <circle cx="2708" cy="800" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
+    <circle cx="2708" cy="800" r="35" fill="#667eea"/>
     
-    <circle cx="600" cy="1750" r="80" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
-    <circle cx="600" cy="1750" r="35" fill="#764ba2"/>
+    <circle cx="800" cy="1240" r="80" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
+    <circle cx="800" cy="1240" r="35" fill="#764ba2"/>
     
-    <circle cx="1240" cy="1750" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
-    <circle cx="1240" cy="1750" r="35" fill="#667eea"/>
+    <circle cx="1754" cy="1240" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
+    <circle cx="1754" cy="1240" r="35" fill="#667eea"/>
     
-    <circle cx="1880" cy="1750" r="80" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
-    <circle cx="1880" cy="1750" r="35" fill="#764ba2"/>
+    <circle cx="2708" cy="1240" r="80" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
+    <circle cx="2708" cy="1240" r="35" fill="#764ba2"/>
+    
+    <circle cx="800" cy="1680" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
+    <circle cx="800" cy="1680" r="35" fill="#667eea"/>
+    
+    <circle cx="1754" cy="1680" r="80" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
+    <circle cx="1754" cy="1680" r="35" fill="#764ba2"/>
+    
+    <circle cx="2708" cy="1680" r="80" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
+    <circle cx="2708" cy="1680" r="35" fill="#667eea"/>
   </g>
   
   <!-- Decorative Corner Elements -->
@@ -254,21 +263,21 @@ Composition:
     <circle cx="150" cy="150" r="90" stroke="#667eea" stroke-width="3" fill="none"/>
     
     <!-- Top Right -->
-    <rect x="2200" y="50" width="200" height="200" rx="30" stroke="#764ba2" stroke-width="4" fill="none"/>
-    <rect x="2230" y="80" width="140" height="140" rx="20" stroke="#764ba2" stroke-width="3" fill="none"/>
+    <rect x="2950" y="50" width="200" height="200" rx="30" stroke="#764ba2" stroke-width="4" fill="none"/>
+    <rect x="2980" y="80" width="140" height="140" rx="20" stroke="#764ba2" stroke-width="3" fill="none"/>
     
     <!-- Bottom Left -->
-    <rect x="80" y="3250" width="200" height="200" rx="30" stroke="#667eea" stroke-width="4" fill="none"/>
-    <rect x="110" y="3280" width="140" height="140" rx="20" stroke="#667eea" stroke-width="3" fill="none"/>
+    <rect x="80" y="2250" width="200" height="200" rx="30" stroke="#667eea" stroke-width="4" fill="none"/>
+    <rect x="110" y="2280" width="140" height="140" rx="20" stroke="#667eea" stroke-width="3" fill="none"/>
     
     <!-- Bottom Right -->
-    <circle cx="2330" cy="3358" r="120" stroke="#764ba2" stroke-width="4" fill="none"/>
-    <circle cx="2330" cy="3358" r="90" stroke="#764ba2" stroke-width="3" fill="none"/>
+    <circle cx="3150" cy="2400" r="120" stroke="#764ba2" stroke-width="4" fill="none"/>
+    <circle cx="3150" cy="2400" r="90" stroke="#764ba2" stroke-width="3" fill="none"/>
   </g>
   
   <!-- Accent Bars -->
-  <rect width="2480" height="30" fill="url(#accent1)" opacity="0.7"/>
-  <rect y="3478" width="2480" height="30" fill="url(#accent3)" opacity="0.7"/>
+  <rect width="3300" height="30" fill="url(#accent1)" opacity="0.7"/>
+  <rect y="2520" width="3300" height="30" fill="url(#accent3)" opacity="0.7"/>
 </svg>`;
 
     return Buffer.from(svg).toString('base64');
@@ -298,118 +307,120 @@ Composition:
    */
   private getManufacturingPattern(): string {
     return `
-      <g opacity="0.6" transform="translate(800, 1600)">
+      <g opacity="0.6" transform="translate(1200, 900)">
         <!-- Assembly Line with Colorful Elements -->
-        <rect x="0" y="200" width="800" height="12" fill="url(#accent1)" rx="6"/>
+        <rect x="0" y="200" width="1000" height="12" fill="url(#accent1)" rx="6"/>
         
         <!-- Production Boxes -->
         <rect x="50" y="100" width="150" height="150" rx="20" fill="url(#accent1)" filter="url(#shadow)"/>
-        <rect x="250" y="100" width="150" height="150" rx="20" fill="url(#accent2)" filter="url(#shadow)"/>
-        <rect x="450" y="100" width="150" height="150" rx="20" fill="url(#accent3)" filter="url(#shadow)"/>
-        <rect x="650" y="100" width="150" height="150" rx="20" fill="url(#accent1)" filter="url(#shadow)"/>
+        <rect x="275" y="100" width="150" height="150" rx="20" fill="url(#accent2)" filter="url(#shadow)"/>
+        <rect x="500" y="100" width="150" height="150" rx="20" fill="url(#accent3)" filter="url(#shadow)"/>
+        <rect x="725" y="100" width="150" height="150" rx="20" fill="url(#accent1)" filter="url(#shadow)"/>
         
         <!-- Decorative Gears -->
-        <circle cx="125" cy="350" r="80" stroke="#667eea" stroke-width="10" fill="url(#accent2)" opacity="0.6"/>
-        <circle cx="325" cy="350" r="80" stroke="#764ba2" stroke-width="10" fill="url(#accent1)" opacity="0.6"/>
-        <circle cx="525" cy="350" r="80" stroke="#667eea" stroke-width="10" fill="url(#accent3)" opacity="0.6"/>
-        <circle cx="725" cy="350" r="80" stroke="#764ba2" stroke-width="10" fill="url(#accent2)" opacity="0.6"/>
+        <circle cx="125" cy="350" r="70" stroke="#667eea" stroke-width="8" fill="url(#accent2)" opacity="0.6"/>
+        <circle cx="350" cy="350" r="70" stroke="#764ba2" stroke-width="8" fill="url(#accent1)" opacity="0.6"/>
+        <circle cx="575" cy="350" r="70" stroke="#667eea" stroke-width="8" fill="url(#accent3)" opacity="0.6"/>
+        <circle cx="800" cy="350" r="70" stroke="#764ba2" stroke-width="8" fill="url(#accent2)" opacity="0.6"/>
       </g>
     `;
   }
 
   private getTechnologyPattern(): string {
     return `
-      <g opacity="0.6" transform="translate(400, 1600)">
+      <g opacity="0.6" transform="translate(900, 900)">
         <!-- Network Grid -->
-        <circle cx="200" cy="200" r="50" fill="url(#accent1)" filter="url(#shadow)"/>
-        <circle cx="500" cy="200" r="50" fill="url(#accent2)" filter="url(#shadow)"/>
-        <circle cx="800" cy="200" r="50" fill="url(#accent3)" filter="url(#shadow)"/>
-        <circle cx="1100" cy="200" r="50" fill="url(#accent1)" filter="url(#shadow)"/>
+        <circle cx="200" cy="150" r="50" fill="url(#accent1)" filter="url(#shadow)"/>
+        <circle cx="550" cy="150" r="50" fill="url(#accent2)" filter="url(#shadow)"/>
+        <circle cx="900" cy="150" r="50" fill="url(#accent3)" filter="url(#shadow)"/>
+        <circle cx="1250" cy="150" r="50" fill="url(#accent1)" filter="url(#shadow)"/>
         
-        <circle cx="350" cy="450" r="50" fill="url(#accent2)" filter="url(#shadow)"/>
-        <circle cx="650" cy="450" r="50" fill="url(#accent3)" filter="url(#shadow)"/>
-        <circle cx="950" cy="450" r="50" fill="url(#accent1)" filter="url(#shadow)"/>
+        <circle cx="375" cy="400" r="50" fill="url(#accent2)" filter="url(#shadow)"/>
+        <circle cx="725" cy="400" r="50" fill="url(#accent3)" filter="url(#shadow)"/>
+        <circle cx="1075" cy="400" r="50" fill="url(#accent1)" filter="url(#shadow)"/>
         
         <!-- Connections -->
-        <line x1="200" y1="200" x2="500" y2="200" stroke="#667eea" stroke-width="8" opacity="0.5"/>
-        <line x1="500" y1="200" x2="800" y2="200" stroke="#764ba2" stroke-width="8" opacity="0.5"/>
-        <line x1="800" y1="200" x2="1100" y2="200" stroke="#667eea" stroke-width="8" opacity="0.5"/>
+        <line x1="200" y1="150" x2="550" y2="150" stroke="#667eea" stroke-width="8" opacity="0.5"/>
+        <line x1="550" y1="150" x2="900" y2="150" stroke="#764ba2" stroke-width="8" opacity="0.5"/>
+        <line x1="900" y1="150" x2="1250" y2="150" stroke="#667eea" stroke-width="8" opacity="0.5"/>
         
-        <line x1="200" y1="200" x2="350" y2="450" stroke="#764ba2" stroke-width="6" opacity="0.5"/>
-        <line x1="500" y1="200" x2="350" y2="450" stroke="#667eea" stroke-width="6" opacity="0.5"/>
-        <line x1="500" y1="200" x2="650" y2="450" stroke="#764ba2" stroke-width="6" opacity="0.5"/>
-        <line x1="800" y1="200" x2="650" y2="450" stroke="#667eea" stroke-width="6" opacity="0.5"/>
-        <line x1="800" y1="200" x2="950" y2="450" stroke="#764ba2" stroke-width="6" opacity="0.5"/>
-        <line x1="1100" y1="200" x2="950" y2="450" stroke="#667eea" stroke-width="6" opacity="0.5"/>
+        <line x1="200" y1="150" x2="375" y2="400" stroke="#764ba2" stroke-width="6" opacity="0.5"/>
+        <line x1="550" y1="150" x2="375" y2="400" stroke="#667eea" stroke-width="6" opacity="0.5"/>
+        <line x1="550" y1="150" x2="725" y2="400" stroke="#764ba2" stroke-width="6" opacity="0.5"/>
+        <line x1="900" y1="150" x2="725" y2="400" stroke="#667eea" stroke-width="6" opacity="0.5"/>
+        <line x1="900" y1="150" x2="1075" y2="400" stroke="#764ba2" stroke-width="6" opacity="0.5"/>
+        <line x1="1250" y1="150" x2="1075" y2="400" stroke="#667eea" stroke-width="6" opacity="0.5"/>
       </g>
     `;
   }
 
   private getHealthcarePattern(): string {
     return `
-      <g opacity="0.6" transform="translate(900, 1600)">
+      <g opacity="0.6" transform="translate(1300, 900)">
         <!-- Medical Cross -->
-        <rect x="250" y="100" width="100" height="400" rx="20" fill="url(#accent1)" filter="url(#shadow)"/>
-        <rect x="100" y="250" width="400" height="100" rx="20" fill="url(#accent2)" filter="url(#shadow)"/>
+        <rect x="250" y="80" width="90" height="350" rx="18" fill="url(#accent1)" filter="url(#shadow)"/>
+        <rect x="120" y="210" width="350" height="90" rx="18" fill="url(#accent2)" filter="url(#shadow)"/>
         
         <!-- Heart Symbol -->
-        <path d="M700 200 Q700 100 800 100 Q900 100 900 200 Q900 350 700 500 Q500 350 500 200 Q500 100 600 100 Q700 100 700 200 Z" 
+        <path d="M700 180 Q700 90 790 90 Q880 90 880 180 Q880 310 700 440 Q520 310 520 180 Q520 90 610 90 Q700 90 700 180 Z" 
               fill="url(#accent3)" filter="url(#shadow)"/>
         
         <!-- Pulse Line -->
-        <path d="M100 600 L200 600 L250 500 L300 700 L350 600 L600 600" 
-              stroke="#667eea" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M100 520 L200 520 L250 430 L300 610 L350 520 L600 520" 
+              stroke="#667eea" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
       </g>
     `;
   }
 
   private getFinancePattern(): string {
     return `
-      <g opacity="0.6" transform="translate(500, 1600)">
+      <g opacity="0.6" transform="translate(900, 900)">
         <!-- Colorful Bar Chart -->
-        <rect x="100" y="300" width="120" height="200" rx="15" fill="url(#accent1)" filter="url(#shadow)"/>
-        <rect x="270" y="220" width="120" height="280" rx="15" fill="url(#accent2)" filter="url(#shadow)"/>
-        <rect x="440" y="150" width="120" height="350" rx="15" fill="url(#accent3)" filter="url(#shadow)"/>
-        <rect x="610" y="250" width="120" height="250" rx="15" fill="url(#accent1)" filter="url(#shadow)"/>
-        <rect x="780" y="180" width="120" height="320" rx="15" fill="url(#accent2)" filter="url(#shadow)"/>
-        <rect x="950" y="200" width="120" height="300" rx="15" fill="url(#accent3)" filter="url(#shadow)"/>
+        <rect x="100" y="250" width="110" height="180" rx="14" fill="url(#accent1)" filter="url(#shadow)"/>
+        <rect x="260" y="190" width="110" height="240" rx="14" fill="url(#accent2)" filter="url(#shadow)"/>
+        <rect x="420" y="130" width="110" height="300" rx="14" fill="url(#accent3)" filter="url(#shadow)"/>
+        <rect x="580" y="210" width="110" height="220" rx="14" fill="url(#accent1)" filter="url(#shadow)"/>
+        <rect x="740" y="160" width="110" height="270" rx="14" fill="url(#accent2)" filter="url(#shadow)"/>
+        <rect x="900" y="180" width="110" height="250" rx="14" fill="url(#accent3)" filter="url(#shadow)"/>
+        <rect x="1060" y="200" width="110" height="230" rx="14" fill="url(#accent1)" filter="url(#shadow)"/>
         
         <!-- Trend Line -->
-        <path d="M160 400 L330 320 L500 250 L670 350 L840 280 L1010 300" 
-              stroke="#667eea" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+        <path d="M155 340 L315 280 L475 220 L635 310 L795 250 L955 270 L1115 290" 
+              stroke="#667eea" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
         
         <!-- Data Points -->
-        <circle cx="160" cy="400" r="20" fill="#ffffff" stroke="#667eea" stroke-width="4"/>
-        <circle cx="330" cy="320" r="20" fill="#ffffff" stroke="#764ba2" stroke-width="4"/>
-        <circle cx="500" cy="250" r="20" fill="#ffffff" stroke="#667eea" stroke-width="4"/>
-        <circle cx="670" cy="350" r="20" fill="#ffffff" stroke="#764ba2" stroke-width="4"/>
-        <circle cx="840" cy="280" r="20" fill="#ffffff" stroke="#667eea" stroke-width="4"/>
-        <circle cx="1010" cy="300" r="20" fill="#ffffff" stroke="#764ba2" stroke-width="4"/>
+        <circle cx="155" cy="340" r="18" fill="#ffffff" stroke="#667eea" stroke-width="4"/>
+        <circle cx="315" cy="280" r="18" fill="#ffffff" stroke="#764ba2" stroke-width="4"/>
+        <circle cx="475" cy="220" r="18" fill="#ffffff" stroke="#667eea" stroke-width="4"/>
+        <circle cx="635" cy="310" r="18" fill="#ffffff" stroke="#764ba2" stroke-width="4"/>
+        <circle cx="795" cy="250" r="18" fill="#ffffff" stroke="#667eea" stroke-width="4"/>
+        <circle cx="955" cy="270" r="18" fill="#ffffff" stroke="#764ba2" stroke-width="4"/>
+        <circle cx="1115" cy="290" r="18" fill="#ffffff" stroke="#667eea" stroke-width="4"/>
       </g>
     `;
   }
 
   private getGenericPattern(): string {
     return `
-      <g opacity="0.6" transform="translate(700, 1600)">
+      <g opacity="0.6" transform="translate(1100, 900)">
         <!-- Interconnected Colorful Circles -->
-        <circle cx="250" cy="250" r="150" fill="url(#accent1)" filter="url(#shadow)"/>
-        <circle cx="550" cy="250" r="150" fill="url(#accent2)" filter="url(#shadow)"/>
-        <circle cx="850" cy="250" r="150" fill="url(#accent3)" filter="url(#shadow)"/>
+        <circle cx="250" cy="200" r="140" fill="url(#accent1)" filter="url(#shadow)"/>
+        <circle cx="600" cy="200" r="140" fill="url(#accent2)" filter="url(#shadow)"/>
+        <circle cx="950" cy="200" r="140" fill="url(#accent3)" filter="url(#shadow)"/>
         
-        <circle cx="400" cy="500" r="150" fill="url(#accent2)" filter="url(#shadow)"/>
-        <circle cx="700" cy="500" r="150" fill="url(#accent1)" filter="url(#shadow)"/>
+        <circle cx="425" cy="450" r="140" fill="url(#accent2)" filter="url(#shadow)"/>
+        <circle cx="775" cy="450" r="140" fill="url(#accent1)" filter="url(#shadow)"/>
         
         <!-- Connection Lines -->
-        <line x1="250" y1="250" x2="400" y2="500" stroke="#667eea" stroke-width="8" opacity="0.5"/>
-        <line x1="550" y1="250" x2="400" y2="500" stroke="#764ba2" stroke-width="8" opacity="0.5"/>
-        <line x1="550" y1="250" x2="700" y2="500" stroke="#667eea" stroke-width="8" opacity="0.5"/>
-        <line x1="850" y1="250" x2="700" y2="500" stroke="#764ba2" stroke-width="8" opacity="0.5"/>
+        <line x1="250" y1="200" x2="425" y2="450" stroke="#667eea" stroke-width="8" opacity="0.5"/>
+        <line x1="600" y1="200" x2="425" y2="450" stroke="#764ba2" stroke-width="8" opacity="0.5"/>
+        <line x1="600" y1="200" x2="775" y2="450" stroke="#667eea" stroke-width="8" opacity="0.5"/>
+        <line x1="950" y1="200" x2="775" y2="450" stroke="#764ba2" stroke-width="8" opacity="0.5"/>
         
         <!-- Center Nodes -->
-        <circle cx="325" cy="375" r="30" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
-        <circle cx="475" cy="375" r="30" fill="#ffffff" stroke="#764ba2" stroke-width="6"/>
-        <circle cx="625" cy="375" r="30" fill="#ffffff" stroke="#667eea" stroke-width="6"/>
+        <circle cx="337" cy="325" r="28" fill="#ffffff" stroke="#667eea" stroke-width="5"/>
+        <circle cx="512" cy="325" r="28" fill="#ffffff" stroke="#764ba2" stroke-width="5"/>
+        <circle cx="687" cy="325" r="28" fill="#ffffff" stroke="#667eea" stroke-width="5"/>
       </g>
     `;
   }

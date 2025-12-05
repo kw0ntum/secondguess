@@ -52,21 +52,19 @@ export class SOPChartGenerator {
 
       const charts: GeneratedChart[] = [];
 
-      // Generate main process flowchart
+      // ALWAYS generate all three diagrams
+      
+      // 1. Generate main process flowchart
       const flowchart = await this.generateFlowchart(input);
       charts.push(flowchart);
 
-      // Generate swimlane diagram if there are multiple actors
-      if (input.actors && input.actors.length > 1) {
-        const swimlane = await this.generateSwimlane(input);
-        charts.push(swimlane);
-      }
+      // 2. Generate event diagram (always, even with single actor)
+      const eventDiagram = await this.generateSwimlane(input);
+      charts.push(eventDiagram);
 
-      // Always generate data flow diagram if there are inputs or outputs
-      if ((input.inputs && input.inputs.length > 0) || (input.outputs && input.outputs.length > 0)) {
-        const dataFlow = await this.generateDataFlow(input);
-        charts.push(dataFlow);
-      }
+      // 3. Always generate data flow diagram
+      const dataFlow = await this.generateDataFlow(input);
+      charts.push(dataFlow);
 
       logger.info('Charts generated successfully', { count: charts.length });
       return charts;
@@ -145,12 +143,12 @@ Return ONLY valid Mermaid code, no explanations or markdown blocks.`;
   }
 
   /**
-   * Generate swimlane diagram for multi-actor processes
+   * Generate event diagram for multi-actor processes (replacing swimlane)
    */
   private async generateSwimlane(input: ChartGenerationInput): Promise<GeneratedChart> {
-    const prompt = `You are an expert in creating swimlane diagrams for Standard Operating Procedures (SOPs).
+    const prompt = `You are an expert in creating event-driven process diagrams for Standard Operating Procedures (SOPs).
 
-Generate a Mermaid swimlane diagram showing responsibilities across different actors:
+Generate a Mermaid sequence diagram showing the event flow and interactions between actors:
 
 TITLE: ${input.title}
 DESCRIPTION: ${input.description}
@@ -161,42 +159,39 @@ STEPS:
 ${input.steps.map((step, i) => `${i + 1}. ${step.description || step.title || step}${step.actor ? ` (Actor: ${step.actor})` : ''}`).join('\n')}
 
 CRITICAL Requirements - MUST FOLLOW EXACTLY:
-1. Use ONLY Mermaid flowchart syntax: flowchart TD
-2. Create ONE subgraph for EACH actor/role
-3. ALL tasks for the SAME actor MUST be inside the SAME subgraph
-4. List ALL nodes for an actor VERTICALLY inside their subgraph (one per line)
-5. DO NOT connect nodes within the same subgraph - they stack automatically
-6. ONLY connect nodes BETWEEN different subgraphs
-7. Subgraphs will appear side-by-side, tasks stack top-to-bottom
-8. Simple node IDs (emp1, emp2, mgr1, mgr2)
-9. Short labels (max 35 characters)
-10. Keep it SIMPLE - 2-4 tasks per actor, max 3 actors
+1. Use ONLY Mermaid sequence diagram syntax: sequenceDiagram
+2. Show events and interactions between actors
+3. Use participant declarations for each actor
+4. Show message flow with arrows (->>, ->, -->>)
+5. Include activation boxes for active processes
+6. Keep labels SHORT (max 40 characters)
+7. Show the temporal sequence of events
+8. Max 3-4 actors, 6-8 interactions
 
 EXACT FORMAT - COPY THIS STRUCTURE:
-flowchart TD
-    subgraph "Employee"
-        emp1["Submit request"]
-        emp2["Provide info"]
-        emp3["Receive result"]
-    end
+sequenceDiagram
+    participant E as Employee
+    participant M as Manager
+    participant S as System
     
-    subgraph "Manager"
-        mgr1["Review request"]
-        mgr2["Make decision"]
-        mgr3["Send approval"]
-    end
-    
-    emp1 --> mgr1
-    mgr1 --> emp2
-    emp2 --> mgr2
-    mgr2 --> mgr3
-    mgr3 --> emp3
+    E->>M: Submit request
+    activate M
+    M->>E: Request info
+    deactivate M
+    E->>M: Provide details
+    activate M
+    M->>S: Process request
+    activate S
+    S-->>M: Confirmation
+    deactivate S
+    M->>E: Send approval
+    deactivate M
 
 IMPORTANT: 
-- Each actor = ONE subgraph
-- All actor's tasks listed inside their subgraph
-- Tasks automatically stack vertically
-- Only connect BETWEEN subgraphs, not within
+- Each actor is a participant
+- Show clear event flow with arrows
+- Use activate/deactivate for processing
+- Keep it focused on key events
 
 Return ONLY valid Mermaid code, no explanations.`;
 
@@ -207,11 +202,11 @@ Return ONLY valid Mermaid code, no explanations.`;
     mermaidCode = this.cleanMermaidCode(mermaidCode);
 
     return {
-      type: 'swimlane',
-      title: 'Roles and Responsibilities',
-      description: 'Shows which role performs each action in the process',
+      type: 'sequence',
+      title: 'Event Flow Diagram',
+      description: 'Shows the sequence of events and interactions between actors',
       mermaidCode,
-      caption: `Swimlane showing role responsibilities`
+      caption: `Event-driven process flow showing actor interactions`
     };
   }
 

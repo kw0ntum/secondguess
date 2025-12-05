@@ -203,7 +203,8 @@ export class SOPDocumentGenerator {
   }
 
   /**
-   * Generate table of contents
+   * Generate table of contents AFTER document is complete
+   * This ensures all section numbers and titles are accurate
    */
   private generateTableOfContents(
     sopText: GeneratedSOPText, 
@@ -211,27 +212,36 @@ export class SOPDocumentGenerator {
   ): TableOfContentsEntry[] {
     const toc: TableOfContentsEntry[] = [];
 
-    // Add charts section FIRST (always include, even if empty for consistency)
+    // Add charts section FIRST (always include all three diagrams)
     const chartsEntry: TableOfContentsEntry = {
       number: '1',
       title: 'Process Diagrams',
-      subsections: charts.length > 0 ? charts.map((chart, index) => ({
+      subsections: charts.map((chart, index) => ({
         number: `1.${index + 1}`,
         title: chart.title
-      })) : undefined
+      }))
     };
     toc.push(chartsEntry);
 
-    // Add text sections (renumber starting from 2)
+    // Add text sections (starting from 2 since Process Diagrams is 1)
+    // Renumber sections to ensure consistency
     sopText.sections.forEach((section, index) => {
       const sectionNumber = index + 2; // Start from 2 since Process Diagrams is 1
+      
+      // Update section number to match TOC
+      section.number = `${sectionNumber}`;
+      
       const entry: TableOfContentsEntry = {
         number: `${sectionNumber}`,
         title: section.title,
-        subsections: section.subsections ? section.subsections.map((sub: any, subIndex: number) => ({
-          number: `${sectionNumber}.${subIndex + 1}`,
-          title: sub.title
-        })) : undefined
+        subsections: section.subsections ? section.subsections.map((sub: any, subIndex: number) => {
+          // Update subsection number to match parent
+          sub.number = `${sectionNumber}.${subIndex + 1}`;
+          return {
+            number: `${sectionNumber}.${subIndex + 1}`,
+            title: sub.title
+          };
+        }) : undefined
       };
       toc.push(entry);
     });

@@ -121,26 +121,30 @@ Create a complete SOP document following ISO 9001 structure with these sections:
 
 ### PROCEDURE
    CRITICAL FORMATTING REQUIREMENTS:
-   - Main steps MUST use format: "1. Step Title - Brief description" (ALL on ONE LINE)
-   - Number, title, dash, and description MUST be on ONE LINE (no line breaks)
+   - Main steps MUST use format: "1. Step Title" on ONE line, then description on next line
+   - Number and title MUST be on ONE LINE with NO separators (no dash, no colon)
+   - Description goes on the NEXT line (not same line as title)
    - Related sub-steps MUST use indented sub-numbering: "   1.1", "   1.2", "   1.3" with 3 spaces indent
    - Sub-steps are additional details, warnings, or notes for the main step
    - Each sub-step on its own line with proper indentation and numbering
    
    EXACT FORMAT TO FOLLOW (copy this exactly):
    
-1. Prepare Materials - Gather all required materials and tools
+1. Prepare Materials
+Gather all required materials and tools for the process.
    1.1 Check material quality and expiration dates
    1.2 Verify quantities match requirements
    1.3 Organize materials in work area
 
-2. Execute Process - Follow the documented procedure
+2. Execute Process
+Follow the documented procedure step by step.
    2.1 Monitor progress at each checkpoint
    2.2 Record observations and measurements
    2.3 Address any deviations immediately
 
-3. Complete Documentation - Record all results and observations
-   3.1 Fill out required forms
+3. Complete Documentation
+Record all results and observations in the appropriate forms.
+   3.1 Fill out required forms completely
    3.2 Sign and date all documents
    3.3 File records in appropriate location
 
@@ -200,21 +204,27 @@ Requirements:
 CRITICAL FORMATTING RULES (MUST FOLLOW EXACTLY):
 
 1. SECTION HEADERS:
-   - Format: "### Section Title" (ONE line, NO numbers, NO line breaks)
-   - Example: "### PURPOSE" NOT "### 1. PURPOSE" or "###\nPURPOSE"
+   - Format: "### Section Title" (ONE line, NO numbers, NO separating characters)
+   - Example: "### PURPOSE" NOT "### 1. PURPOSE" or "### 1 - PURPOSE" or "###\nPURPOSE"
    - All headers must have consistent spacing (one blank line before and after)
+   - NO dashes, colons, or other separators between number and title
+   - Headers will be numbered automatically by the system
 
 2. PROCEDURE SECTION NUMBERING:
-   - Main steps: "1. Step Title - Brief description" (ALL on ONE line)
-   - Sub-steps: "   1.1 Sub-step description" (3 spaces indent, sub-number, description)
-   - Format example:
+   - Main steps: "1. Step Title" on ONE line (NO separators like dash or colon)
+   - Description goes on the NEXT line (separate from title)
+   - Sub-steps: "   1.1 Sub-step description" (3 spaces indent, sub-number, description on SAME line)
+   - NO dashes, colons, or separators between number and title
+   - Format example (FOLLOW EXACTLY):
    
-1. Prepare Materials - Gather all required materials and tools
+1. Prepare Materials
+Gather all required materials and tools for the process.
    1.1 Check material quality and expiration dates
    1.2 Verify quantities match requirements
    1.3 Organize materials in work area
 
-2. Execute Process - Follow the documented procedure
+2. Execute Process
+Follow the documented procedure step by step.
    2.1 Monitor progress at each checkpoint
    2.2 Record observations and measurements
    2.3 Address any deviations immediately
@@ -235,18 +245,29 @@ CRITICAL FORMATTING RULES (MUST FOLLOW EXACTLY):
    - Use bullet points (- not *) for non-sequential items
    - Use numbered lists (1. 2. 3.) only in PROCEDURE section
    - Maintain consistent formatting throughout
+   - NO dashes, hyphens, or separators between numbers and titles
 
-5. SPACING:
+5. SPACING AND MARGINS:
    - One blank line before each section header
    - One blank line after each section header
    - NO extra line breaks within headers
-   - Consistent margins for all sections
+   - Consistent left margin for all sections (no indentation for main sections)
+   - All section headers start at the same left margin
+   - Subsections indented with 3 spaces
 
-Format your response as structured sections with clear headings. Use "###" for section titles and "####" for subsection titles. DO NOT include section numbers in the headings. Keep all headers on a single line with NO line breaks.`;
+6. LIST FORMATTING:
+   - Before creating numbered lists, check if items have sub-items (e.g., 2.1, 2.2)
+   - If sub-items exist, format as:
+     Main item number and title on one line
+     Sub-items indented with 3 spaces and sub-numbers (2.1, 2.2, etc.)
+   - Maintain proper hierarchy: 1 → 1.1 → 1.1.1 (if needed)
+
+Format your response as structured sections with clear headings. Use "###" for section titles and "####" for subsection titles. DO NOT include section numbers in the headings. Keep all headers on a single line with NO line breaks. NO separating characters (dashes, colons, etc.) between numbers and titles.`;
   }
 
   /**
    * Parse AI response into structured SOP document
+   * Ensures proper formatting with no separating characters between numbers and titles
    */
   private parseSOPResponse(text: string, input: SOPTextInput): GeneratedSOPText {
     const sections: SOPSection[] = [];
@@ -260,16 +281,18 @@ Format your response as structured sections with clear headings. Use "###" for s
     for (const line of lines) {
       const trimmedLine = line.trim();
       
-      // Main section (### Title or ### 1. Title)
+      // Main section (### Title or ### 1. Title or ### 1 - Title)
       if (trimmedLine.startsWith('###') && !trimmedLine.startsWith('####')) {
         if (currentSection) {
           sections.push(currentSection);
         }
         
-        // Remove ### and any existing numbering, also remove line breaks
+        // Remove ### and any existing numbering/separators, also remove line breaks
         const title = trimmedLine
           .replace(/^###\s*/, '')
           .replace(/^\d+\.\s*/, '')
+          .replace(/^\d+\s*-\s*/, '')
+          .replace(/^\d+\s*:\s*/, '')
           .replace(/^\d+\s+/, '')
           .replace(/\n/g, ' ')
           .trim();
@@ -284,13 +307,15 @@ Format your response as structured sections with clear headings. Use "###" for s
         subsectionNumber = 1;
         currentSubsection = null;
       }
-      // Subsection (#### Title or #### 1.1 Title)
+      // Subsection (#### Title or #### 1.1 Title or #### 1.1 - Title)
       else if (trimmedLine.startsWith('####')) {
         if (currentSection) {
-          // Remove #### and any existing numbering, also remove line breaks
+          // Remove #### and any existing numbering/separators, also remove line breaks
           const title = trimmedLine
             .replace(/^####\s*/, '')
             .replace(/^\d+\.\d+\s*/, '')
+            .replace(/^\d+\.\d+\s*-\s*/, '')
+            .replace(/^\d+\.\d+\s*:\s*/, '')
             .replace(/^\d+\.\d+\.\s*/, '')
             .replace(/\n/g, ' ')
             .trim();
@@ -313,12 +338,30 @@ Format your response as structured sections with clear headings. Use "###" for s
           currentSection.content = (currentSection.content || '') + line + '\n';
         }
       }
+      // Preserve blank lines in content
+      else if (currentSection || currentSubsection) {
+        if (currentSubsection) {
+          currentSubsection.content = (currentSubsection.content || '') + '\n';
+        } else if (currentSection) {
+          currentSection.content = (currentSection.content || '') + '\n';
+        }
+      }
     }
 
     // Add last section
     if (currentSection) {
       sections.push(currentSection);
     }
+
+    // Post-process content to ensure proper list formatting
+    sections.forEach(section => {
+      section.content = this.formatListContent(section.content);
+      if (section.subsections) {
+        section.subsections.forEach(subsection => {
+          subsection.content = this.formatListContent(subsection.content);
+        });
+      }
+    });
 
     // Generate document metadata
     const now = new Date();
@@ -331,5 +374,97 @@ Format your response as structured sections with clear headings. Use "###" for s
       effectiveDate: now.toISOString().split('T')[0] as string,
       sections: sections as SOPSection[]
     };
+  }
+
+  /**
+   * Format list content to ensure proper hierarchy and indentation
+   * Identifies numbered lists with sub-items (e.g., 2.1, 2.2) and formats them correctly
+   */
+  private formatListContent(content: string | undefined): string {
+    if (!content) return '';
+    
+    const lines = content.split('\n');
+    const formattedLines: string[] = [];
+    let i = 0;
+    
+    while (i < lines.length) {
+      const line = lines[i];
+      if (!line) {
+        formattedLines.push('');
+        i++;
+        continue;
+      }
+      
+      const trimmed = line.trim();
+      
+      // Check if this is a main numbered item (e.g., "1. Title" or "1. Title - Description")
+      const mainItemMatch = trimmed.match(/^(\d+)\.\s+(.+?)(?:\s*-\s*(.+))?$/);
+      if (mainItemMatch && mainItemMatch[1] && mainItemMatch[2]) {
+        const itemNumber = mainItemMatch[1];
+        const itemTitle = mainItemMatch[2];
+        const itemDescription = mainItemMatch[3]; // May be undefined
+        
+        // Check if next lines have sub-items (e.g., "1.1", "1.2")
+        const hasSubItems = this.hasSubItems(lines, i + 1, itemNumber);
+        
+        // Format: number and title on one line (NO dash)
+        formattedLines.push(`${itemNumber}. ${itemTitle}`);
+        
+        // If there was a description after dash, put it on next line
+        if (itemDescription) {
+          formattedLines.push(itemDescription);
+        }
+        
+        // If no sub-items and next line is not a numbered item or sub-item, it might be the description
+        if (!hasSubItems && !itemDescription && i + 1 < lines.length) {
+          const nextLine = lines[i + 1];
+          if (nextLine) {
+            const nextTrimmed = nextLine.trim();
+            // Check if next line is a description (not a numbered item or sub-item)
+            if (nextTrimmed && !nextTrimmed.match(/^\d+\.\s+/) && !nextTrimmed.match(/^\d+\.\d+\s+/)) {
+              formattedLines.push(nextLine);
+              i++; // Skip the description line
+            }
+          }
+        }
+      }
+      // Check if this is a sub-item (e.g., "1.1 Description" or "   1.1 Description")
+      else if (trimmed.match(/^(\d+\.\d+)\s+(.+)$/)) {
+        // Ensure proper indentation (3 spaces)
+        const subItemMatch = trimmed.match(/^(\d+\.\d+)\s+(.+)$/);
+        if (subItemMatch) {
+          formattedLines.push(`   ${subItemMatch[1]} ${subItemMatch[2]}`);
+        }
+      }
+      else {
+        // Regular line, keep as is
+        formattedLines.push(line);
+      }
+      
+      i++;
+    }
+    
+    return formattedLines.join('\n');
+  }
+
+  /**
+   * Check if the following lines contain sub-items for the given item number
+   */
+  private hasSubItems(lines: string[], startIndex: number, itemNumber: string): boolean {
+    for (let i = startIndex; i < Math.min(startIndex + 10, lines.length); i++) {
+      const line = lines[i];
+      if (!line) continue;
+      
+      const trimmed = line.trim();
+      // Check for sub-item pattern (e.g., "1.1", "2.1")
+      if (trimmed.match(new RegExp(`^${itemNumber}\\.\\d+\\s+`))) {
+        return true;
+      }
+      // Stop checking if we hit another main item or empty section
+      if (trimmed.match(/^\d+\.\s+/) && !trimmed.startsWith(`${itemNumber}.`)) {
+        break;
+      }
+    }
+    return false;
   }
 }

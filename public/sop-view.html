@@ -128,15 +128,14 @@
         .cover-page::before {
             content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 600px;
-            height: 600px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-repeat: no-repeat;
             background-position: center;
-            background-size: contain;
-            opacity: 0.4;
+            background-size: cover;
+            opacity: 0.3;
             z-index: 0;
             pointer-events: none;
         }
@@ -309,20 +308,27 @@
             page-break-inside: avoid;
         }
 
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
         .section-number {
             font-size: 2rem;
             font-weight: 700;
             color: #667eea;
-            margin-bottom: 0.5rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
         }
 
         .section-title {
             font-size: 1.8rem;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 1.5rem;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 0.5rem;
+            flex: 1;
         }
 
         .section-content {
@@ -335,13 +341,13 @@
             margin: 1rem 0;
         }
 
-        .section-content ul,
+        .section-content ul:not(.bullet-list),
         .section-content ol {
             margin: 1rem 0 1rem 2rem;
             line-height: 1.8;
         }
 
-        .section-content ul {
+        .section-content ul:not(.bullet-list) {
             list-style-type: disc;
         }
 
@@ -354,9 +360,96 @@
             padding-left: 0.5rem;
         }
 
-        .section-content li::marker {
+        .section-content ul:not(.bullet-list) li::marker,
+        .section-content ol li::marker {
             color: #667eea;
             font-weight: 600;
+        }
+
+        /* Procedure Items with Sub-items */
+        .procedure-item {
+            display: flex;
+            margin: 1.5rem 0;
+            page-break-inside: avoid;
+        }
+
+        .procedure-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+            min-width: 3rem;
+            flex-shrink: 0;
+        }
+
+        .procedure-content {
+            flex: 1;
+        }
+
+        .procedure-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 0.5rem;
+        }
+
+        .procedure-description {
+            font-size: 1.05rem;
+            color: #333;
+            margin-bottom: 0.75rem;
+            line-height: 1.7;
+        }
+
+        .procedure-subitems {
+            margin-top: 0.75rem;
+            margin-left: 0;
+        }
+
+        .procedure-subitem {
+            margin: 0.5rem 0;
+            padding-left: 1rem;
+            line-height: 1.7;
+        }
+
+        .subitem-number {
+            font-weight: 600;
+            color: #764ba2;
+            margin-right: 0.5rem;
+        }
+
+        .subitem-text {
+            color: #333;
+        }
+
+        /* Bullet Lists */
+        .bullet-list {
+            list-style: none;
+            margin: 1rem 0;
+            padding-left: 0;
+        }
+
+        .bullet-list li {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .bullet-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .bullet-list li.sub-bullet {
+            padding-left: 3rem;
+        }
+
+        .bullet-list li.sub-bullet::before {
+            content: "◦";
+            left: 1.5rem;
+            color: #764ba2;
         }
 
         /* Nested list indentation */
@@ -702,49 +795,27 @@
                     <ul class="toc-list">
             `;
 
-            // Check if Process Diagrams is already in TOC
-            const hasProcessDiagramsInTOC = sop.tableOfContents && sop.tableOfContents.some(entry => 
-                entry.title === 'Process Diagrams' || entry.number === '0'
-            );
-
-            // Add Process Diagrams to TOC if charts exist and not already in TOC
-            if (sop.charts && sop.charts.length > 0 && !hasProcessDiagramsInTOC) {
-                html += `
-                    <li class="toc-item">
-                        <span class="toc-number">1</span>
-                        <span class="toc-title-text">Process Diagrams</span>
-                    </li>
-                `;
+            // Add all sections from tableOfContents (backend already includes Process Diagrams)
+            if (sop.tableOfContents && sop.tableOfContents.length > 0) {
+                sop.tableOfContents.forEach(entry => {
+                    html += `
+                        <li class="toc-item">
+                            <span class="toc-number">${entry.number}</span>
+                            <span class="toc-title-text">${entry.title}</span>
+                        </li>
+                    `;
+                    if (entry.subsections) {
+                        entry.subsections.forEach(sub => {
+                            html += `
+                                <li class="toc-item toc-subsection">
+                                    <span class="toc-number">${sub.number}</span>
+                                    <span class="toc-title-text">${sub.title}</span>
+                                </li>
+                            `;
+                        });
+                    }
+                });
             }
-
-            // Add other sections with adjusted numbering
-            sop.tableOfContents.forEach(entry => {
-                // Skip if this is Process Diagrams (number 0) since we handle it separately
-                if (entry.number === '0' || entry.title === 'Process Diagrams') {
-                    return;
-                }
-                
-                const adjustedNumber = sop.charts && sop.charts.length > 0 ? parseInt(entry.number) + 1 : entry.number;
-                html += `
-                    <li class="toc-item">
-                        <span class="toc-number">${adjustedNumber}</span>
-                        <span class="toc-title-text">${entry.title}</span>
-                    </li>
-                `;
-                if (entry.subsections) {
-                    entry.subsections.forEach(sub => {
-                        const adjustedSubNumber = sop.charts && sop.charts.length > 0 
-                            ? `${adjustedNumber}.${sub.number.split('.')[1]}` 
-                            : sub.number;
-                        html += `
-                            <li class="toc-item toc-subsection">
-                                <span class="toc-number">${adjustedSubNumber}</span>
-                                <span class="toc-title-text">${sub.title}</span>
-                            </li>
-                        `;
-                    });
-                }
-            });
 
             html += `
                     </ul>
@@ -756,8 +827,10 @@
                 html += `<div class="content-section">`;
                 html += `
                     <div class="section">
-                        <div class="section-number">1</div>
-                        <h2 class="section-title">Process Diagrams</h2>
+                        <div class="section-header">
+                            <div class="section-number">1.</div>
+                            <h2 class="section-title">Process Diagrams</h2>
+                        </div>
                         <div class="charts-section">
                 `;
                 
@@ -784,32 +857,28 @@ ${chart.mermaidCode}
                 html += `</div>`;
             }
 
-            // Content Sections (adjust numbering to start after Process Diagrams)
+            // Content Sections - use numbers as-is from backend (already correct)
             if (!sop.charts || sop.charts.length === 0) {
                 html += `<div class="content-section">`;
             }
             
             sop.sections.forEach((section, sectionIndex) => {
-                // Adjust section number to account for Process Diagrams section
-                const adjustedNumber = sop.charts && sop.charts.length > 0 ? parseInt(section.number) + 1 : section.number;
-                
+                // Use section number as-is from backend (already correctly numbered)
                 html += `
                     <div class="section">
-                        <div class="section-number">${adjustedNumber}</div>
-                        <h2 class="section-title">${section.title}</h2>
+                        <div class="section-header">
+                            <div class="section-number">${section.number}.</div>
+                            <h2 class="section-title">${section.title}</h2>
+                        </div>
                         <div class="section-content">${formatContent(section.content)}</div>
                 `;
                 
                 if (section.subsections) {
                     section.subsections.forEach(subsection => {
-                        // Adjust subsection number
-                        const adjustedSubNumber = sop.charts && sop.charts.length > 0 
-                            ? `${adjustedNumber}.${subsection.number.split('.')[1]}` 
-                            : subsection.number;
-                        
+                        // Use subsection number as-is from backend (already correctly numbered)
                         html += `
                             <div class="subsection">
-                                <div class="subsection-number">${adjustedSubNumber}</div>
+                                <div class="subsection-number">${subsection.number}</div>
                                 <h3 class="subsection-title">${subsection.title}</h3>
                                 <div class="section-content">${formatContent(subsection.content)}</div>
                             </div>
@@ -850,56 +919,124 @@ ${chart.mermaidCode}
         function formatContent(content) {
             if (!content) return '';
             
-            // Split into paragraphs
             let html = '';
-            const paragraphs = content.split('\n\n');
+            const lines = content.split('\n');
+            let i = 0;
             
-            for (const para of paragraphs) {
-                const trimmed = para.trim();
-                if (!trimmed) continue;
+            while (i < lines.length) {
+                const line = lines[i];
+                const trimmed = line.trim();
                 
-                // Check if it's a list
-                if (trimmed.match(/^[\*\-\+]\s/m)) {
-                    // Unordered list - remove bullet characters
-                    const items = trimmed.split('\n')
-                        .filter(line => line.trim())
-                        .map(line => {
-                            // Remove leading bullet characters (*, -, +) and any following asterisks
-                            return line.replace(/^[\*\-\+]\s+/, '')
-                                      .replace(/^\*+\s*/, '')
-                                      .trim();
-                        });
-                    html += '<ul>';
-                    items.forEach(item => {
-                        if (item) { // Only add non-empty items
-                            html += `<li>${formatInline(item)}</li>`;
-                        }
-                    });
-                    html += '</ul>';
-                } else if (trimmed.match(/^\d+\.\s/m)) {
-                    // Ordered list - remove number prefix
-                    const items = trimmed.split('\n')
-                        .filter(line => line.trim())
-                        .map(line => {
-                            // Remove leading numbers and any following asterisks
-                            return line.replace(/^\d+\.\s+/, '')
-                                      .replace(/^\*+\s*/, '')
-                                      .trim();
-                        });
-                    html += '<ol>';
-                    items.forEach(item => {
-                        if (item) { // Only add non-empty items
-                            html += `<li>${formatInline(item)}</li>`;
-                        }
-                    });
-                    html += '</ol>';
-                } else if (trimmed.startsWith('|')) {
-                    // Table
-                    html += formatTable(trimmed);
-                } else {
-                    // Regular paragraph
-                    html += `<p>${formatInline(trimmed)}</p>`;
+                if (!trimmed) {
+                    i++;
+                    continue;
                 }
+                
+                // Check for numbered list item (e.g., "1. Title" or "1. Title - Description")
+                const mainItemMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+                if (mainItemMatch) {
+                    const itemNumber = mainItemMatch[1];
+                    const itemText = mainItemMatch[2];
+                    
+                    // Check if next lines have sub-items (e.g., "   1.1", "   1.2")
+                    let hasSubItems = false;
+                    let j = i + 1;
+                    while (j < lines.length && j < i + 10) {
+                        const nextTrimmed = lines[j] ? lines[j].trim() : '';
+                        if (nextTrimmed.match(new RegExp(`^${itemNumber}\\.\\d+\\s+`))) {
+                            hasSubItems = true;
+                            break;
+                        }
+                        if (nextTrimmed.match(/^\d+\.\s+/)) break;
+                        j++;
+                    }
+                    
+                    // Format main item
+                    html += `<div class="procedure-item">`;
+                    html += `<div class="procedure-number">${itemNumber}.</div>`;
+                    html += `<div class="procedure-content">`;
+                    html += `<div class="procedure-title">${formatInline(itemText)}</div>`;
+                    
+                    // Check if next line is description (not a sub-item or another main item)
+                    i++;
+                    if (i < lines.length) {
+                        const nextLine = lines[i];
+                        const nextTrimmed = nextLine ? nextLine.trim() : '';
+                        if (nextTrimmed && !nextTrimmed.match(/^\d+\.\s+/) && !nextTrimmed.match(/^\d+\.\d+\s+/)) {
+                            html += `<div class="procedure-description">${formatInline(nextTrimmed)}</div>`;
+                            i++;
+                        }
+                    }
+                    
+                    // Add sub-items if they exist
+                    if (hasSubItems) {
+                        html += `<div class="procedure-subitems">`;
+                        while (i < lines.length) {
+                            const subLine = lines[i];
+                            const subTrimmed = subLine ? subLine.trim() : '';
+                            const subItemMatch = subTrimmed.match(new RegExp(`^(${itemNumber}\\.\\d+)\\s+(.+)$`));
+                            
+                            if (subItemMatch) {
+                                html += `<div class="procedure-subitem">`;
+                                html += `<span class="subitem-number">${subItemMatch[1]}</span> `;
+                                html += `<span class="subitem-text">${formatInline(subItemMatch[2])}</span>`;
+                                html += `</div>`;
+                                i++;
+                            } else if (subTrimmed.match(/^\d+\.\s+/)) {
+                                // Hit next main item, stop
+                                break;
+                            } else {
+                                i++;
+                            }
+                        }
+                        html += `</div>`;
+                    }
+                    
+                    html += `</div></div>`;
+                    continue;
+                }
+                
+                // Check for bullet list
+                if (trimmed.match(/^[\*\-\+•]\s/)) {
+                    html += '<ul class="bullet-list">';
+                    while (i < lines.length) {
+                        const bulletLine = lines[i];
+                        const bulletTrimmed = bulletLine ? bulletLine.trim() : '';
+                        
+                        if (bulletTrimmed.match(/^[\*\-\+•]\s/)) {
+                            const text = bulletTrimmed.replace(/^[\*\-\+•]\s+/, '');
+                            html += `<li>${formatInline(text)}</li>`;
+                            i++;
+                        } else if (bulletTrimmed.match(/^\s+[\*\-\+•]\s/)) {
+                            // Sub-bullet
+                            const text = bulletTrimmed.replace(/^\s+[\*\-\+•]\s+/, '');
+                            html += `<li class="sub-bullet">${formatInline(text)}</li>`;
+                            i++;
+                        } else if (!bulletTrimmed) {
+                            i++;
+                            break;
+                        } else {
+                            break;
+                        }
+                    }
+                    html += '</ul>';
+                    continue;
+                }
+                
+                // Check for table
+                if (trimmed.startsWith('|')) {
+                    let tableLines = [];
+                    while (i < lines.length && lines[i] && lines[i].trim().startsWith('|')) {
+                        tableLines.push(lines[i]);
+                        i++;
+                    }
+                    html += formatTable(tableLines.join('\n'));
+                    continue;
+                }
+                
+                // Regular paragraph
+                html += `<p>${formatInline(trimmed)}</p>`;
+                i++;
             }
             
             return html;

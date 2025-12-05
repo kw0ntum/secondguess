@@ -34,13 +34,36 @@ export class DocumentExporterService implements DocumentExporter {
     try {
       await this.ensureExportDirectory();
       
-      // Sanitize and truncate title to prevent filename too long errors
-      const sanitizedTitle = sop.title.replace(/[^a-zA-Z0-9\s-_]/g, '').replace(/\s+/g, '_');
-      const maxTitleLength = 100; // Maximum characters for title in filename
-      const truncatedTitle = sanitizedTitle.length > maxTitleLength 
-        ? sanitizedTitle.substring(0, maxTitleLength) 
-        : sanitizedTitle;
-      const filename = `${truncatedTitle}_v${sop.version}.${format}`;
+      // Generate filename: Title_DocumentNumber_Version.format
+      // Example: Customer_Onboarding_Process_SOP-2024-12-001_v1.0.pdf
+      let sanitizedTitle = sop.title
+        .replace(/[^a-zA-Z0-9\s_-]/g, '') // Remove special chars except space, underscore, hyphen
+        .replace(/\s+/g, '_')              // Replace spaces with underscores
+        .replace(/_+/g, '_')               // Replace multiple underscores with single
+        .replace(/^_|_$/g, '');            // Remove leading/trailing underscores
+      
+      // Limit title length to keep filename reasonable
+      const maxTitleLength = 60;
+      if (sanitizedTitle.length > maxTitleLength) {
+        sanitizedTitle = sanitizedTitle.substring(0, maxTitleLength);
+      }
+      
+      // Fallback if title is empty after sanitization
+      if (!sanitizedTitle) {
+        sanitizedTitle = 'SOP_Document';
+      }
+      
+      // Get document number (use id if available)
+      const documentNumber = sop.id || '';
+      const version = sop.version || '1.0';
+      
+      // Build filename with document number and version
+      let filename = sanitizedTitle;
+      if (documentNumber) {
+        filename += `_${documentNumber}`;
+      }
+      filename += `_v${version}.${format}`;
+      
       const filePath = path.join(this.exportDir, filename);
       
       let fileSize = 0;

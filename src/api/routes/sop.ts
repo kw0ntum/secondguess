@@ -255,15 +255,38 @@ router.post('/:sopId/export', authenticateUser, async (req: Request, res: Respon
     const mimeType = mimeTypes[format] || 'application/octet-stream';
     const extension = extensions[format] || format;
     
-    // Get title from metadata or fallback and truncate to prevent filename too long errors
-    const title = sopData.metadata?.title || sopData.title || 'SOP_Document';
-    const version = sopData.metadata?.version || sopData.version || '1.0';
-    const sanitizedTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
-    const maxTitleLength = 100;
-    const truncatedTitle = sanitizedTitle.length > maxTitleLength 
-      ? sanitizedTitle.substring(0, maxTitleLength) 
-      : sanitizedTitle;
-    const filename = `${truncatedTitle}_v${version}.${extension}`;
+    // Generate filename: Title_DocumentNumber_Version.extension
+    // Example: Customer_Onboarding_Process_SOP-2024-12-001_v1.0.pdf
+    const title = sopData.metadata?.title || sopData.coverPage?.title || 'SOP_Document';
+    const documentNumber = sopData.metadata?.documentNumber || '';
+    const version = sopData.metadata?.version || '1.0';
+    
+    // Sanitize title (remove special characters, keep alphanumeric, spaces, and underscores)
+    let sanitizedTitle = title
+      .replace(/[^a-zA-Z0-9\s_-]/g, '') // Remove special chars except space, underscore, hyphen
+      .replace(/\s+/g, '_')              // Replace spaces with underscores
+      .replace(/_+/g, '_')               // Replace multiple underscores with single
+      .replace(/^_|_$/g, '');            // Remove leading/trailing underscores
+    
+    // Limit title length to keep filename reasonable
+    const maxTitleLength = 60;
+    if (sanitizedTitle.length > maxTitleLength) {
+      sanitizedTitle = sanitizedTitle.substring(0, maxTitleLength);
+    }
+    
+    // Fallback if title is empty after sanitization
+    if (!sanitizedTitle) {
+      sanitizedTitle = 'SOP_Document';
+    }
+    
+    // Build filename with document number and version
+    let filename = sanitizedTitle;
+    if (documentNumber) {
+      filename += `_${documentNumber}`;
+    }
+    filename += `_v${version}.${extension}`;
+    
+    // Example result: Customer_Onboarding_Process_SOP-2024-12-001_v1.0.pdf
     
     res.setHeader('Content-Type', mimeType);
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
